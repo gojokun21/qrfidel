@@ -5,6 +5,48 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 03 – QrTokenService (HMAC, rotație, jti de unică folosință) (2026-10-15)
+
+**Făcut:**
+- `app/Services/Loyalty/QrTokenService.php`:
+  - `issue(Card): QrToken` emite `public_id.timestamp.jti.sig`, cu HMAC-SHA256 pe secretul cardului și prefix de versiune `qr1`, plus un cod scurt de 6 caractere (fără 0/O/1/I/L). Codul e per afacere, valabil 90 s, și există un singur cod activ per card.
+  - `resolve(input, actor, location): Card` acceptă tokenul sau codul scurt și verifică, în ordine: semnătura (`hash_equals`, cost egal și pentru card inexistent), vârsta ≤ 90 s (toleranță 5 s), locația și apartenența actorului (`authorizeMember`), afacerea și programul active. La final consumă jti-ul atomic (`Cache::add`, SET NX), deci un scan refuzat nu arde codul.
+  - `rotateSecret(card, ?actor)` invalidează toate QR-urile; staff-ul are nevoie de rol de manager; secretul și auditul `card.secret_rotated` se scriu în aceeași tranzacție. `Card::newSecret()`.
+- `config/loyalty.php` (`qr.*`), `LOYALTY_QR_STORE` (implicit `redis`; în teste `array`), `CACHE_PREFIX=creative-loyalty-test-` în `phpunit.xml`.
+- Excepția `InvalidQrToken` (`LoyaltyException`). Mesaje: „Cod QR invalid.”, „Cod QR expirat – cere clientului să-l reîmprospăteze.”, „Cod QR deja folosit.”, „Cod invalid sau expirat – cere clientului codul actual.” (cod scurt), plus afacere suspendată și program inactiv.
+- Teste:
+  - `QrTokenServiceTest` (54): falsificat (fiecare parte a tokenului, secretul altui card, format greșit), expirat (90 s / 91 s, viitor, skew), refolosit, TTL jti, rotație, tenancy și autorizare, program și afacere inactive.
+  - `QrTokenRedisTest`: Redis real.
+  - `tests/Concurrency/QrConcurrencyTest`: două procese scanează același QR și trece exact unul. Am verificat că testul **pică** fără `add` atomic.
+
+**Verificări:** `composer test` 263 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK.
+
+**Fixuri după `/code-review high`:**
+- `rotateSecret` verifică actorul (manager+) și rulează în tranzacție.
+- Timing egal pentru card inexistent (HMAC pe un card fictiv).
+- Un singur cod scurt activ per card.
+- TTL-ul jti e cel puțin `ttl + skew`, indiferent de config.
+- Mesaj clar pentru un cod scurt expirat sau greșit.
+- Testul de concurență verifică faptul că ambele procese au ajuns la barieră la timp.
+- Prefix Redis separat pentru teste și curățarea cheilor.
+- Scoase `rotate_seconds` (nefolosit) și `InvalidQrToken::inactive()`.
+
+**Rămas / de continuat:**
+- **Important pentru S8:** `resolve()` consumă QR-ul, dar ștampila, redeem-ul și void-ul primesc cardul după `public_id`, deci un angajat ar putea acționa fără o scanare nouă. Recomandarea din review: `resolve()` întoarce un „scan ticket” scurt (nonce în Redis, legat de card, actor și locație), pe care `StampService::add()` / `RewardService::redeem()` îl cer și îl consumă. Schimbă semnăturile din S02, de aceea nu l-am făcut acum.
+- Verificările „afacere suspendată” și „program inactiv” sunt duplicate în Stamp/Reward/QrTokenService (fiecare cu excepția lui). Se pot muta într-un helper din `GuardsCardActions` când se atinge din nou zona.
+- S7: endpoint client (guard `customer`) care întoarce `token`, `shortCode`, `expiresAt`; Alpine îl cere la 30 s.
+- S8: maparea `InvalidQrToken` → 422. S10: rate limit 30/min per angajat pe resolve (face nepractică ghicirea codurilor scurte).
+
+**Decizii noi:**
+- [005](decisions/005-qr-emis-de-server.md): QR emis de server (secretul nu ajunge în browser), cod scurt per afacere în Redis, jti consumat la scanare ca ultim pas, rotația secretului.
+
+**Probleme cunoscute:**
+- Bash-ul din Claude Code (Git Bash pe Windows) a refuzat de două ori heredoc-uri lungi cu text românesc („unexpected EOF”). Pentru fișiere folosește Write/Edit.
+
+**Următoarea sesiune:** 04 – Dashboard owner: afacere, locații, echipă și invitații.
+
+---
+
 ## Sesiunea 02 – StampService + RewardService + VoidService (doar backend) (2026-10-15)
 
 **Făcut:**
