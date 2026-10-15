@@ -5,6 +5,7 @@ use App\Models\Business;
 use App\Models\Card;
 use App\Models\CardTransaction;
 use App\Models\Customer;
+use App\Models\Invitation;
 use App\Models\Location;
 use App\Models\StampRequest;
 use Illuminate\Database\QueryException;
@@ -168,4 +169,20 @@ describe('card_transactions is append-only', function () {
             ->where('id', $this->transaction->id)
             ->update(['voided_by_id' => $void->id, 'quantity' => 9]));
     })->throws(QueryException::class);
+});
+
+it('allows a single active invitation per business and email', function () {
+    $invitation = Invitation::factory()->create(['email' => 'a@exemplu.test']);
+
+    inSavepoint(fn () => Invitation::factory()->for($invitation->business)->create(['email' => 'A@exemplu.test']));
+})->throws(QueryException::class);
+
+it('allows a new invitation once the previous one is revoked or accepted', function () {
+    $business = Business::factory()->create();
+    Invitation::factory()->for($business)->revoked()->create(['email' => 'a@exemplu.test']);
+    Invitation::factory()->for($business)->accepted()->create(['email' => 'a@exemplu.test']);
+    Invitation::factory()->for($business)->create(['email' => 'a@exemplu.test']);
+    Invitation::factory()->create(['email' => 'a@exemplu.test']);
+
+    expect(Invitation::query()->count())->toBe(4);
 });
