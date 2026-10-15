@@ -1,0 +1,63 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan *)",
+      "Bash(composer test*)",
+      "Bash(composer lint*)",
+      "Bash(composer analyse*)",
+      "Bash(composer check*)",
+      "Bash(./vendor/bin/pint*)",
+      "Bash(./vendor/bin/phpstan*)",
+      "Bash(./vendor/bin/pest*)",
+      "Bash(npm run *)",
+      "Bash(docker compose ps*)",
+      "Bash(docker compose up*)",
+      "Bash(docker compose logs*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "PowerShell(php artisan *)",
+      "PowerShell(composer test*)",
+      "PowerShell(composer lint*)",
+      "PowerShell(composer analyse*)",
+      "PowerShell(composer check*)",
+      "PowerShell(./vendor/bin/pint*)",
+      "PowerShell(./vendor/bin/phpstan*)",
+      "PowerShell(./vendor/bin/pest*)",
+      "PowerShell(npm run *)",
+      "PowerShell(docker compose ps*)",
+      "PowerShell(docker compose up*)",
+      "PowerShell(docker compose logs*)",
+      "PowerShell(git status*)",
+      "PowerShell(git diff*)",
+      "PowerShell(git log*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "php \"$CLAUDE_PROJECT_DIR/.claude/hooks/pint-file.php\"",
+            "timeout": 60,
+            "statusMessage": "Pint pe fișierul modificat..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "php \"$CLAUDE_PROJECT_DIR/.claude/hooks/run-tests.php\"",
+            "timeout": 300,
+            "statusMessage": "composer test..."
+          }
+        ]
+      }
+    ]
+  }
+}
