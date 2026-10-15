@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\TeamRuleViolation;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
+use App\Services\Loyalty\AccountService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -40,17 +44,20 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, AccountService $accounts): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
 
+        /** @var User $user */
         $user = $request->user();
 
-        Auth::logout();
-
-        $user->delete();
+        try {
+            $accounts->delete($user, fn () => Auth::logout());
+        } catch (TeamRuleViolation $e) {
+            throw ValidationException::withMessages(['password' => $e->getMessage()])->errorBag('userDeletion');
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
