@@ -21,4 +21,13 @@ enum Role: string
     {
         return $this->rank() >= $role->rank();
     }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Owner => 'Owner',
+            self::Manager => 'Manager',
+            self::Staff => 'Angajat',
+        };
+    }
 }
