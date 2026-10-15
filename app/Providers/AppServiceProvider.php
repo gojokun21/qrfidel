@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\Tenancy\CurrentBusiness;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +12,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Scoped: un context nou pentru fiecare request/job (inclusiv sub Octane sau în worker-ul de cozi).
+        $this->app->scoped(CurrentBusiness::class);
     }
 
     /**
