@@ -5,6 +5,53 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 04 – Dashboard owner: afacere, locații, echipă și invitații (2026-10-16)
+
+**Făcut:**
+- Servicii noi în `app/Services/Loyalty/`, fiecare cu audit (`business.*`, `location.*`, `member.*`) și cu verificarea ownerului (trait `Concerns\RequiresOwner`):
+  - `BusinessService`: creare self-serve (creatorul devine owner; slug unic din nume sau ales, fixat după creare), setări.
+  - `LocationService`: CRUD; ștergerea e refuzată dacă locația are activitate; regenerare `counter_token`.
+  - `TeamService`: schimbare rol/locație și scoatere din echipă. Se șterge membership-ul, nu userul. Regula „cel puțin un owner” folosește lock pe owneri.
+  - `InvitationService`: invitare, re-invitare (o înlocuiește pe cea veche), revocare, acceptare cu cont existent sau cont nou (email marcat verificat), cu lock pe invitație.
+  - `AccountService`: ștergerea propriului cont e refuzată pentru singurul owner sau pentru un user cu activitate în jurnal (rezolvă nota din S01).
+- Tabelul `invitations`: în DB stă doar hash-ul sha256 al tokenului; CHECK pe rol, owner fără locație, index unic parțial „o invitație activă per afacere + email”. Model, factory, `InvitationPolicy`, `MembershipPolicy`, `LocationPolicy::viewAny`. Mail markdown `TeamInvitation`.
+- UI (Blade + Alpine, în română):
+  - `/dashboard` (home cu sumar), creare și setări afacere, locații (managerul doar le vede), echipă (membri, invitații, formular de invitare).
+  - Pagina publică `/invitations/{token}` (acceptare, cont nou, login, invitație invalidă).
+  - Navigația afișează linkurile după rol și permite comutarea între afaceri.
+- Middleware `has-business`: un user fără afacere ajunge la formularul de creare. `EnsureBusinessMember` rulează înainte de route model binding, așa că modelele altor afaceri dau 404.
+- Excepții `TeamRuleViolation`, `LocationInUse`, `InvitationInvalid` (cu cod HTTP). `LoyaltyException` e mapată global: pe web, redirect cu eroarea `loyalty`; pe JSON, 422/409. Nu se mai raportează în log.
+- Teste noi: `tests/Feature/Dashboard/` (onboarding, locații, echipă, invitații, ștergere cont), `TeamPolicyTest`, schemă invitații. Include fluxul complet „owner creează locație și invită un angajat care intră în echipă”.
+
+**Verificări:** `composer test` 345 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK.
+
+**Fixuri după `/code-review high`:**
+- Dublu-click pe „Trimite invitația” dădea 500 (indexul unic): acum e mesaj clar.
+- Slug-ul afacerii: ocupat simultan → eroare de validare; nu mai poate rămâne cu cratimă la final după trunchiere.
+- Ștergerea contului: verificarea și ștergerea se fac în aceeași tranzacție, cu lock pe owneri (doi owneri nu mai pot pleca simultan). Logout-ul rulează înainte de `delete()`, pentru că rotirea remember token-ului salva userul din nou.
+- Un owner care se retrogradează singur e trimis la dashboard, nu la un 403.
+- `LoyaltyException` scos din raportare.
+- `Gate::authorize('viewAny')` pe lista de locații.
+- `AuditTrail::recordForBusiness` acceptă `Business|int`, fără query-uri și `runAs` în plus.
+- Șters `dashboard.blade.php` din Breeze, nefolosit.
+
+**Rămas / de continuat:**
+- Observație din review neaplicată: `User::roleIn()` / `hasRoleIn()` interoghează la fiecare apel (N+1 pe lista de locații cu `@can`, plus navigația). Memoizarea pe instanța `User` ar da rezultate vechi în teste, unde aceeași instanță trece prin mai multe request-uri. De rezolvat cu un cache per request (de ex. membership-ul pus de middleware în `CurrentBusiness`) când contează.
+- Logo-ul afacerii: S5, la „Aspect”.
+- Emailul de invitație se trimite sincron. Se poate trece pe coadă în S12, când există worker.
+- Rate limit pe trimiterea invitațiilor: S10. Înregistrarea din invitație are deja `throttle:6,1`.
+- Verificarea manuală în browser (înregistrare → afacere → locație → invitație în Mailpit → acceptare) nu s-a făcut în sesiune; fluxul e acoperit de teste feature.
+
+**Decizii noi:**
+- [006](decisions/006-dashboard-owner-echipa-invitatii.md): afacere self-serve, slug imutabil, echipa ca membership-uri, cel puțin un owner, invitații cu token hash-uit și valabile 7 zile, reguli pentru ștergerea contului, binding în contextul afacerii, maparea `LoyaltyException`.
+
+**Probleme cunoscute:**
+- Python din Git Bash citește heredoc-urile cu diacritice ca cp1252. Pentru scripturi de editare: fișier în scratchpad + `python -X utf8`.
+
+**Următoarea sesiune:** 05 – Wizard programe + template-uri + previzualizare card.
+
+---
+
 ## Sesiunea 03 – QrTokenService (HMAC, rotație, jti de unică folosință) (2026-10-15)
 
 **Făcut:**

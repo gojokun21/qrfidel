@@ -1,3 +1,17 @@
+@php
+    use App\Enums\Role;
+
+    // Linkurile dashboard-ului depind de rolul în afacerea curentă (setată de middleware-ul `business`).
+    $navBusiness = app(\App\Support\Tenancy\CurrentBusiness::class)->get();
+    $navRole = $navBusiness ? Auth::user()->roleIn($navBusiness) : null;
+    $navLinks = collect([
+        ['route' => 'dashboard', 'label' => 'Dashboard', 'pattern' => 'dashboard', 'visible' => true],
+        ['route' => 'dashboard.locations.index', 'label' => 'Locații', 'pattern' => 'dashboard.locations.*', 'visible' => $navRole?->atLeast(Role::Manager)],
+        ['route' => 'dashboard.team.index', 'label' => 'Echipa', 'pattern' => 'dashboard.team.*', 'visible' => $navRole === Role::Owner],
+        ['route' => 'dashboard.business.edit', 'label' => 'Afacerea', 'pattern' => 'dashboard.business.edit', 'visible' => $navRole === Role::Owner],
+    ])->filter(fn (array $link) => $link['visible']);
+    $navBusinesses = Auth::user()->businesses()->orderBy('name')->get();
+@endphp
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -12,9 +26,11 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                    @foreach ($navLinks as $link)
+                        <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['pattern'])">
+                            {{ $link['label'] }}
+                        </x-nav-link>
+                    @endforeach
                 </div>
             </div>
 
@@ -23,7 +39,7 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+                            <div>{{ Auth::user()->name }}@if ($navBusiness) <span class="text-gray-400">· {{ $navBusiness->name }}</span>@endif</div>
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -34,6 +50,16 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        @foreach ($navBusinesses->reject(fn ($b) => $b->id === $navBusiness?->id) as $other)
+                            <form method="POST" action="{{ route('dashboard.business.switch') }}">
+                                @csrf
+                                <input type="hidden" name="business_id" value="{{ $other->id }}">
+                                <button class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100">Comută la {{ $other->name }}</button>
+                            </form>
+                        @endforeach
+                        <x-dropdown-link :href="route('dashboard.business.create')">
+                            Afacere nouă
+                        </x-dropdown-link>
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
@@ -67,9 +93,11 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
+            @foreach ($navLinks as $link)
+                <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['pattern'])">
+                    {{ $link['label'] }}
+                </x-responsive-nav-link>
+            @endforeach
         </div>
 
         <!-- Responsive Settings Options -->
@@ -80,6 +108,16 @@
             </div>
 
             <div class="mt-3 space-y-1">
+                @foreach ($navBusinesses->reject(fn ($b) => $b->id === $navBusiness?->id) as $other)
+                    <form method="POST" action="{{ route('dashboard.business.switch') }}">
+                        @csrf
+                        <input type="hidden" name="business_id" value="{{ $other->id }}">
+                        <button class="block w-full ps-3 pe-4 py-2 text-start text-base font-medium text-gray-600 hover:bg-gray-50">Comută la {{ $other->name }}</button>
+                    </form>
+                @endforeach
+                <x-responsive-nav-link :href="route('dashboard.business.create')">
+                    Afacere nouă
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>

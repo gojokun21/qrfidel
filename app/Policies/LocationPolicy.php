@@ -12,6 +12,14 @@ use App\Models\User;
  */
 class LocationPolicy
 {
+    /**
+     * Lista locațiilor din dashboard: managerii și ownerii.
+     */
+    public function viewAny(User $user, Business $business): bool
+    {
+        return $user->hasRoleIn($business, Role::Manager);
+    }
+
     public function view(User $user, Location $location): bool
     {
         return $user->isMemberOf($location->business_id);
