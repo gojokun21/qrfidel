@@ -5,6 +5,35 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 02 – StampService + RewardService + VoidService (doar backend) (2026-10-15)
+
+**Făcut:**
+- `app/Services/Loyalty/`: `StampService::add()`, `RewardService::redeem()`, `VoidService::void()`, fiecare într-o tranzacție DB cu `SELECT … FOR UPDATE` pe card. Rezultatele sunt DTO-uri (`StampResult`, `RedeemResult`, `VoidResult`, cu `replayed`). Trait-ul `Concerns\GuardsCardActions` (lock, autorizare membru/rol/locație, idempotency) și `AuditTrail` (audit `card.stamped`, `reward.redeemed`, `transaction.voided`).
+- Reguli din SDD §5.4–5.6: program activ, afacere activă, `1 ≤ quantity ≤ max_stamps_per_visit`, cooldown cu mesaj „Ultima ștampilă acum X min – așteaptă Y min.”, limită zilnică în timezone-ul afacerii, emitere recompense cu/fără rollover (inclusiv mai multe dintr-o ștampilare), `expires_at` din `reward_expire_days`, redeem pe cea mai veche recompensă neexpirată, void în 24h ca tranzacție inversă.
+- Excepții `LoyaltyException` → `StampRuleViolation`, `RewardUnavailable`, `VoidNotAllowed`, `IdempotencyConflict` (mesaje în română); actor fără drept → `AuthorizationException`.
+- Rezolvate notele din S01: actorii (`staff_user_id`, `redeemed_by`) sunt verificați ca membri; managerul pe locația lui; fereastra de 24h; membrii legați de o locație lucrează doar acolo.
+- Migrație: `rewards.status` acceptă `voided`, coloana `rewards.issued_by_transaction_id`.
+- Teste: `tests/Feature/Loyalty/` (66) + suita nouă `tests/Concurrency/` cu două procese PHP reale pe același card (cooldown → o singură ștampilă; aceeași cheie → o singură tranzacție). Am verificat că testul de cooldown **pică** fără `lockForUpdate`.
+
+**Verificări:** `composer test` 206 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK.
+
+**Fixuri după `/code-review high`:** restricția pe locație pentru staff/manager legați de o locație; replay doar dacă cantitatea și locația coincid (altfel conflict); void pe un redeem a cărui recompensă a expirat între timp → `expired`, nu `available`; retry-ul la unique violation se uită după numele indexului de idempotency; fără `max(0, …)` care ar ascunde drift-ul cache-ului (CHECK-ul din DB pică zgomotos); logica de stamp din void adunată în `revertStamp`.
+
+**Rămas / de continuat:**
+- Comanda `cards:recalculate` (SDD §4) – Sesiunea 10, împreună cu joburile de expirare (care trebuie să țină cont de `issued_by_transaction_id` și de regula „void doar pe ultima ștampilă”).
+- Observații din review neaplicate: bariera de 3s din testul de concurență nu garantează suprapunerea pe o mașină foarte lentă (azi suprapunerea e reală – testul pică fără lock); `revertStamp` salvează recompensele una câte una (N mic, se poate face cu un singur `update`).
+- Controllerele (S8/S9) trebuie să mapeze `LoyaltyException` → 422 cu mesajul, `AuthorizationException` → 403, `IdempotencyConflict` → 409.
+
+**Decizii noi:**
+- [004](decisions/004-void-ultima-stampila-si-recompense-voided.md) idempotency ca replay, limita zilnică în ștampile, void doar pe ultima ștampilă activă, status `voided` + `issued_by_transaction_id`, redeem permis pe program pus pe pauză/arhivat, restricții de locație.
+
+**Probleme cunoscute:**
+- `main` local era cu 6 commit-uri înaintea `origin/main` la începutul sesiunii (push-ul din S01 nu ajunsese); se rezolvă la push-ul de acum.
+
+**Următoarea sesiune:** 03 – `QrTokenService` (HMAC, rotație, jti de unică folosință).
+
+---
+
 ## Sesiunea 01 – Migrații, modele, multi-tenancy, roluri, Policies, seed demo (2026-10-15)
 
 **Făcut:**
