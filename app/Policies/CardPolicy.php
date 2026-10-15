@@ -27,7 +27,7 @@ class CardPolicy
     }
 
     /**
-     * Restricția pe locația managerului și fereastra de 24h stau în VoidService (Sesiunea 2).
+     * Restricția pe locația managerului, fereastra de 24h și ordinea anulărilor stau în VoidService (ADR 004).
      */
     public function void(User $user, Card $card): bool
     {
