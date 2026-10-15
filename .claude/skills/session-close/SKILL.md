@@ -8,7 +8,7 @@ description: Închide o sesiune de lucru pe creative-loyalty - verificări (test
 Checklistul de la pașii 4–6 din `docs/SDD.md` §11.2. Execută pașii **în ordine**; nu trece la pasul următor cât timp cel curent e roșu.
 
 ## 0. Context
-- `git branch --show-current` trebuie să fie `session/NN-nume`. Dacă ești pe `main`, oprește-te și întreabă.
+- `git branch --show-current` trebuie să fie `session/NN-nume`. Dacă ești pe `main` cu modificări necomise, creează acum branch-ul sesiunii (`git checkout -b session/NN-nume`) și continuă.
 - `docker compose ps` – postgres și redis trebuie să fie `healthy` (altfel `docker compose up -d`).
 
 ## 1. Verificări (toate verzi)
@@ -41,10 +41,12 @@ Adaugă o intrare nouă **deasupra** celor vechi, cu structura:
 - `git status` – verifică să nu intre `.env`, `vendor/`, `node_modules/`, fișiere de probă.
 - Commit-uri mici, mesaje în stil conventional (`feat:`, `fix:`, `test:`, `docs:`, `chore:`), adaugate explicit pe fișiere.
 
-## 5. Merge în main
-- **Cere confirmarea utilizatorului** înainte de merge.
-- `git checkout main && git merge --no-ff session/NN-nume`, apoi `composer test` pe `main`.
-- Nu face push decât dacă utilizatorul cere.
+## 5. Merge și push
+Utilizatorul a autorizat explicit (2026-10-15) merge + push automat la finalul sesiunilor verzi; vezi CLAUDE.md.
+- Doar dacă pașii 1–4 sunt verzi. Altfel nu face merge: lasă branch-ul, notează în PROGRESS ce e roșu și spune-i utilizatorului.
+- `git checkout main && git pull --ff-only && git merge --no-ff session/NN-nume`, apoi `composer test` pe `main`.
+- `git push origin main` și `git push -u origin session/NN-nume`.
+- Dacă push-ul eșuează (conflict, autentificare): oprește-te și explică. Niciodată `--force`.
 
 ## 6. Raport final
 Spune-i utilizatorului, în română: ce s-a livrat, rezultatul verificărilor (număr teste, PHPStan, Pint), ce a rămas și promptul pentru sesiunea următoare (șablonul din SDD §11.4).

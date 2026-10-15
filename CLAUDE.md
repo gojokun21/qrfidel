@@ -28,7 +28,10 @@ php artisan serve             # http://localhost:8000
 - `card_transactions` e jurnal append-only: tranzacțiile **nu se șterg și nu se modifică**, doar se anulează (void = tranzacție inversă). Soldul de pe `cards` e cache.
 - Testele Pest se scriu **înainte** de implementare pentru regulile din sesiune.
 - Abaterile de la SDD primesc un ADR în `docs/decisions/NNN-titlu.md`.
-- Fiecare sesiune lucrează pe branch-ul `session/NN-nume`; merge în `main` doar cu confirmarea utilizatorului.
+- Fiecare sesiune lucrează pe branch-ul `session/NN-nume`. Utilizatorul doar lipește promptul sesiunii; Claude se ocupă singur de git:
+  - **La început** (după aprobarea planului): `docker compose up -d`, `git checkout main && git pull`, `git checkout -b session/NN-nume`.
+  - **La final** (`/session-close`, doar dacă totul e verde): merge `--no-ff` în `main`, apoi `git push origin main` și push la branch-ul sesiunii (autorizat de utilizator pe 2026-10-15, fără confirmare suplimentară).
+  - Niciodată `push --force`, rescriere de istoric sau ștergere de branch-uri.
 
 ## Automatizări (`.claude/`)
 - Hook `PostToolUse` (Edit|Write): rulează Pint pe fișierul `.php` modificat.
