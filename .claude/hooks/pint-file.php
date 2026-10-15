@@ -8,7 +8,8 @@ $root = dirname(__DIR__, 2);
 $input = json_decode((string) stream_get_contents(STDIN), true);
 $file = $input['tool_input']['file_path'] ?? $input['tool_response']['filePath'] ?? null;
 
-if (! is_string($file) || ! str_ends_with($file, '.php') || ! is_file($file)) {
+// Blade-ul nu e formatat de Pint în restul proiectului (pint --test îl ignoră), deci nici aici.
+if (! is_string($file) || ! str_ends_with($file, '.php') || str_ends_with($file, '.blade.php') || ! is_file($file)) {
     exit(0);
 }
 

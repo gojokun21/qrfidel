@@ -18,6 +18,15 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 - PHP XAMPP: activate `pdo_pgsql`, `pgsql`, `sodium` (backup `C:\xampp\php\php.ini.bak`).
 
 **Verificări:** `composer test` 26 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK.
+Manual: `/`, `/login`, `/register` → 200; înregistrare staff → redirect la verify-email, mail ajuns în Mailpit.
+
+**Fixuri după `/code-review high`:**
+- Hook Stop: retestează și după o oprire blocată (max 3 blocări, apoi avertisment), sare peste rulare dacă starea codului e identică cu ultima rulare verde, raportează separat „Postgres nu răspunde”.
+- Hook Pint: ignoră `.blade.php` (consecvent cu `pint --test`).
+- Permisiuni: `php artisan *` restrâns la subcomenzi sigure (fără tinker, migrate:fresh, db:wipe); scos `./vendor/bin/pest` din allow.
+- `tests/Pest.php` refuză să ruleze cu config în cache (altfel RefreshDatabase ar goli baza de dev).
+- Porturile Docker legate doar de `127.0.0.1`.
+- `InfrastructureTest` verifică literal „Creative Loyalty”; `VerifyEmailController` simplificat.
 
 **Rămas / de continuat:**
 - GitHub Actions cu aceleași verificări (opțional în SDD) – neimplementat.

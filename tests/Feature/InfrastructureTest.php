@@ -10,5 +10,5 @@ it('runs the test suite against PostgreSQL', function () {
 it('renders the start page', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee(config('app.name'));
+        ->assertSee('Creative Loyalty');
 });

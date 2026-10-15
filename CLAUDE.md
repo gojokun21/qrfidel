@@ -39,4 +39,7 @@ php artisan serve             # http://localhost:8000
 - PHP vine din XAMPP (`C:\xampp\php`); `pdo_pgsql`, `pgsql`, `sodium` sunt activate în `php.ini` (backup: `php.ini.bak`).
 - Pe mașină rulează și PostgreSQL 17/18 nativ (5432/5433) și alte containere (5434/5435) – de aceea proiectul folosește **portul 5436**.
 - Dacă testele pică cu erori de conexiune: pornește Docker Desktop, apoi `docker compose up -d`.
+- Baza de test e creată de `docker/postgres/init.sql` doar la prima inițializare a volumului. Dacă lipsește („database creative_loyalty_test does not exist”): `docker compose exec postgres createdb -U loyalty creative_loyalty_test`.
+- Porturile Docker sunt legate doar de `127.0.0.1` (parolele din compose sunt doar pentru dezvoltare).
+- Nu rula `php artisan config:cache` local: testele refuză să pornească (protecție în `tests/Pest.php`, altfel ar goli baza de dezvoltare).
 - `tests/` nu e analizat de PHPStan (Pest leagă `$this` dinamic în closure-uri).
