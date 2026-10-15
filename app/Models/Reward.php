@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $business_id
  * @property int $card_id
+ * @property int|null $issued_by_transaction_id
  * @property RewardStatus $status
  * @property Carbon $issued_at
  * @property Carbon|null $redeemed_at
@@ -34,6 +35,7 @@ class Reward extends Model
     protected $fillable = [
         'business_id',
         'card_id',
+        'issued_by_transaction_id',
         'status',
         'issued_at',
         'redeemed_at',
@@ -69,6 +71,7 @@ class Reward extends Model
     {
         return [
             'card_id' => Card::class,
+            'issued_by_transaction_id' => CardTransaction::class,
             'location_id' => Location::class,
         ];
     }
@@ -79,6 +82,16 @@ class Reward extends Model
     public function card(): BelongsTo
     {
         return $this->belongsTo(Card::class);
+    }
+
+    /**
+     * Tranzacția `stamp` care a emis recompensa (null pentru recompense create altfel, de ex. seed).
+     *
+     * @return BelongsTo<CardTransaction, $this>
+     */
+    public function issuedBy(): BelongsTo
+    {
+        return $this->belongsTo(CardTransaction::class, 'issued_by_transaction_id');
     }
 
     /**

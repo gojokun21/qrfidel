@@ -7,4 +7,5 @@ enum RewardStatus: string
     case Available = 'available';
     case Redeemed = 'redeemed';
     case Expired = 'expired';
+    case Voided = 'voided';
 }
