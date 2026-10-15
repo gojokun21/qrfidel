@@ -1,0 +1,12 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+# tests/ nu e analizat: Pest leagă $this dinamic în closure-uri, iar PHPStan nu îl poate tipa.
+parameters:
+    level: 6
+    paths:
+        - app/
+        - bootstrap/app.php
+        - config/
+        - database/
+        - routes/
