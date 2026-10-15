@@ -75,8 +75,16 @@ class Card extends Model
     protected static function booted(): void
     {
         static::creating(function (Card $card): void {
-            $card->secret ??= bin2hex(random_bytes(32));
+            $card->secret ??= self::newSecret();
         });
+    }
+
+    /**
+     * Secretul cu care QrTokenService semnează QR-ul cardului.
+     */
+    public static function newSecret(): string
+    {
+        return bin2hex(random_bytes(32));
     }
 
     /**
