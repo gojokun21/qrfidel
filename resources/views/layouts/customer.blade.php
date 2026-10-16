@@ -2,8 +2,9 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('layouts.partials.head', ['title' => $title])
+        @include('layouts.partials.pwa-head')
     </head>
-    <body class="min-h-screen bg-cream-50 font-sans text-espresso-900 antialiased">
+    <body class="min-h-screen bg-cream-50 font-sans text-espresso-900 antialiased" data-pwa>
         <header class="bg-espresso-950">
             <div class="mx-auto flex h-16 max-w-xl items-center justify-between gap-4 px-4">
                 <a href="{{ auth('customer')->check() ? route('customer.cards') : route('home') }}" aria-label="Creative Loyalty – acasă"><x-wordmark dark /></a>

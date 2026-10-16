@@ -5,6 +5,7 @@ namespace App\Services\Loyalty;
 use App\Enums\Role;
 use App\Exceptions\InvalidQrToken;
 use App\Models\Card;
+use App\Models\Customer;
 use App\Models\Location;
 use App\Models\Program;
 use App\Models\User;
@@ -13,6 +14,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use RuntimeException;
 
 /**
@@ -53,6 +55,37 @@ class QrTokenService
             issuedAt: $issuedAt,
             expiresAt: $issuedAt->addSeconds($ttl),
         );
+    }
+
+    /**
+     * QR-ul cerut de PWA-ul clientului (ADR 010): doar pentru cardul lui, și doar cât poate fi scanat
+     * (afacere și program active); altfel clientul ar arăta un cod pe care `resolve()` îl refuză.
+     *
+     * @throws AuthorizationException
+     * @throws InvalidQrToken
+     */
+    public function issueForCustomer(Card $card, Customer $customer): QrToken
+    {
+        // Aceeași regulă (și același 404) ca pagina cardului: CardPolicy::own.
+        Gate::forUser($customer)->authorize('own', $card);
+
+        $this->assertActive($card);
+
+        return $this->issue($card);
+    }
+
+    /**
+     * Cardul poate fi arătat la casă acum (afacere și program active)? Pagina cardului și emiterea folosesc aceeași regulă.
+     */
+    public function isScannable(Card $card): bool
+    {
+        try {
+            $this->assertActive($card);
+
+            return true;
+        } catch (InvalidQrToken) {
+            return false;
+        }
     }
 
     /**
@@ -173,10 +206,7 @@ class QrTokenService
             $key = $this->shortCodeKey($card->business_id, $code);
 
             if ($this->store()->add($key, $token, $ttl)) {
-                $previous = $this->store()->get($currentKey);
-                if (is_string($previous)) {
-                    $this->store()->forget($previous);
-                }
+                $this->retirePreviousShortCode($currentKey);
                 $this->store()->put($currentKey, $key, $ttl);
 
                 return $code;
@@ -184,6 +214,29 @@ class QrTokenService
         }
 
         throw new RuntimeException('Nu am putut genera un cod scurt unic.');
+    }
+
+    /**
+     * Codul anterior mai trăiește câteva secunde (ADR 010): clientul poate fi în mijlocul dictării când PWA-ul rotește.
+     * Nu trăiește niciodată mai mult decât tokenul lui: grația se taie la timpul rămas din valabilitate.
+     */
+    private function retirePreviousShortCode(string $currentKey): void
+    {
+        $previousKey = $this->store()->get($currentKey);
+        if (! is_string($previousKey)) {
+            return;
+        }
+
+        $previousToken = $this->store()->get($previousKey);
+        $issuedAt = is_string($previousToken) ? (int) (explode('.', $previousToken)[1] ?? 0) : 0;
+        $remaining = $issuedAt + $this->ttl() - now()->getTimestamp();
+        $grace = min((int) config('loyalty.qr.short_code_grace_seconds'), $remaining);
+
+        if ($grace > 0 && is_string($previousToken)) {
+            $this->store()->put($previousKey, $previousToken, $grace);
+        } else {
+            $this->store()->forget($previousKey);
+        }
     }
 
     /**
