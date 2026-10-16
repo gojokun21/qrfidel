@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\MagicLinkRequest;
 use App\Models\Business;
+use App\Models\Location;
 use App\Services\Loyalty\MagicLinkService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class MagicLinkController extends Controller
 
     public function store(MagicLinkRequest $request): RedirectResponse
     {
-        $this->magicLinks->send($request->email(), (string) $request->ip(), $request->business());
+        $this->magicLinks->send($request->email(), (string) $request->ip(), $request->business(), $request->counterLocation());
 
         return back()->with('magic_link_sent', $request->email());
     }
@@ -52,7 +53,12 @@ class MagicLinkController extends Controller
         Auth::guard('customer')->login($customer, remember: true);
         $request->session()->regenerate();
 
-        // Doar spre pagina unei afaceri (slug din linkul semnat), niciodată spre un URL arbitrar.
+        // Doar spre tejgheaua sau pagina unei afaceri (din linkul semnat), niciodată spre un URL arbitrar.
+        $counter = Location::findByCounterToken(self::signedParam($request, 'l'));
+        if ($counter !== null) {
+            return redirect()->route('customer.counter', $counter->counter_token);
+        }
+
         $business = Business::findActiveBySlug(self::signedParam($request, 'b'));
 
         return $business !== null

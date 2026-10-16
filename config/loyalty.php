@@ -29,6 +29,16 @@ return [
     ],
 
     /*
+    | Cererile de ștampilă de la tejghea (SDD §5.3, §6, ADR 012): o cerere pending expiră după ttl_minutes;
+    | per_hour cereri noi per card; panoul angajatului și cardul clientului se reîmprospătează la poll_seconds.
+    */
+    'requests' => [
+        'ttl_minutes' => 10,
+        'per_hour' => 3,
+        'poll_seconds' => 5,
+    ],
+
+    /*
     | Magic link-ul clientului (SDD §5.1, §6, ADR 009): URL semnat valabil ttl_minutes,
     | de unică folosință (nonce consumat în store-ul dat, separat de cache-ul golit de cache:clear).
     | Rate limit: per_email_per_hour per email + IP, per_email_per_hour_all_ips per email din orice IP.

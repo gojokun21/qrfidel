@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Card;
 use App\Models\Customer;
 use App\Services\Loyalty\QrTokenService;
+use App\Services\Loyalty\StampRequestService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -27,7 +28,7 @@ class CardController extends Controller
         ]);
     }
 
-    public function show(Request $request, Card $card, QrTokenService $qr): View
+    public function show(Request $request, Card $card, QrTokenService $qr, StampRequestService $requests): View
     {
         Gate::forUser($this->customer($request))->authorize('own', $card);
 
@@ -37,7 +38,30 @@ class CardController extends Controller
             'card' => $card,
             'program' => $card->program,
             'scannable' => $qr->isScannable($card),
+            'stampRequest' => $requests->latestFor($card),
+            'pollSeconds' => (int) config('loyalty.requests.poll_seconds'),
         ]);
+    }
+
+    /**
+     * Starea cardului pentru polling (SDD §5.3): pagina se reîncarcă atunci când ceva s-a schimbat
+     * (o ștampilă de la scanare sau de la o cerere aprobată, o cerere respinsă sau expirată).
+     */
+    public function status(Request $request, Card $card, StampRequestService $requests): JsonResponse
+    {
+        Gate::forUser($this->customer($request))->authorize('own', $card);
+
+        $stampRequest = $requests->latestFor($card);
+
+        return response()->json([
+            'stamps' => $card->stamps_balance,
+            'rewards' => $card->rewards_available,
+            'request' => $stampRequest === null ? null : [
+                'id' => $stampRequest->id,
+                'status' => $stampRequest->effectiveStatus()->value,
+                'expiresAt' => $stampRequest->expires_at->toIso8601String(),
+            ],
+        ])->header('Cache-Control', 'no-store, private');
     }
 
     /**

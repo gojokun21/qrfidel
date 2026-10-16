@@ -42,7 +42,8 @@ class ScanController extends Controller
     {
         $request->session()->put(self::LOCATION_SESSION_KEY, $request->integer('location_id'));
 
-        return redirect()->route('staff.scan');
+        // Alegerea se face și din panoul de cereri: angajatul rămâne pe pagina de unde a ales.
+        return redirect()->back(fallback: route('staff.scan'));
     }
 
     public function resolve(ResolveScanRequest $request, CurrentBusiness $currentBusiness, QrTokenService $qr, ScanTicketService $tickets): RedirectResponse|JsonResponse

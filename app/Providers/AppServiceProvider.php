@@ -33,5 +33,8 @@ class AppServiceProvider extends ServiceProvider
 
         // QR-ul rotativ (ADR 010): PWA-ul cere 2/min; limita e per client, nu per IP (rețele mobile cu NAT).
         RateLimiter::for('customer-qr', fn (Request $request) => Limit::perMinute(10)->by('customer-qr:'.$request->user('customer')?->getAuthIdentifier()));
+
+        // Polling-ul cardului (ADR 012): 12/min cât e o cerere deschisă, 4/min altfel; limita lasă loc pentru mai multe taburi.
+        RateLimiter::for('customer-status', fn (Request $request) => Limit::perMinute(30)->by('customer-status:'.$request->user('customer')?->getAuthIdentifier()));
     }
 }

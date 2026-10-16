@@ -5,6 +5,63 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 09 – Flux B: QR tejghea, `stamp_requests`, panou cu polling (2026-10-16)
+
+**Făcut:**
+- `StampRequestService` (`request`, `approve`, `reject`, `openFor`, `latestFor`, `latestForCards`). Excepția `StampRequestUnavailable`. Lock-urile se iau mereu în ordinea card → cerere.
+  - `request()`: clientul neînscris e înscris (`EnrollmentService`); un pending deschis e întors din nou (și mutat la tejgheaua curentă); pending-ul expirat e închis; 3 cereri noi/oră per card (limita se consumă după commit); audit `stamp_request.created` cu actorul client.
+  - `approve()`: prin `StampService::add()` cu `source=request`, `meta.stamp_request_id`, locația cererii; angajatul alege +1…max; replay doar pe cheia propriei aprobări (o cheie care ar face replay pe altă ștampilă a cardului → conflict); regulă încălcată → cererea rămâne pending; cerere expirată → marcată `expired` + refuz. Audit `stamp_request.approved`.
+  - `reject()`: idempotentă pe stare; o cerere aprobată nu se respinge. Audit `stamp_request.rejected`.
+- Migrație: `stamp_requests.card_transaction_id` (FK + CHECK „approved ⇒ tranzacție”). `StampRequest`: `transaction()`, scope `open()`, `effectiveStatus()`, `isOpen()`, `closedAt()`. `Location::findByCounterToken()`, `Customer::maskedEmail()`, `Program::quickStampCount()`, `StampResult::summary()`. Config `loyalty.requests.*`.
+- HTTP:
+  - client: `GET /l/{token}` (public; afacere activă), `POST /l/{token}/programs/{program}/request` (redirect pe card), `GET /me/cards/{card}/status` (JSON `no-store`, limitatorul `customer-status` 30/min);
+  - magic link: parametrul semnat `l` → după conectare înapoi la tejghea (fallback: pagina afacerii);
+  - staff: `GET /staff/requests`, `GET /staff/requests/feed`, `POST /staff/requests/{id}/approve|reject` (JSON sau redirect), `StampRequestPolicy::handle`, `ApproveStampRequestRequest`. Panoul folosește locația curentă (`StaffLocationService`); selectorul de locație e acum partialul `staff/partials/location-picker`, iar `POST /staff/location` revine pe pagina de unde s-a ales.
+- UI/JS: `customer/counter.blade.php`; banner de cerere pe pagina cardului; `cardPoller` (5 s cu cerere deschisă, 15 s altfel, pauză în tab ascuns, reîncarcă pagina la schimbare – acoperă și fluxul A); `staff/requests.blade.php` + `requestPoller` (feed la 5 s, fetch prin `window.axios`, cheie de idempotency per cerere, fallback UUID fără context securizat, numărul de cereri în titlu). Link „Cereri” în sidebar; linkul QR din lista de locații e clicabil.
+- Teste: `Loyalty/StampRequestServiceTest`, `Customer/CounterPageTest`, `Customer/CardStatusTest`, `Staff/RequestPanelTest`, `Concurrency/StampRequestConcurrencyTest` (două aprobări simultane → o ștampilă); extinse `SchemaTest`, `SidebarTest`.
+
+**Verificări:** `composer test` 718 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Verificat manual în Chrome, pe `localhost` (Cafenea Demo, Centru), cu clientul `client.s06@client.test` și owner-ul demo în două taburi:
+- „Cere ștampilă” → cardul cu „Cerere trimisă”;
+- cererea apare singură în panou → „Aprobă +1” → „Ștampilă adăugată: 1 din 5”, iar cardul clientului s-a reîncărcat singur la 1/5 cu „Cererea a fost aprobată”;
+- o a doua cerere apare prin polling → „Respinge” → clientul vede „Cererea a fost respinsă”;
+- după fixurile din review: încă o aprobare (2/5), fără erori în consolă.
+
+**Fixuri după `/code-review high`:**
+- O cerere care aștepta la altă tejghea ascundea butonul: clientul nu o putea muta la locația unde stă. Acum butonul apare dacă cererea nu e la tejgheaua curentă.
+- `approve()` accepta o cheie care făcea replay pe o ștampilă mai veche a cardului și marca cererea aprobată fără ștampilă nouă → acum `IdempotencyConflict`.
+- Limita de 3/oră se consuma și când tranzacția eșua: acum se numără după commit.
+- În panou, un poll pornit înaintea unei aprobări putea readuce cererea tratată (și al doilea click primea „deja tratată”): versiune pe listă + reîmprospătare după poll-ul în curs.
+- Pollerele foloseau `fetch` fără `X-Requested-With`, iar Laravel salva endpointul JSON ca „URL anterior” (`back()` ar fi dus pe JSON). Acum folosesc `window.axios`.
+- `/status` nu mai face SELECT pe program și nu mai trimite câmpuri nefolosite. Pagina de tejghea ia ultimele cereri într-o singură interogare. Plafonul butoanelor +N stă într-un singur loc (`Program::quickStampCount()`).
+
+**Rămas / de continuat:**
+- **S10:** jobul `ExpireStampRequests` (UPDATE pe pending-urile trecute de termen). Azi expirarea e „leneșă” (`effectiveStatus()` / scope `open()`), deci în DB rămân rânduri `pending` vechi; orice raport pe `status` trebuie să folosească scope-ul până atunci.
+- Observație din review neaplicată: `CounterController::show` filtrează programele active și cardurile clientului direct în controller, ca `BusinessPageController` (S06). Se pot muta amândouă într-un serviciu de „pagină publică” când se atinge zona.
+- Testul pe telefon (fluxurile A și B) rămâne de făcut cu HTTPS (tunel), ca în S08. Pentru B camera nu e necesară: clientul scanează QR-ul tejghelei cu camera telefonului.
+- Nu există încă un generator de afiș cu QR-ul tejghelei (doar linkul din Locații); se poate tipări din orice generator de QR.
+- Pe 429 dintr-un formular obișnuit, pagina implicită e în engleză (S10).
+
+**Decizii noi:**
+- [012](decisions/012-flux-b-cereri-stampila.md):
+  - auto-înscriere la cerere;
+  - pending-ul repetat întoarce aceeași cerere (mutată la tejgheaua curentă);
+  - cantitatea e aleasă de angajat;
+  - o aprobare refuzată lasă cererea pending;
+  - `card_transaction_id` pe cerere;
+  - panoul e filtrat pe locația curentă;
+  - expirare leneșă;
+  - rate limit 3/oră adus din S10, cu mesaj în română;
+  - cardul clientului se reîncarcă la schimbare;
+  - parametrul `l` în magic link.
+
+**Probleme cunoscute:**
+- Python pe Windows scrie `\r\n` în modul text: la editări cu scripturi folosește `open(..., newline='')` (altfel fișierele ajung cu CRLF).
+- `Business::update(['status' => …])` nu schimbă statusul (nu e fillable): în teste folosește `forceFill`.
+
+**Următoarea sesiune:** 10 – Hardening: rate limit, audit log, joburi de expirare, void în UI.
+
+---
+
 ## Sesiunea 08 – Staff: scanare cu camera + ecranul cardului + stamp/redeem (2026-10-16)
 
 **Făcut:**

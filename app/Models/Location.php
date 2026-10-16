@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BusinessStatus;
 use App\Models\Concerns\BelongsToBusiness;
 use Database\Factories\LocationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,5 +37,22 @@ class Location extends Model
         static::creating(function (Location $location): void {
             $location->counter_token ??= Str::random(40);
         });
+    }
+
+    /**
+     * Locația din QR-ul de pe tejghea (`/l/{counter_token}`, SDD §5.3), doar la o afacere activă. Fără scope:
+     * clientul nu are context de afacere.
+     */
+    public static function findByCounterToken(?string $token): ?self
+    {
+        if ($token === null || $token === '' || strlen($token) > 64) {
+            return null;
+        }
+
+        return self::query()->withoutGlobalScopes()
+            ->where('counter_token', $token)
+            ->whereHas('business', fn ($query) => $query->where('status', BusinessStatus::Active))
+            ->with('business')
+            ->first();
     }
 }

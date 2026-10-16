@@ -6,10 +6,8 @@
 @php
     $customer = $card->customer;
     $stampable = $program->isActive();
-    $maxStamps = max(1, min($program->max_stamps_per_visit, 5));
-    // Angajatul recunoaște clientul fără să vadă emailul întreg: „an***@client.test”.
-    [$local, $domain] = array_pad(explode('@', $customer->email, 2), 2, '');
-    $maskedEmail = mb_substr($local, 0, 2).'***@'.$domain;
+    $maxStamps = $program->quickStampCount();
+    $maskedEmail = $customer->maskedEmail();
 @endphp
 
 <x-app-layout>

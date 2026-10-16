@@ -66,6 +66,21 @@ it('allows a new request once the previous one is no longer pending', function (
     expect($card->stampRequests()->count())->toBe(3);
 });
 
+it('refuses an approved stamp request without its transaction', function () {
+    $request = StampRequest::factory()->create();
+
+    inSavepoint(fn () => DB::table('stamp_requests')->where('id', $request->id)->update(['status' => 'approved']));
+})->throws(QueryException::class, 'stamp_requests_approved_transaction_check');
+
+it('links an approved stamp request to its transaction', function () {
+    $request = StampRequest::factory()->create();
+    $transaction = CardTransaction::factory()->create(['card_id' => $request->card_id, 'location_id' => $request->location_id]);
+
+    $request->forceFill(['status' => StampRequestStatus::Approved, 'card_transaction_id' => $transaction->id])->save();
+
+    expect($request->refresh()->transaction?->is($transaction))->toBeTrue();
+});
+
 it('keeps customer emails unique regardless of case', function () {
     Customer::factory()->create(['email' => 'ana@example.com']);
 

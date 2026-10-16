@@ -57,7 +57,7 @@ class SidebarComposer
     }
 
     /**
-     * @return list<array{route: string, label: string, pattern: string, icon: string}>
+     * @return list<array{route: string, label: string, pattern: string|list<string>, icon: string}>
      */
     private function links(?Role $role): array
     {
@@ -67,7 +67,8 @@ class SidebarComposer
 
         $links = [
             ['route' => 'dashboard', 'label' => 'Dashboard', 'pattern' => 'dashboard', 'icon' => 'home'],
-            ['route' => 'staff.scan', 'label' => 'Scanează', 'pattern' => 'staff.*', 'icon' => 'qr'],
+            ['route' => 'staff.scan', 'label' => 'Scanează', 'pattern' => ['staff.scan*', 'staff.cards.*', 'staff.location'], 'icon' => 'qr'],
+            ['route' => 'staff.requests', 'label' => 'Cereri', 'pattern' => 'staff.requests*', 'icon' => 'list'],
         ];
 
         if ($role->atLeast(Role::Manager)) {
