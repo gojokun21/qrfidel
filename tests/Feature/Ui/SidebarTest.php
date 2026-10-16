@@ -35,9 +35,9 @@ it('shows the links allowed for each role', function (Role $role, array $visible
         expect($sidebar)->not->toContain('href="'.route($routeName).'"');
     }
 })->with([
-    'owner' => [Role::Owner, ['dashboard', 'staff.scan', 'staff.requests', 'dashboard.programs.index', 'dashboard.locations.index', 'dashboard.team.index', 'dashboard.business.edit'], []],
-    'manager' => [Role::Manager, ['dashboard', 'staff.scan', 'staff.requests', 'dashboard.programs.index', 'dashboard.locations.index'], ['dashboard.team.index', 'dashboard.business.edit']],
-    'staff' => [Role::Staff, ['dashboard', 'staff.scan', 'staff.requests'], ['dashboard.programs.index', 'dashboard.locations.index', 'dashboard.team.index', 'dashboard.business.edit']],
+    'owner' => [Role::Owner, ['dashboard', 'staff.scan', 'staff.requests', 'dashboard.programs.index', 'dashboard.locations.index', 'dashboard.transactions.index', 'dashboard.team.index', 'dashboard.business.edit', 'dashboard.audit.index'], []],
+    'manager' => [Role::Manager, ['dashboard', 'staff.scan', 'staff.requests', 'dashboard.programs.index', 'dashboard.locations.index', 'dashboard.transactions.index'], ['dashboard.team.index', 'dashboard.business.edit', 'dashboard.audit.index']],
+    'staff' => [Role::Staff, ['dashboard', 'staff.scan', 'staff.requests'], ['dashboard.programs.index', 'dashboard.locations.index', 'dashboard.transactions.index', 'dashboard.team.index', 'dashboard.business.edit', 'dashboard.audit.index']],
 ]);
 
 it('marks the current page link as active', function () {
