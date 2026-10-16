@@ -45,6 +45,12 @@
         @case('shield')
             <path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>
             @break
+        @case('chart')
+            <path d="M4 20h16"/><path d="M7 16v-5"/><path d="M12 16V7"/><path d="M17 16v-8"/>
+            @break
+        @case('globe')
+            <circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z"/>
+            @break
         @case('clock')
             <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
             @break

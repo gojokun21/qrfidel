@@ -6,6 +6,7 @@ use App\Exceptions\LoyaltyException;
 use App\Exceptions\MagicLinkInvalid;
 use App\Http\Middleware\EnsureBusinessMember;
 use App\Http\Middleware\EnsureHasBusiness;
+use App\Http\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsureRole;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'business' => EnsureBusinessMember::class,
             'has-business' => EnsureHasBusiness::class,
             'role' => EnsureRole::class,
+            'platform-admin' => EnsurePlatformAdmin::class,
         ]);
 
         // Clienții (rutele `customer.*`) au login-ul și pagina de start proprii, separate de staff (ADR 009).

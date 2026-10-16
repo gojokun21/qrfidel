@@ -47,7 +47,7 @@ class SidebarComposer
             'sidebarUser' => $user,
             'sidebarBusiness' => $current,
             'sidebarRole' => $role,
-            'sidebarLinks' => $this->links($role),
+            'sidebarLinks' => $this->links($role, $user->isPlatformAdmin()),
             // Pe o afacere suspendată middleware-ul nu te lasă să intri, deci nu o oferim la comutare.
             'sidebarOtherBusinesses' => $businesses
                 ->filter(fn (Business $business) => $business->isActive() && $business->getKey() !== $current?->getKey())
@@ -59,10 +59,15 @@ class SidebarComposer
     /**
      * @return list<array{route: string, label: string, pattern: string|list<string>, icon: string}>
      */
-    private function links(?Role $role): array
+    private function links(?Role $role, bool $platformAdmin): array
     {
+        // Adminul platformei are panoul lui și când nu face parte din nicio afacere (ADR 014).
+        $admin = $platformAdmin
+            ? [['route' => 'admin.index', 'label' => 'Admin platformă', 'pattern' => 'admin.*', 'icon' => 'globe']]
+            : [];
+
         if ($role === null) {
-            return [];
+            return $admin;
         }
 
         $links = [
@@ -75,6 +80,7 @@ class SidebarComposer
             $links[] = ['route' => 'dashboard.programs.index', 'label' => 'Programe', 'pattern' => 'dashboard.programs.*', 'icon' => 'gift'];
             $links[] = ['route' => 'dashboard.locations.index', 'label' => 'Locații', 'pattern' => 'dashboard.locations.*', 'icon' => 'map-pin'];
             $links[] = ['route' => 'dashboard.transactions.index', 'label' => 'Tranzacții', 'pattern' => 'dashboard.transactions.*', 'icon' => 'clock'];
+            $links[] = ['route' => 'dashboard.reports', 'label' => 'Rapoarte', 'pattern' => 'dashboard.reports', 'icon' => 'chart'];
         }
 
         if ($role === Role::Owner) {
@@ -83,6 +89,6 @@ class SidebarComposer
             $links[] = ['route' => 'dashboard.audit.index', 'label' => 'Jurnal', 'pattern' => 'dashboard.audit.*', 'icon' => 'shield'];
         }
 
-        return $links;
+        return [...$links, ...$admin];
     }
 }

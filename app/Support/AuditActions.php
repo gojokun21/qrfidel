@@ -56,6 +56,8 @@ final class AuditActions
 
         'business.created' => ['business', 'Afacere creată'],
         'business.updated' => ['business', 'Afacere modificată'],
+        'business.suspended' => ['business', 'Afacere suspendată'],
+        'business.reactivated' => ['business', 'Afacere reactivată'],
     ];
 
     public static function label(string $action): string

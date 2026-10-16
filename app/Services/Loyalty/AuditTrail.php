@@ -37,11 +37,12 @@ class AuditTrail
     }
 
     /**
-     * Acțiuni din dashboard (afacere, locații, echipă) care nu țin de un card.
+     * Acțiuni din dashboard (afacere, locații, echipă) care nu țin de un card. `withIp: false` pentru acțiunile
+     * adminului de platformă: rândul apare în jurnalul afacerii, iar ownerul nu trebuie să vadă IP-ul adminului (ADR 014).
      *
      * @param  array<string, mixed>  $payload
      */
-    public function recordForBusiness(User $actor, Business|int $business, string $action, Model $subject, array $payload = []): AuditLog
+    public function recordForBusiness(User $actor, Business|int $business, string $action, Model $subject, array $payload = [], bool $withIp = true): AuditLog
     {
         return AuditLog::query()->create([
             'business_id' => $business instanceof Business ? $business->id : $business,
@@ -51,7 +52,7 @@ class AuditTrail
             'subject_type' => $subject->getMorphClass(),
             'subject_id' => $subject->getKey(),
             'payload' => $payload === [] ? null : $payload,
-            'ip_address' => $this->ip(),
+            'ip_address' => $withIp ? $this->ip() : null,
         ]);
     }
 

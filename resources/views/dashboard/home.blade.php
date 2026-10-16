@@ -28,6 +28,23 @@
                 </div>
             </div>
 
+            @if ($headline)
+                <div class="grid gap-6 sm:grid-cols-3">
+                    @foreach ([['Ștampile azi', $headline['stampsToday'], 'clock'], ['Ștampile în 7 zile', $headline['stampsWeek'], 'star'], ['Clienți activi ('.mb_strtolower(\App\Services\Loyalty\ReportService::periodLabel($headlinePeriod)).')', $headline['activeCustomers'], 'users']] as [$label, $value, $icon])
+                        <x-card class="flex flex-col">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-medium text-espresso-500">{{ $label }}</p>
+                                <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-50 text-gold-600"><x-icon :name="$icon" class="h-5 w-5" /></span>
+                            </div>
+                            <p class="mt-3 text-4xl font-bold tracking-tight text-espresso-900">{{ $value }}</p>
+                            @if ($loop->last)
+                                <a href="{{ route('dashboard.reports') }}" class="link mt-auto pt-4 text-sm">Vezi rapoartele</a>
+                            @endif
+                        </x-card>
+                    @endforeach
+                </div>
+            @endif
+
             <div class="grid gap-6 sm:grid-cols-3">
                 <x-card class="flex flex-col">
                     <div class="flex items-center justify-between">
