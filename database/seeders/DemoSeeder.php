@@ -6,6 +6,7 @@ use App\Enums\BusinessType;
 use App\Enums\ProgramStatus;
 use App\Enums\RewardStatus;
 use App\Enums\Role;
+use App\Enums\StampIcon;
 use App\Enums\TransactionSource;
 use App\Enums\TransactionType;
 use App\Models\Business;
@@ -59,6 +60,7 @@ class DemoSeeder extends Seeder
                 'reward_description' => 'Orice cafea din meniu, la alegere.',
                 'cooldown_minutes' => 0,
                 'daily_limit' => null,
+                'stamp_icon' => StampIcon::Coffee,
                 'status' => ProgramStatus::Active,
             ]);
 
@@ -80,6 +82,7 @@ class DemoSeeder extends Seeder
                 'reward_title' => 'Spălare gratuită',
                 'cooldown_minutes' => 60,
                 'daily_limit' => 1,
+                'stamp_icon' => StampIcon::Car,
                 'status' => ProgramStatus::Active,
             ]);
 

@@ -106,6 +106,9 @@ it('rejects invalid program rules at database level', function (array $attribute
     'zero daily limit' => [['daily_limit' => 0]],
     'unknown status' => [['status' => 'deleted']],
     'unknown type' => [['type' => 'cashback']],
+    'invalid color' => [['color' => 'red']],
+    'color without hash' => [['color' => '7c2d12']],
+    'unknown stamp icon' => [['stamp_icon' => 'rocket']],
 ]);
 
 it('rejects negative card balances at database level', function (string $column) {

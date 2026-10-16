@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\ProgramStatus;
 use App\Enums\ProgramType;
+use App\Enums\StampIcon;
 use App\Models\Business;
 use App\Models\Program;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -31,6 +32,8 @@ class ProgramFactory extends Factory
             'stamps_expire_days' => null,
             'reward_expire_days' => null,
             'rollover_extra' => false,
+            'color' => null,
+            'stamp_icon' => StampIcon::Coffee,
             'status' => ProgramStatus::Draft,
         ];
     }

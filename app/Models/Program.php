@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ProgramStatus;
 use App\Enums\ProgramType;
+use App\Enums\StampIcon;
 use App\Models\Concerns\BelongsToBusiness;
 use Database\Factories\ProgramFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,8 +25,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $stamps_expire_days
  * @property int|null $reward_expire_days
  * @property bool $rollover_extra
+ * @property string|null $color
+ * @property StampIcon $stamp_icon
  * @property ProgramStatus $status
  * @property string|null $terms
+ * @property-read Business $business
  */
 class Program extends Model
 {
@@ -33,6 +37,11 @@ class Program extends Model
 
     /** @use HasFactory<ProgramFactory> */
     use HasFactory;
+
+    /**
+     * Culoarea implicită a cardului (accentul auriu din ADR 007).
+     */
+    public const DEFAULT_COLOR = '#CC9933';
 
     /**
      * @var list<string>
@@ -50,6 +59,8 @@ class Program extends Model
         'stamps_expire_days',
         'reward_expire_days',
         'rollover_extra',
+        'color',
+        'stamp_icon',
         'status',
         'terms',
     ];
@@ -64,6 +75,7 @@ class Program extends Model
         'cooldown_minutes' => 30,
         'daily_limit' => 1,
         'rollover_extra' => false,
+        'stamp_icon' => 'star',
     ];
 
     /**
@@ -81,12 +93,29 @@ class Program extends Model
             'stamps_expire_days' => 'integer',
             'reward_expire_days' => 'integer',
             'rollover_extra' => 'boolean',
+            'stamp_icon' => StampIcon::class,
         ];
     }
 
     public function isActive(): bool
     {
         return $this->status === ProgramStatus::Active;
+    }
+
+    /**
+     * Culoarea cardului: a programului, altfel a brandului, altfel auriul platformei.
+     */
+    public function displayColor(): string
+    {
+        return $this->color ?? self::fallbackColorFor($this->business);
+    }
+
+    /**
+     * Culoarea unui program fără culoare proprie: a brandului, altfel auriul platformei.
+     */
+    public static function fallbackColorFor(Business $business): string
+    {
+        return $business->brand_color ?? self::DEFAULT_COLOR;
     }
 
     /**

@@ -68,6 +68,7 @@ class SidebarComposer
         $links = [['route' => 'dashboard', 'label' => 'Dashboard', 'pattern' => 'dashboard', 'icon' => 'home']];
 
         if ($role->atLeast(Role::Manager)) {
+            $links[] = ['route' => 'dashboard.programs.index', 'label' => 'Programe', 'pattern' => 'dashboard.programs.*', 'icon' => 'gift'];
             $links[] = ['route' => 'dashboard.locations.index', 'label' => 'Locații', 'pattern' => 'dashboard.locations.*', 'icon' => 'map-pin'];
         }
 
