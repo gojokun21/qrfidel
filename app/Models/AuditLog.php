@@ -7,10 +7,16 @@ use Database\Factories\AuditLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
+use LogicException;
 
 /**
  * @property int $id
  * @property int|null $business_id
+ * @property string|null $actor_type
+ * @property int|null $actor_id
+ * @property string|null $ip_address
+ * @property Carbon|null $created_at
  * @property string $action
  * @property array<string, mixed>|null $payload
  */
@@ -45,6 +51,20 @@ class AuditLog extends Model
         return [
             'payload' => 'array',
         ];
+    }
+
+    /**
+     * Jurnal append-only (ADR 013), garantat și de un trigger Postgres.
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (): void {
+            throw new LogicException('Audit logs are append-only.');
+        });
+
+        static::deleting(function (): void {
+            throw new LogicException('Audit logs are append-only and cannot be deleted.');
+        });
     }
 
     /**
