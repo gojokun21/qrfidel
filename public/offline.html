@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#231B18">
+    <title>Fără conexiune · Creative Loyalty</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: #FDFBF7; color: #231B18;
+               font-family: Onest, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+        header { background: #161110; height: 64px; display: flex; align-items: center; padding: 0 16px; }
+        header img { width: 36px; height: 36px; border-radius: 10px; }
+        main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+        .card { max-width: 28rem; width: 100%; background: #fff; border-radius: 24px; padding: 32px 24px; text-align: center;
+                box-shadow: 0 20px 25px -5px rgb(22 17 16 / .05); }
+        h1 { margin: 0; font-size: 1.375rem; }
+        p { margin: 8px 0 0; color: #523F34; line-height: 1.5; }
+        button { margin-top: 24px; border: 0; border-radius: 12px; background: #231B18; color: #FDFBF7; font: inherit;
+                 font-weight: 600; padding: 12px 20px; cursor: pointer; }
+        button:hover { background: #2F2622; }
+    </style>
+</head>
+<body>
+    <header><img src="/icons/icon-192.png" alt="Creative Loyalty"></header>
+    <main>
+        <div class="card">
+            <h1>Ești offline</h1>
+            <p>Cardurile și codul QR au nevoie de internet. Conectează-te și încearcă din nou.</p>
+            <button type="button" onclick="location.reload()">Reîncearcă</button>
+        </div>
+    </main>
+</body>
+</html>
