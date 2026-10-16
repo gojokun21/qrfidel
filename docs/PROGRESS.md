@@ -5,6 +5,78 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 06 – Client: magic link, guard `customer`, pagina `/b/{slug}`, înscriere (2026-10-16)
+
+**Făcut:**
+- Guard `customer` (session, provider `customers`), separat de `web`. Rutele `customer.*` au login-ul (`/login/magic`) și pagina de start (`/me`) proprii.
+- `MagicLinkService` (fără pachete):
+  - `send`: link semnat valabil 15 min, cu `email` + `nonce` + opțional `b` (slug-ul afacerii). Rate limit 5/oră per email + IP și 20/oră per email din orice IP.
+  - `url`: construiește linkul.
+  - `consume`: clientul e creat abia acum, cu emailul marcat verificat. Nonce-ul se consumă atomic în store-ul `loyalty` (Redis `default`, ferit de `cache:clear`).
+  - Mail markdown `CustomerMagicLink`.
+  - GET pe link = pagină „Continuă” (scannerele de email nu ard linkul), POST = login cu remember.
+  - Link expirat, alterat sau folosit → pagina „Linkul nu mai e valabil” (403).
+- `EnrollmentService::enroll()`:
+  - `FOR SHARE` pe program (rezolvă nota din ADR 008);
+  - program și afacere active (`EnrollmentRefused`);
+  - `createOrFirst` pe UNIQUE(program, client), deci idempotentă și sigură la paralelism;
+  - audit `card.enrolled` cu actor = clientul. `AuditTrail::record()` acceptă `User|Customer`.
+- HTTP, în `Customer/`:
+  - `/b/{slug}`: pagina publică cu programele active și `x-loyalty-card`. Guest vede formularul de email, logatul vede „Înscrie-te”, înscrisul vede progresul real. 404 pe afacere suspendată.
+  - `POST /b/{slug}/programs/{program}/enroll` (binding scoped).
+  - `/me`: lista cardurilor.
+  - `POST /me/logout`: fără `invalidate()`, deci nu deloghează staff-ul din același browser.
+- UI: `x-customer-layout` (mobile-first) și view-urile `customer/*`. Link „Cardurile mele” pe landing.
+- Helperi:
+  - `Customer::normalizeEmail()`: o singură regulă pentru email;
+  - `Business::findActiveBySlug()`.
+- Teste:
+  - `tests/Feature/Customer/` (`MagicLinkTest`, `CustomerGuardTest`, `BusinessPageTest`, `EnrollmentTest`), inclusiv **client logat cu card 0/5 pe `/me`**;
+  - `tests/Concurrency/EnrollmentConcurrencyTest`: două procese înscriu același client și rezultă un singur card. Am verificat că pică cu un `create` naiv.
+
+**Verificări:** `composer test` 527 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Verificat manual în Chrome, pe dev:
+- `/b/cafenea-demo` → email nou → link din Mailpit → „Continuă” → înapoi pe pagina afacerii → „Înscrie-te” → `/me` cu cardul **0/5**;
+- linkul refolosit e refuzat;
+- logout-ul merge.
+
+**Fixuri după `/code-review high`:**
+- **Critic:** `consume()` citea `email` / `nonce` cu `$request->string()`. Pe POST, corpul suprascrie query string-ul semnat, deci cineva se putea loga ca orice client. Acum le citește doar din query. Testul pică pe codul vechi.
+- Rate limit-ul doar pe email permitea blocarea login-ului cuiva: acum e per email + IP, plus o limită globală mai largă.
+- Redirectul clientului neautentificat lăsa `url.intended=/me`, iar login-ul staff-ului ajungea acolo. Acum nu se mai salvează.
+- Nonce-ul se consumă după crearea clientului, ca o eroare de DB să nu ardă linkul.
+- Store separat pentru nonce-uri (`loyalty`).
+- Eroarea `loyalty` nu mai apare de două ori pe pagina afacerii.
+- Normalizarea emailului și căutarea afacerii active după slug sunt acum într-un singur loc.
+- O interogare în minus la înscriere.
+
+**Rămas / de continuat:**
+- **S7:**
+  - cardul cu QR (`/me/cards/{card}`), manifest, service worker și butonul „Adaugă pe ecranul principal”;
+  - refolosește `layouts/customer` și `x-loyalty-card`.
+- Emailul cu magic link se trimite sincron. De trecut pe coadă în S12, când există worker (review: un SMTP lent blochează formularul).
+- Observații din review neaplicate:
+  - store-ul de jti pentru QR (`LOYALTY_QR_STORE=redis`) e tot pe conexiunea `cache`, deci `cache:clear` șterge jti-urile folosite (90 s fereastră). Se poate muta pe store-ul `loyalty` în S8.
+  - `throttle:N,1` numeric are cheia comună pe IP pentru toate rutele. În S10 se trece pe limitatori numiți.
+- Clienții demo din seed (`ana@`, `bogdan@client.test`) se pot loga acum prin magic link. În baza de dev a rămas clientul de test `client.s06@client.test` cu un card 0/5 la Cafenea Demo.
+
+**Decizii noi:**
+- [009](decisions/009-magic-link-client-si-inscriere.md):
+  - guard `customer`;
+  - link de unică folosință, cu GET de confirmare + POST;
+  - clientul se creează la folosirea linkului;
+  - redirect doar pe slug, fără `url.intended`;
+  - rate limit adus din S10 (email + IP);
+  - store `loyalty` separat de cache;
+  - înscriere cu FOR SHARE + `createOrFirst`;
+  - logout fără `invalidate()`.
+
+**Probleme cunoscute:**
+- Fără probleme noi.
+
+**Următoarea sesiune:** 07 – PWA client: card cu progres, QR rotativ, manifest și service worker.
+
+---
+
 ## Sesiunea 05 – Wizard programe + template-uri + previzualizare card (2026-10-16)
 
 **Făcut:**
