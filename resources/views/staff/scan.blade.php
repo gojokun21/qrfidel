@@ -15,7 +15,7 @@
                     <p x-show="state === 'starting'" class="absolute inset-0 flex items-center justify-center p-8 text-center text-sm text-inverse-muted">Pornim camera… Dacă browserul cere acces la cameră, permite-l.</p>
                     <p x-show="state === 'busy'" x-cloak class="absolute inset-0 flex items-center justify-center bg-inverse-deep/70 text-sm font-semibold text-inverse-fg" role="status">Verificăm codul…</p>
                     <div x-show="state === 'unavailable'" x-cloak class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center text-inverse-muted">
-                        <x-ui.icon name="qr" class="h-10 w-10 text-primary" />
+                        <x-ui.icon name="qr" class="h-10 w-10 text-accent" />
                         <p class="text-sm" x-text="error"></p>
                     </div>
                 </div>

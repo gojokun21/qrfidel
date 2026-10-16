@@ -15,7 +15,7 @@
                 @auth('customer')
                     <form method="POST" action="{{ route('customer.logout') }}">
                         @csrf
-                        <button class="rounded-control px-3 py-2 text-sm font-semibold text-inverse-fg transition hover:text-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-focus">Ieși</button>
+                        <button class="rounded-control px-3 py-2 text-sm font-semibold text-inverse-fg transition hover:text-accent-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-focus">Ieși</button>
                     </form>
                 @endauth
             </div>

@@ -20,7 +20,7 @@
         'ghost' => 'text-ink-secondary hover:bg-surface-muted hover:text-ink',
         'danger' => 'bg-danger text-danger-fg hover:bg-danger-hover',
         'danger-ghost' => 'text-danger hover:bg-danger-soft hover:text-danger-hover',
-        'inverse' => 'border border-inverse-fg/30 text-inverse-fg hover:border-primary hover:text-primary-hover',
+        'inverse' => 'border border-inverse-fg/30 text-inverse-fg hover:border-accent hover:text-accent-hover',
     ];
     $sizes = [
         'sm' => 'gap-1.5 px-2.5 py-1.5 text-sm',

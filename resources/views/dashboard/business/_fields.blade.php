@@ -19,6 +19,6 @@
     </x-ui.select>
 </x-ui.field>
 
-<x-ui.field label="Culoarea brandului" for="brand_color" optional hint="Cod hex, de exemplu #CC9933. Apare pe pagina publică și pe carduri.">
-    <x-ui.input id="brand_color" name="brand_color" type="text" class="max-w-40 font-mono" :value="old('brand_color', $business?->brand_color)" placeholder="#CC9933" maxlength="7" />
+<x-ui.field label="Culoarea brandului" for="brand_color" optional hint="Cod hex, de exemplu #1F5B45. Apare pe pagina publică și pe carduri.">
+    <x-ui.input id="brand_color" name="brand_color" type="text" class="max-w-40 font-mono" :value="old('brand_color', $business?->brand_color)" placeholder="#1F5B45" maxlength="7" />
 </x-ui.field>

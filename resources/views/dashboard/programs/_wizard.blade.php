@@ -29,7 +29,7 @@
     ];
     $stepTitles = [1 => 'Tip și template', 2 => 'Reguli', 3 => 'Aspect'];
     // Culorile propuse pentru card (date de conținut, nu tokenuri ale interfeței).
-    $swatches = ['#CC9933', '#7c2d12', '#b91c1c', '#be185d', '#7e22ce', '#1d4ed8', '#0f766e', '#15803d'];
+    $swatches = ['#D9822B', '#1F5B45', '#7c2d12', '#b91c1c', '#be185d', '#7e22ce', '#1d4ed8', '#0f766e'];
 @endphp
 
 <form method="POST" action="{{ $action }}" novalidate x-data="programWizard(@js($config))" @submit="submit($event)" @keydown.enter="enter($event)" x-ref="wizard" class="scroll-mt-6">
@@ -75,7 +75,7 @@
                                     :aria-pressed="selected === '{{ $template['key'] }}' ? 'true' : 'false'"
                                     class="flex items-start gap-3 rounded-card border-2 p-4 text-left transition hover:border-primary-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
                                     :class="selected === '{{ $template['key'] }}' ? 'border-primary bg-primary-soft' : 'border-line bg-surface'">
-                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-inverse text-primary-hover">
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-inverse text-accent-hover">
                                     <x-ui.icon :name="$template['attributes']['stamp_icon']" class="h-5 w-5" />
                                 </span>
                                 <span class="min-w-0">

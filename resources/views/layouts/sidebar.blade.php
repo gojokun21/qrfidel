@@ -47,7 +47,7 @@
                     </button>
                 </form>
             @endforeach
-            <a href="{{ route('dashboard.business.create') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-primary-hover hover:bg-inverse-line focus:bg-inverse-line focus:outline-none">
+            <a href="{{ route('dashboard.business.create') }}" class="flex items-center gap-3 px-3 py-2 text-sm text-accent-hover hover:bg-inverse-line focus:bg-inverse-line focus:outline-none">
                 <span class="flex h-7 w-7 items-center justify-center rounded-lg border border-dashed border-inverse-muted/60" aria-hidden="true"><x-ui.icon name="plus" class="h-4 w-4" /></span>
                 Afacere nouă
             </a>

@@ -5,7 +5,7 @@
         <linearGradient id="{{ $id }}-fill" x1="15" y1="5" x2="85" y2="95" gradientUnits="userSpaceOnUse">
             <stop offset="0" stop-color="#F5E8C8"/>
             <stop offset=".35" stop-color="#E0B95F"/>
-            <stop offset=".7" stop-color="#CC9933"/>
+            <stop offset=".7" stop-color="#D9822B"/>
             <stop offset="1" stop-color="#8A6220"/>
         </linearGradient>
         <radialGradient id="{{ $id }}-shine" cx="36" cy="28" r="34" gradientUnits="userSpaceOnUse">

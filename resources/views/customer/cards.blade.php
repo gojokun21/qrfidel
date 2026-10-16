@@ -27,7 +27,7 @@
                     <div class="mt-2 flex items-center justify-between gap-3 px-1 text-sm">
                         <x-ui.link :href="route('customer.business', $program->business)" class="truncate">{{ $program->business->name }}</x-ui.link>
                         @if ($card->rewards_available > 0)
-                            <x-ui.badge tone="primary">
+                            <x-ui.badge tone="accent">
                                 {{ $card->rewards_available === 1 ? '1 recompensă disponibilă' : $card->rewards_available.' recompense disponibile' }}
                             </x-ui.badge>
                         @elseif (! $program->isActive())

@@ -4,11 +4,11 @@
         <defs>
             <path id="rotating-badge-circle" d="M80 80m-60 0a60 60 0 1 1 120 0a60 60 0 1 1-120 0"/>
         </defs>
-        <circle cx="80" cy="80" r="78" fill="#CC9933"/>
-        <circle cx="80" cy="80" r="72" fill="none" stroke="#161110" stroke-opacity=".25" stroke-width="1"/>
-        <text fill="#161110" font-family="Onest, sans-serif" font-size="14" font-weight="800" letter-spacing="2">
+        <circle cx="80" cy="80" r="78" fill="#D9822B"/>
+        <circle cx="80" cy="80" r="72" fill="none" stroke="#111312" stroke-opacity=".25" stroke-width="1"/>
+        <text fill="#111312" font-family="Onest, sans-serif" font-size="14" font-weight="800" letter-spacing="2">
             <textPath href="#rotating-badge-circle" textLength="372" lengthAdjust="spacing">FĂRĂ APLICAȚIE ✦ FĂRĂ HÂRTIE ✦ FĂRĂ PAROLĂ ✦</textPath>
         </text>
     </svg>
-    <x-brand.logo class="absolute inset-0 m-auto h-[38%] w-[38%] text-espresso-950" />
+    <x-brand.logo class="absolute inset-0 m-auto h-[38%] w-[38%] text-graphite-950" />
 </div>

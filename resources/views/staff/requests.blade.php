@@ -45,7 +45,7 @@
                                     <p class="mt-1 text-sm text-ink-secondary">
                                         <span x-text="request.program"></span> ·
                                         <span x-text="`${request.stamps} din ${request.required}`"></span>
-                                        <span x-show="request.rewards > 0" class="font-semibold text-primary-ink"
+                                        <span x-show="request.rewards > 0" class="font-semibold text-accent-ink"
                                               x-text="` · ${request.rewards} ${request.rewards === 1 ? 'recompensă' : 'recompense'}`"></span>
                                     </p>
                                 </div>

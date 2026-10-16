@@ -4,42 +4,56 @@ import forms from '@tailwindcss/forms';
 /*
  * Sistemul vizual (ADR 007, ADR 015). Documentație: docs/ui.md.
  *
- * 1. Paleta brandului: espresso (închis), gold (accent), cream (suprafețe calde).
+ * 1. Paleta brandului „Verde cafea” (ADR 016): leaf (verdele frunzei de cafea, acțiunea principală),
+ *    honey (ambra recompenselor și a ștampilelor), graphite (neutre gri-verzui), paper (fundaluri calde).
  *    Paginile aplicației NU o folosesc direct; o folosesc doar tokenurile de mai jos
  *    și landing-ul (direcție artistică proprie).
  */
-const espresso = {
-    50: '#F6F2EF',
-    100: '#E9E1DB',
-    200: '#D3C4B9',
-    300: '#B29D8E',
-    400: '#8C7464',
-    500: '#6B5547',
-    600: '#523F34',
-    700: '#3D312C',
-    800: '#2F2622',
-    900: '#231B18',
-    950: '#161110',
+const leaf = {
+    50: '#EEF6F2',
+    100: '#D5EADF',
+    200: '#ABD4C0',
+    300: '#7AB89C',
+    400: '#4A9878',
+    500: '#2E7A5E',
+    600: '#1F5B45',
+    700: '#194A39',
+    800: '#143A2D',
+    900: '#0F2C22',
 };
 
-const gold = {
-    50: '#FBF6EA',
-    100: '#F5E8C8',
-    200: '#EBD193',
-    300: '#E0B95F',
-    400: '#D6A743',
-    500: '#CC9933',
-    600: '#AE7E25',
-    700: '#8A6220',
-    800: '#6B4B1D',
-    900: '#4F3818',
+const honey = {
+    50: '#FDF5EC',
+    100: '#FAE6CF',
+    200: '#F4CB9C',
+    300: '#EDAE69',
+    400: '#E39645',
+    500: '#D9822B',
+    600: '#B96A1E',
+    700: '#93531A',
+    800: '#6F3F17',
+    900: '#4F2E13',
 };
 
-const cream = {
-    DEFAULT: '#F7F1E8',
-    50: '#FDFBF7',
-    100: '#F7F1E8',
-    200: '#EFE5D5',
+const graphite = {
+    50: '#F4F5F4',
+    100: '#E4E7E5',
+    200: '#CBD0CD',
+    300: '#A9B0AC',
+    400: '#848C88',
+    500: '#646C68',
+    600: '#4B524F',
+    700: '#363C39',
+    800: '#262B29',
+    900: '#1A1D1B',
+    950: '#111312',
+};
+
+const paper = {
+    DEFAULT: '#EFEDE6',
+    50: '#F7F6F2',
+    100: '#EFEDE6',
+    200: '#E4E1D8',
 };
 
 /*
@@ -48,42 +62,51 @@ const cream = {
  */
 const semantic = {
     // Fundalul paginii.
-    canvas: cream[50],
+    canvas: paper[50],
     // Carduri, panouri, câmpuri; `muted` = zone de fundal secundare (pastile, rânduri evidențiate).
     surface: {
         DEFAULT: '#FFFFFF',
-        muted: cream[100],
-        strong: cream[200],
+        muted: paper[100],
+        strong: paper[200],
     },
     // Text: `ink` titluri și text principal, `secondary` paragrafe, `muted` meta/indicii (min. 4.5:1 pe alb).
     ink: {
-        DEFAULT: espresso[900],
-        secondary: espresso[600],
-        muted: espresso[500],
+        DEFAULT: graphite[900],
+        secondary: graphite[600],
+        muted: graphite[500],
     },
     // Borduri: `line` separatoare și carduri, `strong` câmpuri de formular.
     line: {
-        DEFAULT: espresso[100],
-        strong: espresso[200],
+        DEFAULT: graphite[100],
+        strong: graphite[200],
     },
-    // Acțiunea principală (auriu). `fg` = textul de pe ea, `ink` = text/linkuri în culoarea brandului.
+    // Acțiunea principală (verde). `fg` = textul de pe ea, `ink` = text/linkuri în culoarea brandului.
     primary: {
-        DEFAULT: gold[500],
-        hover: gold[400],
-        active: gold[600],
-        fg: espresso[950],
-        soft: gold[50],
-        line: gold[200],
-        ink: gold[700],
+        DEFAULT: leaf[600],
+        hover: leaf[500],
+        active: leaf[700],
+        fg: '#FFFFFF',
+        soft: leaf[50],
+        line: leaf[200],
+        ink: leaf[600],
+    },
+    // Accentul cald: recompense, ștampile și evidențierile de pe fundalurile închise (unde verdele nu are contrast).
+    accent: {
+        DEFAULT: honey[500],
+        hover: honey[400],
+        fg: graphite[950],
+        soft: honey[50],
+        line: honey[200],
+        ink: honey[700],
     },
     // Acțiuni neutre închise și zonele închise (sidebar, header client, cardul de fidelitate).
     inverse: {
-        DEFAULT: espresso[900],
-        deep: espresso[950],
-        raised: espresso[800],
-        line: espresso[700],
-        fg: cream[50],
-        muted: espresso[300],
+        DEFAULT: graphite[900],
+        deep: graphite[950],
+        raised: graphite[800],
+        line: graphite[700],
+        fg: paper[50],
+        muted: graphite[300],
     },
     success: {
         DEFAULT: '#047857',
@@ -106,7 +129,7 @@ const semantic = {
         ink: '#7F1D1D',
     },
     // Inelul de focus: contrast ≥ 3:1 și pe alb, și pe fundalurile închise.
-    focus: gold[600],
+    focus: leaf[500],
 };
 
 /** @type {import('tailwindcss').Config} */
@@ -120,7 +143,7 @@ export default {
 
     theme: {
         extend: {
-            colors: { espresso, gold, cream, ...semantic },
+            colors: { leaf, honey, graphite, paper, ...semantic },
             fontFamily: {
                 sans: ['Onest', ...defaultTheme.fontFamily.sans],
                 // Kaushan Script are ș/ț cu virgulă dedesubt (Yellowtail nu le are). Doar pe landing.
@@ -134,8 +157,8 @@ export default {
                 '4xl': '2rem',
             },
             boxShadow: {
-                card: '0 1px 2px 0 rgb(35 27 24 / 0.05)',
-                overlay: '0 24px 48px -12px rgb(22 17 16 / 0.35)',
+                card: '0 1px 2px 0 rgb(26 29 27 / 0.05)',
+                overlay: '0 24px 48px -12px rgb(17 19 18 / 0.35)',
             },
             // Lățimile conținutului: pagini, formulare, ecranele de lucru ale angajatului / clientului.
             maxWidth: {
@@ -151,8 +174,8 @@ export default {
                 eyebrow: '0.18em',
             },
             backgroundImage: {
-                // Lumina aurie de pe fundalurile închise (auth, landing, cardul de fidelitate).
-                glow: 'radial-gradient(ellipse at 70% 10%, rgb(204 153 51 / 0.3), transparent 55%), radial-gradient(ellipse at 0% 100%, rgb(204 153 51 / 0.15), transparent 50%)',
+                // Lumina verde-ambră de pe fundalurile închise (auth, landing, cardul de fidelitate).
+                glow: 'radial-gradient(ellipse at 70% 10%, rgb(46 122 94 / 0.35), transparent 55%), radial-gradient(ellipse at 0% 100%, rgb(217 130 43 / 0.15), transparent 50%)',
             },
             keyframes: {
                 marquee: {
