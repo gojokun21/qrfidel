@@ -68,6 +68,17 @@ it('shows no QR when the program is not active', function (ProgramStatus $status
         ->assertDontSee('qrDisplay', false);
 })->with([ProgramStatus::Paused, ProgramStatus::Archived]);
 
+it('keeps the QR on a stopped program while the card has rewards to use', function () {
+    giveReward($this->card);
+    $this->program->update(['status' => ProgramStatus::Paused]);
+
+    $this->actingAs($this->customer, 'customer')
+        ->get(route('customer.cards.show', $this->card))
+        ->assertOk()
+        ->assertSee('Programul e oprit – recompensele rămân valabile.')
+        ->assertSee('qrDisplay', false);
+});
+
 it('shows no QR when the business is suspended', function () {
     $this->business->status = BusinessStatus::Suspended;
     $this->business->save();
