@@ -3,59 +3,55 @@
     $timezone = $business->timezone;
 @endphp
 
-<x-app-layout>
-    <x-slot name="header">
-        <div>
-            <h2 class="text-2xl font-bold tracking-tight text-espresso-900">Tranzacții</h2>
-            <p class="mt-1 text-sm text-espresso-500">Ștampilele și recompensele se pot anula în primele {{ \App\Services\Loyalty\VoidService::WINDOW_HOURS }} de ore; o ștampilă doar dacă e ultima de pe card.</p>
-        </div>
-    </x-slot>
+<x-app-layout title="Tranzacții"
+              :description="'Ștampilele și recompensele se pot anula în primele '.\App\Services\Loyalty\VoidService::WINDOW_HOURS.' de ore; o ștampilă doar dacă e ultima de pe card.'">
+    <form method="GET" action="{{ route('dashboard.transactions.index') }}" class="flex flex-wrap items-end gap-3" aria-label="Filtre">
+        @if ($locations->isNotEmpty())
+            <x-ui.field label="Locația" for="location">
+                <x-ui.select id="location" name="location">
+                    <option value="">Toate locațiile</option>
+                    @foreach ($locations as $location)
+                        <option value="{{ $location->id }}" @selected($filters['location'] === $location->id)>{{ $location->name }}</option>
+                    @endforeach
+                </x-ui.select>
+            </x-ui.field>
+        @endif
+        <x-ui.field label="Tipul" for="type">
+            <x-ui.select id="type" name="type">
+                <option value="">Toate tipurile</option>
+                @foreach ($types as $type)
+                    <option value="{{ $type->value }}" @selected($filters['type'] === $type)>{{ $type->label() }}</option>
+                @endforeach
+            </x-ui.select>
+        </x-ui.field>
+        <x-ui.button variant="secondary">Filtrează</x-ui.button>
+    </form>
 
-    <div class="py-8">
-        <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-10">
-            <x-flash />
-
-            <form method="GET" action="{{ route('dashboard.transactions.index') }}" class="flex flex-wrap items-end gap-3">
-                @if ($locations->isNotEmpty())
-                    <div>
-                        <x-input-label for="location" value="Locația" />
-                        <x-select-input id="location" name="location" class="mt-1">
-                            <option value="">Toate locațiile</option>
-                            @foreach ($locations as $location)
-                                <option value="{{ $location->id }}" @selected($filters['location'] === $location->id)>{{ $location->name }}</option>
-                            @endforeach
-                        </x-select-input>
-                    </div>
-                @endif
-                <div>
-                    <x-input-label for="type" value="Tipul" />
-                    <x-select-input id="type" name="type" class="mt-1">
-                        <option value="">Toate tipurile</option>
-                        @foreach ($types as $type)
-                            <option value="{{ $type->value }}" @selected($filters['type'] === $type)>{{ $type->label() }}</option>
-                        @endforeach
-                    </x-select-input>
-                </div>
-                <button class="btn-outline">Filtrează</button>
-            </form>
-
-            <x-card flush>
-                @forelse ($transactions as $transaction)
+    <x-ui.card flush>
+        @if ($transactions->isEmpty())
+            <x-ui.empty-state icon="clock" title="Nicio tranzacție">
+                Ștampilele, recompensele folosite și anulările apar aici pe măsură ce echipa le face.
+            </x-ui.empty-state>
+        @else
+            <ul class="divide-y divide-line">
+                @foreach ($transactions as $transaction)
                     @php
                         $card = $transaction->card;
                     @endphp
-                    <div class="flex flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between {{ $loop->first ? '' : 'border-t border-espresso-100' }}">
+                    <li class="flex flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0">
-                            <p class="font-semibold text-espresso-900 {{ $transaction->voided_by_id ? 'line-through' : '' }}">
-                                {{ $transaction->type->label() }}@if ($transaction->type === \App\Enums\TransactionType::Stamp) ×{{ $transaction->quantity }}@endif
+                            <p class="flex flex-wrap items-center gap-2 font-semibold text-ink">
+                                <span @class(['line-through decoration-ink-muted' => $transaction->voided_by_id])>
+                                    {{ $transaction->type->label() }}@if ($transaction->type === \App\Enums\TransactionType::Stamp) ×{{ $transaction->quantity }}@endif
+                                </span>
                                 @if ($transaction->voided_by_id)
-                                    <span class="ml-1 rounded-full bg-cream-100 px-2 py-0.5 text-xs font-medium text-espresso-600 no-underline">anulată</span>
+                                    <x-ui.badge tone="muted">anulată</x-ui.badge>
                                 @endif
                             </p>
-                            <p class="truncate text-sm text-espresso-600">
+                            <p class="break-words text-sm text-ink-secondary">
                                 {{ $card?->customer?->maskedEmail() }} · {{ $card?->program?->name }}
                             </p>
-                            <p class="truncate text-xs text-espresso-500">
+                            <p class="break-words text-xs text-ink-muted">
                                 <time datetime="{{ $transaction->created_at->toIso8601String() }}">{{ $transaction->created_at->setTimezone($timezone)->format('d.m.Y H:i') }}</time>
                                 @if ($transaction->staff) · {{ $transaction->staff->name }}@endif
                                 @if ($transaction->location) · {{ $transaction->location->name }}@endif
@@ -70,13 +66,11 @@
                                 @include('dashboard.transactions._void-form', ['transaction' => $transaction])
                             </div>
                         @endif
-                    </div>
-                @empty
-                    <p class="p-6 text-espresso-500">Nicio tranzacție.</p>
-                @endforelse
-            </x-card>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </x-ui.card>
 
-            {{ $transactions->links() }}
-        </div>
-    </div>
+    {{ $transactions->links() }}
 </x-app-layout>

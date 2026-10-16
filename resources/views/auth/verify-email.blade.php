@@ -1,31 +1,23 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-espresso-600">
+<x-guest-layout :title="__('Verify Email Address')">
+    <p class="mb-4 text-sm text-ink-secondary">
         {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+    </p>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
+        <x-ui.alert tone="success" class="mb-4">
             {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
+        </x-ui.alert>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
-            </div>
+            <x-ui.button>{{ __('Resend Verification Email') }}</x-ui.button>
         </form>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
-            <button type="submit" class="text-sm link">
-                {{ __('Log Out') }}
-            </button>
+            <x-ui.button variant="ghost">{{ __('Log Out') }}</x-ui.button>
         </form>
     </div>
 </x-guest-layout>

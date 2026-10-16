@@ -39,9 +39,9 @@ class Program extends Model
     use HasFactory;
 
     /**
-     * Culoarea implicită a cardului (accentul auriu din ADR 007).
+     * Culoarea implicită a cardului (accentul ambră din ADR 016).
      */
-    public const DEFAULT_COLOR = '#CC9933';
+    public const DEFAULT_COLOR = '#D9822B';
 
     /**
      * @var list<string>

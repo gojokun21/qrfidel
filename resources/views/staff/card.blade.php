@@ -10,116 +10,96 @@
     $maskedEmail = $customer->maskedEmail();
 @endphp
 
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between gap-4">
-            <div class="min-w-0">
-                <h2 class="truncate text-2xl font-bold tracking-tight text-espresso-900">{{ $customer->name ?: 'Client' }}</h2>
-                <p class="truncate text-sm text-espresso-500">{{ $maskedEmail }}</p>
-            </div>
-            <a href="{{ route('staff.scan') }}" class="btn-outline shrink-0">
-                <x-icon name="qr" class="h-4 w-4" />
-                Scanează alt card
-            </a>
-        </div>
-    </x-slot>
+<x-app-layout :title="$customer->name ?: 'Client'" :description="$maskedEmail" width="narrow">
+    <x-slot:actions>
+        <x-ui.button :href="route('staff.scan')" variant="secondary" icon="qr">Scanează alt card</x-ui.button>
+    </x-slot:actions>
 
-    <div class="py-6 sm:py-8">
-        <div class="mx-auto max-w-lg space-y-6 px-4 sm:px-6">
-            <x-flash />
+    <x-loyalty.card :business="$program->business->name" :name="$program->name" :required="$program->stamps_required"
+                    :reward="$program->reward_title" :color="$program->displayColor()" :icon="$program->stamp_icon->value"
+                    :filled="$card->stamps_balance" />
 
-            <x-loyalty-card :business="$program->business->name" :name="$program->name" :required="$program->stamps_required"
-                            :reward="$program->reward_title" :color="$program->displayColor()" :icon="$program->stamp_icon->value"
-                            :filled="$card->stamps_balance" />
+    @if ($rewards > 0)
+        <x-ui.alert tone="success">
+            <span class="font-semibold">{{ $rewards === 1 ? '1 recompensă disponibilă' : $rewards.' recompense disponibile' }}</span>
+            · {{ $program->reward_title }}
+        </x-ui.alert>
+    @endif
 
-            @if ($rewards > 0)
-                <p class="rounded-2xl bg-gold-100 px-4 py-3 text-center text-sm font-semibold text-gold-800">
-                    {{ $rewards === 1 ? '1 recompensă disponibilă' : $rewards.' recompense disponibile' }}
-                    · {{ $program->reward_title }}
-                </p>
-            @endif
+    @if ($scan)
+        <section class="space-y-3" aria-label="Acțiuni">
+            <p class="flex items-center gap-2 text-sm text-ink-secondary">
+                <x-ui.icon name="map-pin" class="h-4 w-4 text-primary-ink" />
+                {{ $scan->location->name }}
+            </p>
 
-            @if ($scan)
-                <section class="space-y-3" aria-label="Acțiuni">
-                    <p class="flex items-center gap-2 text-sm text-espresso-600">
-                        <x-icon name="map-pin" class="h-4 w-4 text-gold-600" />
-                        {{ $scan->location->name }}
-                    </p>
-
-                    @if (! $stampable)
-                        <p class="rounded-2xl border border-espresso-200 bg-cream-50 p-4 text-sm text-espresso-700">
-                            Programul nu este activ: nu se mai dau ștampile, dar recompensele câștigate se pot folosi.
-                        </p>
-                    @elseif ($scan->stampUsed)
-                        <p class="rounded-2xl border border-espresso-200 bg-cream-50 p-4 text-sm text-espresso-700">
-                            Ștampila pentru această scanare a fost dată. Pentru încă una, scanează din nou codul clientului.
-                        </p>
-                    @else
-                        <div class="grid gap-3 {{ $maxStamps > 1 ? 'grid-cols-2' : '' }}">
-                            @for ($quantity = 1; $quantity <= $maxStamps; $quantity++)
-                                <form method="POST" action="{{ route('staff.cards.stamp', $card) }}" x-data
-                                      @submit="setTimeout(() => $el.querySelector('button').disabled = true)"
-                                      class="{{ $quantity === 1 && $maxStamps > 1 ? 'col-span-2' : '' }}">
-                                    @csrf
-                                    <input type="hidden" name="ticket" value="{{ $scan->id }}">
-                                    <input type="hidden" name="quantity" value="{{ $quantity }}">
-                                    <input type="hidden" name="idempotency_key" value="{{ \Illuminate\Support\Str::uuid() }}">
-                                    <button class="{{ $quantity === 1 ? 'btn-gold' : 'btn-outline' }} w-full justify-center py-4 text-lg">
-                                        {{ $quantity === 1 ? '+1 ștampilă' : "+{$quantity} ștampile" }}
-                                    </button>
-                                </form>
-                            @endfor
-                        </div>
-                    @endif
-
-                    @if ($rewards > 0 && ! $scan->redeemUsed)
-                        <form method="POST" action="{{ route('staff.cards.redeem', $card) }}" x-data
-                              @submit="if (! confirm({{ Js::from('Folosești recompensa „'.$program->reward_title.'”?') }})) { $event.preventDefault() } else { setTimeout(() => $el.querySelector('button').disabled = true) }">
+            @if (! $stampable)
+                <x-ui.alert>Programul nu este activ: nu se mai dau ștampile, dar recompensele câștigate se pot folosi.</x-ui.alert>
+            @elseif ($scan->stampUsed)
+                <x-ui.alert>Ștampila pentru această scanare a fost dată. Pentru încă una, scanează din nou codul clientului.</x-ui.alert>
+            @else
+                <div @class(['grid gap-3', 'grid-cols-2' => $maxStamps > 1])>
+                    @for ($quantity = 1; $quantity <= $maxStamps; $quantity++)
+                        <form method="POST" action="{{ route('staff.cards.stamp', $card) }}" x-data
+                              @submit="setTimeout(() => $el.querySelector('button').disabled = true)"
+                              @class(['col-span-2' => $quantity === 1 && $maxStamps > 1])>
                             @csrf
                             <input type="hidden" name="ticket" value="{{ $scan->id }}">
+                            <input type="hidden" name="quantity" value="{{ $quantity }}">
                             <input type="hidden" name="idempotency_key" value="{{ \Illuminate\Support\Str::uuid() }}">
-                            <button class="btn-dark w-full justify-center py-4 text-lg">
-                                <x-icon name="gift" class="h-5 w-5" />
-                                Folosește recompensa
-                            </button>
+                            <x-ui.button :variant="$quantity === 1 ? 'primary' : 'secondary'" size="xl" class="w-full">
+                                {{ $quantity === 1 ? '+1 ștampilă' : "+{$quantity} ștampile" }}
+                            </x-ui.button>
                         </form>
-                    @endif
-                </section>
-            @else
-                <x-card>
-                    <p class="font-semibold text-espresso-900">Scanează din nou</p>
-                    <p class="mt-1 text-sm text-espresso-600">Ștampilele și recompensele se dau doar după o scanare recentă a codului clientului.</p>
-                    <a href="{{ route('staff.scan') }}" class="btn-gold mt-4">Deschide scanerul</a>
-                </x-card>
+                    @endfor
+                </div>
             @endif
 
-            @if ($transactions->isNotEmpty())
-                <x-card flush>
-                    <h3 class="px-6 pt-5 text-sm font-semibold text-espresso-900">Ultimele mișcări</h3>
-                    <ul class="mt-2 divide-y divide-espresso-100">
-                        @foreach ($transactions as $transaction)
-                            <li class="flex items-center justify-between gap-4 px-6 py-3 text-sm">
-                                <span class="min-w-0">
-                                    <span class="block font-medium text-espresso-900 {{ $transaction->voided_by_id ? 'line-through' : '' }}">
-                                        {{ $transaction->type->label() }}@if ($transaction->type === \App\Enums\TransactionType::Stamp) ×{{ $transaction->quantity }}@endif
-                                    </span>
-                                    <span class="block truncate text-xs text-espresso-500">
-                                        {{ $transaction->staff?->name }}@if ($transaction->location) · {{ $transaction->location->name }}@endif
-                                    </span>
-                                </span>
-                                <span class="shrink-0 text-right">
-                                    <time class="block text-xs text-espresso-500" datetime="{{ $transaction->created_at?->toIso8601String() }}">
-                                        {{ $transaction->created_at?->setTimezone($program->business->timezone)->format('d.m H:i') }}
-                                    </time>
-                                    @if (isset($voidable[$transaction->id]))
-                                        @include('dashboard.transactions._void-form', ['transaction' => $transaction])
-                                    @endif
-                                </span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </x-card>
+            @if ($rewards > 0 && ! $scan->redeemUsed)
+                <form method="POST" action="{{ route('staff.cards.redeem', $card) }}" x-data
+                      @submit="if (! confirm({{ Js::from('Folosești recompensa „'.$program->reward_title.'”?') }})) { $event.preventDefault() } else { setTimeout(() => $el.querySelector('button').disabled = true) }">
+                    @csrf
+                    <input type="hidden" name="ticket" value="{{ $scan->id }}">
+                    <input type="hidden" name="idempotency_key" value="{{ \Illuminate\Support\Str::uuid() }}">
+                    <x-ui.button variant="neutral" size="xl" icon="gift" class="w-full">Folosește recompensa</x-ui.button>
+                </form>
             @endif
-        </div>
-    </div>
+        </section>
+    @else
+        <x-ui.card title="Scanează din nou" description="Ștampilele și recompensele se dau doar după o scanare recentă a codului clientului.">
+            <x-ui.button :href="route('staff.scan')" icon="qr">Deschide scanerul</x-ui.button>
+        </x-ui.card>
+    @endif
+
+    @if ($transactions->isNotEmpty())
+        <x-ui.card flush title="Ultimele mișcări">
+            <ul class="divide-y divide-line">
+                @foreach ($transactions as $transaction)
+                    <li class="flex items-start justify-between gap-4 px-5 py-3 text-sm sm:px-6">
+                        <span class="min-w-0">
+                            <span class="flex flex-wrap items-center gap-2 font-medium text-ink">
+                                <span @class(['line-through decoration-ink-muted' => $transaction->voided_by_id])>
+                                    {{ $transaction->type->label() }}@if ($transaction->type === \App\Enums\TransactionType::Stamp) ×{{ $transaction->quantity }}@endif
+                                </span>
+                                @if ($transaction->voided_by_id)
+                                    <x-ui.badge tone="muted">anulată</x-ui.badge>
+                                @endif
+                            </span>
+                            <span class="block break-words text-xs text-ink-muted">
+                                {{ $transaction->staff?->name }}@if ($transaction->location) · {{ $transaction->location->name }}@endif
+                            </span>
+                        </span>
+                        <span class="shrink-0 text-right">
+                            <time class="block text-xs text-ink-muted" datetime="{{ $transaction->created_at?->toIso8601String() }}">
+                                {{ $transaction->created_at?->setTimezone($program->business->timezone)->format('d.m H:i') }}
+                            </time>
+                            @if (isset($voidable[$transaction->id]))
+                                @include('dashboard.transactions._void-form', ['transaction' => $transaction])
+                            @endif
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        </x-ui.card>
+    @endif
 </x-app-layout>

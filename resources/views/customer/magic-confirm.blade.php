@@ -1,14 +1,14 @@
 <x-customer-layout title="Intră în cont">
-    <div class="rounded-3xl bg-white p-6 text-center shadow-xl shadow-espresso-950/5">
-        <x-flash />
-        <h1 class="text-xl font-bold text-espresso-950">Intră în cont</h1>
-        <p class="mt-2 text-sm text-espresso-600">
-            Te conectezi ca <strong class="break-all text-espresso-900">{{ $email }}</strong>. Rămâi conectat pe acest dispozitiv.
+    <x-ui.card class="text-center">
+        <x-layout.flash class="mb-4 text-left" />
+        <h1 class="text-xl font-bold text-ink">Intră în cont</h1>
+        <p class="mt-2 text-sm text-ink-secondary">
+            Te conectezi ca <strong class="break-all text-ink">{{ $email }}</strong>. Rămâi conectat pe acest dispozitiv.
         </p>
 
         <form method="POST" action="{{ $action }}" class="mt-6" x-data="{ sending: false }" @submit="sending = true">
             @csrf
-            <button class="btn-gold w-full" :disabled="sending">Continuă</button>
+            <x-ui.button class="w-full" ::disabled="sending">Continuă</x-ui.button>
         </form>
-    </div>
+    </x-ui.card>
 </x-customer-layout>
