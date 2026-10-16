@@ -5,12 +5,14 @@ use App\Http\Controllers\Customer\CardController;
 use App\Http\Controllers\Customer\CounterController;
 use App\Http\Controllers\Customer\EnrollmentController;
 use App\Http\Controllers\Customer\MagicLinkController;
+use App\Http\Controllers\Dashboard\AuditLogController;
 use App\Http\Controllers\Dashboard\BusinessController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\InvitationController;
 use App\Http\Controllers\Dashboard\LocationController;
 use App\Http\Controllers\Dashboard\ProgramController;
 use App\Http\Controllers\Dashboard\TeamController;
+use App\Http\Controllers\Dashboard\TransactionController;
 use App\Http\Controllers\InvitationAcceptController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Staff\CardController as StaffCardController;
@@ -25,21 +27,21 @@ Route::view('/', 'landing')->name('home');
 Route::name('customer.')->group(function () {
     Route::get('/b/{business:slug}', BusinessPageController::class)->name('business');
     Route::post('/b/{business:slug}/programs/{program}/enroll', EnrollmentController::class)
-        ->scopeBindings()->middleware('auth:customer')->name('enroll');
+        ->scopeBindings()->middleware(['auth:customer', 'throttle:customer-actions'])->name('enroll');
 
     // QR-ul de pe tejghea (SDD §5.3, ADR 012): locația după counter_token, cererea de ștampilă cu auto-înscriere.
     Route::get('/l/{token}', [CounterController::class, 'show'])->name('counter');
     Route::post('/l/{token}/programs/{program}/request', [CounterController::class, 'store'])
-        ->middleware('auth:customer')->name('counter.request');
+        ->middleware(['auth:customer', 'throttle:customer-actions'])->name('counter.request');
 
     Route::middleware('guest:customer')->group(function () {
         Route::get('/login/magic', [MagicLinkController::class, 'create'])->name('login');
-        Route::post('/login/magic', [MagicLinkController::class, 'store'])->middleware('throttle:10,1')->name('magic.send');
+        Route::post('/login/magic', [MagicLinkController::class, 'store'])->middleware('throttle:magic-link-send')->name('magic.send');
     });
 
     Route::middleware('signed')->group(function () {
         Route::get('/login/magic/verify', [MagicLinkController::class, 'show'])->name('magic.show');
-        Route::post('/login/magic/verify', [MagicLinkController::class, 'consume'])->middleware('throttle:10,1')->name('magic.consume');
+        Route::post('/login/magic/verify', [MagicLinkController::class, 'consume'])->middleware('throttle:magic-link-consume')->name('magic.consume');
     });
 
     Route::middleware('auth:customer')->group(function () {
@@ -84,13 +86,22 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard')-
         Route::patch('/team/{membership}', [TeamController::class, 'update'])->whereNumber('membership')->name('team.update');
         Route::delete('/team/{membership}', [TeamController::class, 'destroy'])->whereNumber('membership')->name('team.destroy');
 
-        Route::post('/invitations', [InvitationController::class, 'store'])->name('invitations.store');
+        Route::post('/invitations', [InvitationController::class, 'store'])->middleware('throttle:invitations')->name('invitations.store');
         Route::delete('/invitations/{invitation}', [InvitationController::class, 'destroy'])->name('invitations.destroy');
+    });
+
+    Route::middleware(['business', 'role:owner'])->name('.')->group(function () {
+        Route::get('/audit', AuditLogController::class)->name('audit.index');
     });
 
     Route::middleware(['business', 'role:manager'])->name('.')->group(function () {
         Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
         Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
+
+        // Anularea (SDD §5.6, ADR 004, 013): manager pe locația lui sau owner; regulile stau în VoidService.
+        Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+        Route::post('/transactions/{transaction}/void', [TransactionController::class, 'void'])
+            ->whereNumber('transaction')->middleware('throttle:staff-actions')->name('transactions.void');
     });
 });
 
@@ -102,21 +113,21 @@ Route::middleware(['auth', 'verified', 'has-business', 'business', 'role:staff']
     Route::post('/scan/resolve', [ScanController::class, 'resolve'])->middleware('throttle:staff-scan')->name('scan.resolve');
 
     Route::get('/cards/{card:public_id}', [StaffCardController::class, 'show'])->name('cards.show');
-    Route::post('/cards/{card:public_id}/stamp', [StaffCardController::class, 'stamp'])->name('cards.stamp');
-    Route::post('/cards/{card:public_id}/redeem', [StaffCardController::class, 'redeem'])->name('cards.redeem');
+    Route::post('/cards/{card:public_id}/stamp', [StaffCardController::class, 'stamp'])->middleware('throttle:staff-actions')->name('cards.stamp');
+    Route::post('/cards/{card:public_id}/redeem', [StaffCardController::class, 'redeem'])->middleware('throttle:staff-actions')->name('cards.redeem');
 
     // Fluxul B (SDD §5.3): panoul cu cererile de la tejghea, reîmprospătat prin polling.
     Route::get('/requests', [RequestController::class, 'index'])->name('requests');
     Route::get('/requests/feed', [RequestController::class, 'feed'])->name('requests.feed');
-    Route::post('/requests/{stampRequest}/approve', [RequestController::class, 'approve'])->whereNumber('stampRequest')->name('requests.approve');
-    Route::post('/requests/{stampRequest}/reject', [RequestController::class, 'reject'])->whereNumber('stampRequest')->name('requests.reject');
+    Route::post('/requests/{stampRequest}/approve', [RequestController::class, 'approve'])->whereNumber('stampRequest')->middleware('throttle:staff-actions')->name('requests.approve');
+    Route::post('/requests/{stampRequest}/reject', [RequestController::class, 'reject'])->whereNumber('stampRequest')->middleware('throttle:staff-actions')->name('requests.reject');
 });
 
 // Linkul din emailul de invitație (public: invitatul poate să nu aibă încă un cont).
 Route::prefix('invitations/{token}')->name('invitations.')->group(function () {
     Route::get('/', [InvitationAcceptController::class, 'show'])->name('show');
     Route::post('/accept', [InvitationAcceptController::class, 'accept'])->middleware('auth')->name('accept');
-    Route::post('/register', [InvitationAcceptController::class, 'register'])->middleware('throttle:6,1')->name('register');
+    Route::post('/register', [InvitationAcceptController::class, 'register'])->middleware('throttle:invitation-register')->name('register');
 });
 
 Route::middleware('auth')->group(function () {

@@ -5,6 +5,55 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 10 – Hardening: rate limit, audit log, joburi de expirare, void în UI (2026-10-16)
+
+**Făcut:**
+- **Expirări** (`ExpirationService` + joburile `ExpireStamps`, `ExpireRewards`, `ExpireStampRequests`, `ShouldBeUnique` cu `uniqueFor = 300`):
+  - ștampilele expiră pe **inactivitate**: N zile fără ștampilă → tranzacție `expire` (sold → 0, cheie `expire:{card}:{last_stamp_at}`, audit `card.stamps_expired` cu actor sistem); afacerile suspendate nu se ating;
+  - recompensele trecute de termen → `expired`, `rewards_available` refăcut din `rewards`, audit `reward.expired`; fără tranzacție în jurnal;
+  - cererile pending trecute de termen → `expired` (UPDATE în bloc; rezolvă nota din S09);
+  - scheduler în `routes/console.php`: cereri la 5 min, recompense și ștampile orar, `onOneServer()`.
+- **`cards:recalculate {--card=} {--business=} {--dry-run}`** (`CardBalanceService`): replay pe jurnal (cu `meta.balance_after` sau regulile programului pentru rândurile vechi), recompense `available`, ultima ștampilă activă; audit `card.recalculated` doar la drift. Regula de emitere stă acum în `RewardRules::applyStamps()` (comună cu StampService).
+- **Audit:** actor null = sistem, `ip_address` completat din request-urile web, `audit_logs` append-only (model + trigger, migrația `2026_10_20_100000`). Pagina **„Jurnal de activitate”** (`/dashboard/audit`, owner): 50/pagină, filtru pe categorie; etichetele în `App\Support\AuditActions`.
+- **Void în UI:** pagina **„Tranzacții”** (`/dashboard/transactions`, manager+; managerul legat de locație vede doar locația lui), filtre pe locație și tip, „Anulează” cu motiv opțional doar pe tranzacțiile anulabile; același formular în „Ultimele mișcări” pe ecranul cardului. `VoidService::refusal()` și `blockedStamps()` sunt folosite și de serviciu, și de listă (`TransactionLog`). Endpoint `POST /dashboard/transactions/{id}/void` (`VoidTransactionRequest`).
+- **Rate limit:** limitatori numiți în `AppServiceProvider` (valorile în `config('loyalty.rate_limits')`): `staff-actions` (stamp/redeem/approve/reject/void), `customer-actions` (înscriere/cerere), `customer-qr`, `customer-status`, `magic-link-send`, `magic-link-consume`, `invitation-register`, `invitations` (per afacere). Niciun `throttle:N,1` numeric în rutele aplicației (Breeze rămâne). 429 în română: JSON + `Retry-After`, formular → înapoi cu eroarea `loyalty`, pagină → `errors/429`.
+- Link-uri noi în sidebar: „Tranzacții” (manager+), „Jurnal” (owner). Eroarea `loyalty` apare și pe pagina de confirmare a magic link-ului.
+- Teste: `Loyalty/ExpirationServiceTest`, `Loyalty/CardRecalculateTest`, `Loyalty/AuditTrailTest`, `Jobs/ExpireJobsTest`, `RateLimitTest`, `Dashboard/TransactionsPageTest`, `Dashboard/AuditLogPageTest`; extins `SidebarTest`.
+
+**Verificări:** `composer test` 804 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Pe baza de dev: `schedule:list` arată cele 3 joburi, `cards:recalculate --dry-run` → 4 carduri, 0 diferențe, joburile rulate cu `dispatch_sync` fără erori. Verificat manual în Chrome, pe `localhost`, ca owner Cafenea Demo: „Tranzacții” arată „Anulează” doar pe ultima ștampilă și pe recompensa folosită → anularea cu motiv („Tranzacția a fost anulată.”, tranzacția inversă cu motivul, butonul trece pe ștampila anterioară); „Jurnal” → „Tranzacție anulată · Owner Cafenea · 127.0.0.1”; fără erori în consolă.
+
+**Fixuri după `/code-review high`:**
+- Handler-ul 429 trimitea și formularele Breeze (retrimiterea emailului de verificare) înapoi cu o eroare pe care pagina nu o afișa; acum primesc pagina 429.
+- `cards:recalculate --business=slug` rula pe toate afacerile; acum refuză.
+- `applyStamps` mutat din modelul `Program` în `RewardRules` (logica de business doar în `app/Services/Loyalty`).
+- Regulile „ultima ștampilă” / „recompensă folosită” erau dublate în listă; acum o singură metodă, `VoidService::blockedStamps()`.
+- `expireRewards()` încărca toate id-urile în memorie; acum `chunkById` pe carduri.
+- `uniqueFor` 3600 → 300 (un job omorât nu mai blochează o oră); scos `withoutOverlapping()` (redundant cu `ShouldBeUnique`).
+- Ecranul cardului: o interogare de membership în minus; restricția pe locație decisă doar în `TransactionLog`; docblock-ul magic link-ului pus la loc în `config/loyalty.php`.
+
+**Rămas / de continuat:**
+- În producție (S12): cron pentru `schedule:run` și worker de cozi; `onOneServer`/`ShouldBeUnique` cer cache-ul Redis.
+- În formularul de anulare, focusul automat pe câmpul „Motiv” nu s-a observat în testul automatizat din Chrome (formularul s-a deschis corect). De reverificat de mână.
+- Observații din S09 neaplicate în continuare: `CounterController::show` / `BusinessPageController` filtrează în controller; generator de afiș pentru QR-ul tejghelei; testul pe telefon cu HTTPS (fluxurile A și B).
+- Seed-ul nu are programe cu `stamps_expire_days`: expirarea ștampilelor se vede doar în teste.
+
+**Decizii noi:**
+- [013](decisions/013-hardening-expirare-audit-void-rate-limit.md):
+  - expirare pe inactivitate (fără afaceri suspendate);
+  - recompensele expirate fără tranzacție în jurnal;
+  - cadența joburilor;
+  - semantica `cards:recalculate`;
+  - audit append-only, actor sistem, IP;
+  - void din dashboard și din ecranul cardului;
+  - limitatorii numiți și tratarea 429.
+
+**Probleme cunoscute:**
+- Git Bash strică backslash-urile din heredoc-uri (`\\` → `\`) și pe cele din `sed`: pentru editări PHP cu namespace-uri folosește Edit/Write sau un script Python scris cu Write.
+
+**Următoarea sesiune:** 11 – Rapoarte owner + admin platformă.
+
+---
+
 ## Sesiunea 09 – Flux B: QR tejghea, `stamp_requests`, panou cu polling (2026-10-16)
 
 **Făcut:**

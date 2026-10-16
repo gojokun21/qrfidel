@@ -107,9 +107,14 @@
                                         {{ $transaction->staff?->name }}@if ($transaction->location) · {{ $transaction->location->name }}@endif
                                     </span>
                                 </span>
-                                <time class="shrink-0 text-xs text-espresso-500" datetime="{{ $transaction->created_at?->toIso8601String() }}">
-                                    {{ $transaction->created_at?->setTimezone($program->business->timezone)->format('d.m H:i') }}
-                                </time>
+                                <span class="shrink-0 text-right">
+                                    <time class="block text-xs text-espresso-500" datetime="{{ $transaction->created_at?->toIso8601String() }}">
+                                        {{ $transaction->created_at?->setTimezone($program->business->timezone)->format('d.m H:i') }}
+                                    </time>
+                                    @if (isset($voidable[$transaction->id]))
+                                        @include('dashboard.transactions._void-form', ['transaction' => $transaction])
+                                    @endif
+                                </span>
                             </li>
                         @endforeach
                     </ul>

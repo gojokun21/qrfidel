@@ -39,6 +39,20 @@ return [
     ],
 
     /*
+    | Limitatorii numiți (SDD §6, ADR 013), definiți în AppServiceProvider. Cheia e per angajat, client,
+    | afacere sau IP – niciodată comună pe IP pentru toate rutele, ca la `throttle:N,1`.
+    */
+    'rate_limits' => [
+        'staff_actions_per_minute' => 60,
+        'customer_actions_per_minute' => 20,
+        'customer_qr_per_minute' => 10,
+        'customer_status_per_minute' => 30,
+        'magic_link_per_minute' => 10,
+        'invitation_register_per_minute' => 6,
+        'invitations_per_hour' => 20,
+    ],
+
+    /*
     | Magic link-ul clientului (SDD §5.1, §6, ADR 009): URL semnat valabil ttl_minutes,
     | de unică folosință (nonce consumat în store-ul dat, separat de cache-ul golit de cache:clear).
     | Rate limit: per_email_per_hour per email + IP, per_email_per_hour_all_ips per email din orice IP.

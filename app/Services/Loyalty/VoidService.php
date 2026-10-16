@@ -88,26 +88,69 @@ class VoidService
     {
         /** @var Business $business */
         $business = $card->business;
-        if (! $business->isActive()) {
-            throw new VoidNotAllowed('Afacerea este suspendată.');
+
+        $refusal = $this->refusal($original, $membership, $business);
+        if ($refusal !== null) {
+            throw new VoidNotAllowed($refusal);
+        }
+    }
+
+    /**
+     * Motivul pentru care tranzacția nu se poate anula, fără excepție (lista din dashboard ascunde butonul).
+     * Regulile care cer lock pe card (ultima ștampilă activă, recompensă deja folosită) stau în revertStamp().
+     */
+    public function refusal(CardTransaction $original, Membership $membership, Business $business): ?string
+    {
+        return match (true) {
+            ! $business->isActive() => 'Afacerea este suspendată.',
+            ! in_array($original->type, [TransactionType::Stamp, TransactionType::Redeem], true) => 'Doar ștampilele și recompensele folosite pot fi anulate.',
+            $original->voided_by_id !== null => 'Tranzacția a fost deja anulată.',
+            $original->created_at->lt(now()->subHours(self::WINDOW_HOURS)) => 'Tranzacțiile pot fi anulate doar în primele 24 de ore.',
+            $membership->role === Role::Manager && $membership->location_id !== null
+                && $original->location_id !== $membership->location_id => 'Poți anula doar tranzacțiile din locația ta.',
+            default => null,
+        };
+    }
+
+    /**
+     * Regulile de ordine pentru ștampile (ADR 004), în bloc: o ștampilă se anulează doar dacă e ultima mișcare
+     * activă de sold a cardului (stamp/expire/adjust) și dacă recompensa emisă de ea nu a fost folosită.
+     * Folosită și de lista din dashboard (TransactionLog), ca butonul să urmeze exact aceleași reguli.
+     *
+     * @param  iterable<CardTransaction>  $stamps
+     * @return array<int, string> id-ul ștampilei => motivul refuzului
+     */
+    public function blockedStamps(iterable $stamps): array
+    {
+        $stamps = collect($stamps)->filter(fn (CardTransaction $transaction) => $transaction->type === TransactionType::Stamp);
+        if ($stamps->isEmpty()) {
+            return [];
         }
 
-        if (! in_array($original->type, [TransactionType::Stamp, TransactionType::Redeem], true)) {
-            throw new VoidNotAllowed('Doar ștampilele și recompensele folosite pot fi anulate.');
+        $latestByCard = CardTransaction::query()
+            ->whereIn('card_id', $stamps->pluck('card_id')->unique())
+            ->whereIn('type', [TransactionType::Stamp, TransactionType::Expire, TransactionType::Adjust])
+            ->whereNull('voided_by_id')
+            ->groupBy('card_id')
+            ->selectRaw('card_id, max(id) as latest_id')
+            ->pluck('latest_id', 'card_id');
+
+        $redeemedIssuers = Reward::query()
+            ->whereIn('issued_by_transaction_id', $stamps->pluck('id'))
+            ->where('status', RewardStatus::Redeemed)
+            ->pluck('issued_by_transaction_id')
+            ->flip();
+
+        $blocked = [];
+        foreach ($stamps as $stamp) {
+            if ((int) ($latestByCard[$stamp->card_id] ?? 0) > $stamp->id) {
+                $blocked[$stamp->id] = 'Doar ultima ștampilă a cardului poate fi anulată.';
+            } elseif ($redeemedIssuers->has($stamp->id)) {
+                $blocked[$stamp->id] = 'Recompensa emisă de această ștampilă a fost deja folosită.';
+            }
         }
 
-        if ($original->voided_by_id !== null) {
-            throw new VoidNotAllowed('Tranzacția a fost deja anulată.');
-        }
-
-        if ($original->created_at->lt(now()->subHours(self::WINDOW_HOURS))) {
-            throw new VoidNotAllowed('Tranzacțiile pot fi anulate doar în primele 24 de ore.');
-        }
-
-        $restrictedToLocation = $membership->role === Role::Manager && $membership->location_id !== null;
-        if ($restrictedToLocation && $original->location_id !== $membership->location_id) {
-            throw new VoidNotAllowed('Poți anula doar tranzacțiile din locația ta.');
-        }
+        return $blocked;
     }
 
     /**
@@ -115,22 +158,12 @@ class VoidService
      */
     private function revertStamp(Card $card, CardTransaction $stamp): void
     {
-        $laterBalanceChange = CardTransaction::query()
-            ->where('card_id', $card->id)
-            ->where('id', '>', $stamp->id)
-            ->whereIn('type', [TransactionType::Stamp, TransactionType::Expire, TransactionType::Adjust])
-            ->whereNull('voided_by_id')
-            ->exists();
-
-        if ($laterBalanceChange) {
-            throw new VoidNotAllowed('Doar ultima ștampilă a cardului poate fi anulată.');
+        $blocked = $this->blockedStamps([$stamp]);
+        if (isset($blocked[$stamp->id])) {
+            throw new VoidNotAllowed($blocked[$stamp->id]);
         }
 
         $rewards = Reward::query()->where('issued_by_transaction_id', $stamp->id)->get();
-
-        if ($rewards->contains(fn (Reward $reward) => $reward->status === RewardStatus::Redeemed)) {
-            throw new VoidNotAllowed('Recompensa emisă de această ștampilă a fost deja folosită.');
-        }
 
         $revokedAvailable = 0;
         foreach ($rewards as $reward) {

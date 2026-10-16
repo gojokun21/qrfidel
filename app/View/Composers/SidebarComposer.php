@@ -74,11 +74,13 @@ class SidebarComposer
         if ($role->atLeast(Role::Manager)) {
             $links[] = ['route' => 'dashboard.programs.index', 'label' => 'Programe', 'pattern' => 'dashboard.programs.*', 'icon' => 'gift'];
             $links[] = ['route' => 'dashboard.locations.index', 'label' => 'Locații', 'pattern' => 'dashboard.locations.*', 'icon' => 'map-pin'];
+            $links[] = ['route' => 'dashboard.transactions.index', 'label' => 'Tranzacții', 'pattern' => 'dashboard.transactions.*', 'icon' => 'clock'];
         }
 
         if ($role === Role::Owner) {
             $links[] = ['route' => 'dashboard.team.index', 'label' => 'Echipa', 'pattern' => 'dashboard.team.*', 'icon' => 'users'];
             $links[] = ['route' => 'dashboard.business.edit', 'label' => 'Afacerea', 'pattern' => 'dashboard.business.edit', 'icon' => 'building'];
+            $links[] = ['route' => 'dashboard.audit.index', 'label' => 'Jurnal', 'pattern' => 'dashboard.audit.*', 'icon' => 'shield'];
         }
 
         return $links;
