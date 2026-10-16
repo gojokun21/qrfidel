@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Staff\CardActionRequest;
 use App\Http\Requests\Staff\StampCardRequest;
@@ -10,6 +11,7 @@ use App\Models\Program;
 use App\Models\User;
 use App\Services\Loyalty\ScanTicketService;
 use App\Services\Loyalty\StaffCardActions;
+use App\Services\Loyalty\TransactionLog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,21 +25,32 @@ class CardController extends Controller
 {
     public function __construct(private StaffCardActions $actions) {}
 
-    public function show(Request $request, Card $card, ScanTicketService $tickets): View
+    public function show(Request $request, Card $card, ScanTicketService $tickets, TransactionLog $log): View
     {
         Gate::authorize('view', $card);
 
         $card->load(['customer', 'program.business']);
 
         $ticket = $request->query('ticket');
+        $actor = $this->actor($request);
+        $transactions = $card->transactions()->with(['staff', 'location'])->latest('id')->limit(5)->get();
+
+        /** @var Program $program */
+        $program = $card->program;
+        $membership = $actor->membershipIn($card->business_id);
 
         return view('staff.card', [
             'card' => $card,
-            'program' => $card->program,
+            'program' => $program,
             // Cache-ul `rewards_available` nu scade la expirare: butonul se bazează pe recompensele reale.
             'rewards' => $card->usableRewardsCount(),
-            'scan' => $tickets->check(is_string($ticket) ? $ticket : null, $card, $this->actor($request)),
-            'transactions' => $card->transactions()->with(['staff', 'location'])->latest('id')->limit(5)->get(),
+            'scan' => $tickets->check(is_string($ticket) ? $ticket : null, $card, $actor),
+            'transactions' => $transactions,
+            // Managerul anulează direct din „Ultimele mișcări” (ADR 013), fără tichet de scanare (ADR 011).
+            // Aceeași regulă ca CardPolicy::void (manager+), din membership-ul deja încărcat.
+            'voidable' => $membership !== null && $membership->role->atLeast(Role::Manager)
+                ? $log->voidableIds($membership, $program->business, $transactions)
+                : [],
         ]);
     }
 
