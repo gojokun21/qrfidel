@@ -3,10 +3,10 @@
 
     // Exemplele vin din template-urile programelor (SDD §7); frizeria e un program personalizat.
     $audiences = [
-        ['title' => 'Cafenele', 'stamps' => 5, 'reward' => '1 cafea gratis', 'rule' => 'Cooldown 30 min', 'text' => 'Clientul revine pentru a cincea cafea, nu pentru cafeneaua de vizavi.'],
-        ['title' => 'Restaurante', 'stamps' => 8, 'reward' => 'Desert din partea casei', 'rule' => 'O ștampilă pe masă', 'text' => 'Fiecare masă contează, iar desertul gratuit aduce înapoi toată familia.'],
-        ['title' => 'Spălătorii auto', 'stamps' => 10, 'reward' => 'O spălare gratis', 'rule' => 'Maximum 1 pe zi', 'text' => 'Șoferii fideli sunt răsplătiți, fără carduri de carton uitate în torpedou.'],
-        ['title' => 'Frizerii', 'stamps' => 6, 'reward' => 'O tunsoare gratis', 'rule' => 'Program personalizat', 'text' => 'Reguli pe care le alegi tu: câte ștampile, ce recompensă, cât e valabilă.'],
+        ['title' => 'Cafenele', 'image' => 'cafenea', 'stamps' => 5, 'reward' => '1 cafea gratis', 'rule' => 'Cooldown 30 min', 'text' => 'Clientul revine pentru a cincea cafea, nu pentru cafeneaua de vizavi.'],
+        ['title' => 'Restaurante', 'image' => 'restaurant', 'stamps' => 8, 'reward' => 'Desert din partea casei', 'rule' => 'O ștampilă pe masă', 'text' => 'Fiecare masă contează, iar desertul gratuit aduce înapoi toată familia.'],
+        ['title' => 'Spălătorii auto', 'image' => 'spalatorie', 'stamps' => 10, 'reward' => 'O spălare gratis', 'rule' => 'Maximum 1 pe zi', 'text' => 'Șoferii fideli sunt răsplătiți, fără carduri de carton uitate în torpedou.'],
+        ['title' => 'Frizerii', 'image' => 'frizerie', 'stamps' => 6, 'reward' => 'O tunsoare gratis', 'rule' => 'Program personalizat', 'text' => 'Reguli pe care le alegi tu: câte ștampile, ce recompensă, cât e valabilă.'],
     ];
 
     $steps = [
@@ -26,13 +26,12 @@
 <x-marketing-layout title="Carduri de fidelitate digitale" description="Creative Loyalty: carduri de fidelitate digitale cu ștampile și QR pentru cafenele, restaurante, spălătorii și frizerii.">
     {{-- 1. Hero --}}
     <section class="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-espresso-950 pb-16 pt-28 text-cream-50">
-        <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_30%,rgba(204,153,51,0.35),transparent_55%),radial-gradient(ellipse_at_10%_90%,rgba(204,153,51,0.18),transparent_50%)]" aria-hidden="true"></div>
-        {{-- Rânduri curbe, ca o plantație văzută de sus. --}}
-        <svg class="absolute inset-0 -z-10 h-full w-full text-gold-500/10" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" aria-hidden="true">
-            @for ($i = 0; $i < 14; $i++)
-                <path d="M{{ -200 + $i * 60 }} 900 C {{ 300 + $i * 70 }} {{ 620 - $i * 18 }}, {{ 700 + $i * 50 }} {{ 420 - $i * 22 }}, {{ 1640 }} {{ 180 - $i * 26 }}" stroke="currentColor" stroke-width="{{ 18 - $i }}" stroke-linecap="round"/>
-            @endfor
-        </svg>
+        {{-- Plantația de cafea văzută de sus (generată cu Figma AI); gradientul ține textul lizibil. --}}
+        <img src="{{ asset('images/landing/hero-bg.webp') }}" alt="" width="1376" height="768" fetchpriority="high"
+             class="absolute inset-0 -z-10 h-full w-full object-cover object-right opacity-80">
+        <div class="absolute inset-0 -z-10 bg-gradient-to-r from-espresso-950 via-espresso-950/80 to-espresso-950/10" aria-hidden="true"></div>
+        <div class="absolute inset-0 -z-10 bg-gradient-to-t from-espresso-950 via-transparent to-espresso-950/60" aria-hidden="true"></div>
+        <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_40%,rgba(204,153,51,0.25),transparent_55%)]" aria-hidden="true"></div>
         <div class="grain pointer-events-none absolute inset-0 -z-10 opacity-[0.07] mix-blend-overlay" aria-hidden="true"></div>
 
         <div class="mx-auto grid w-full max-w-7xl items-center gap-16 px-5 sm:px-8 lg:grid-cols-[1.15fr_1fr]">
@@ -43,7 +42,10 @@
                 </p>
                 <h1 class="mt-8">
                     <span class="block -rotate-3 font-script text-7xl leading-[0.95] text-cream-50 sm:text-8xl lg:text-[9rem]">Fidelitate,</span>
-                    <span class="mt-2 block -rotate-3 pl-10 font-script text-6xl leading-none text-gold-400 sm:text-7xl lg:text-8xl">nu hârtie.</span>
+                    <span class="relative mt-2 inline-block -rotate-3 pl-10 font-script text-6xl leading-none text-gold-400 sm:text-7xl lg:text-8xl">
+                        nu hârtie.
+                        <x-landing.squiggle class="absolute -bottom-5 left-8 w-[90%] text-gold-500" />
+                    </span>
                 </h1>
                 <p class="mt-10 max-w-xl text-lg font-medium leading-relaxed text-cream-100/90 sm:text-xl">
                     Carduri de fidelitate digitale pentru afacerea ta. Clienții adună ștampile din telefon, iar tu îi vezi revenind.
@@ -69,6 +71,11 @@
                      },
                  }">
                 <div class="absolute -inset-8 -z-10 rounded-full bg-gold-500/20 blur-3xl" aria-hidden="true"></div>
+                <x-landing.rotating-badge class="absolute -left-3 -top-14 z-10 h-24 w-24 drop-shadow-xl sm:-left-16 sm:-top-12 sm:h-32 sm:w-32" />
+                <x-landing.sparkle class="absolute -right-6 -top-4 h-7 w-7 text-gold-300 motion-safe:animate-twinkle" />
+                <x-landing.sparkle class="absolute -bottom-8 -left-4 h-4 w-4 text-gold-400 motion-safe:animate-twinkle" style="animation-delay: 1.2s" />
+                <x-landing.bean class="absolute -bottom-10 right-0 h-12 w-9 rotate-[30deg] text-gold-700/80 sm:-right-6" />
+                <x-landing.bean class="absolute -right-12 top-1/3 hidden h-8 w-6 -rotate-12 text-gold-800/70 sm:block" />
                 <div class="animate-float rounded-4xl border border-gold-500/30 bg-gradient-to-br from-espresso-800 to-espresso-950 p-7 shadow-2xl shadow-black/50">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -85,9 +92,8 @@
                         <template x-for="i in total" :key="i">
                             <div class="relative flex aspect-square items-center justify-center rounded-full border-2 border-dashed border-espresso-500">
                                 {{-- Animația pornește din nou de fiecare dată când `x-show` afișează ștampila. --}}
-                                <div x-show="i <= filled"
-                                     class="animate-stamp-in absolute inset-0 flex items-center justify-center rounded-full bg-gold-500 text-espresso-950 shadow-lg shadow-gold-500/30">
-                                    <x-brand.logo class="h-6 w-6" />
+                                <div x-show="i <= filled" class="animate-stamp-in absolute -inset-1 drop-shadow-[0_6px_10px_rgba(204,153,51,0.35)]">
+                                    <x-landing.seal id="hero-seal" class="h-full w-full" />
                                 </div>
                             </div>
                         </template>
@@ -169,15 +175,20 @@
             <div class="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ($audiences as $audience)
                     <article class="group flex flex-col">
-                        <div class="relative flex aspect-square flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-gold-400 to-gold-600 p-6 transition duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-gold-600/30">
+                        <div class="relative flex aspect-square flex-col justify-between overflow-hidden rounded-3xl bg-gold-500 p-5 transition duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-gold-600/30">
+                            {{-- Ilustrațiile 3D sunt generate cu Figma AI pe același fundal ca gold-500. --}}
+                            <img src="{{ asset('images/landing/'.$audience['image'].'.webp') }}" alt="" width="800" height="800" loading="lazy"
+                                 class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105">
                             <div class="grain pointer-events-none absolute inset-0 opacity-20 mix-blend-multiply" aria-hidden="true"></div>
-                            <p class="relative text-6xl font-extrabold leading-none tracking-tighter text-espresso-950">{{ $audience['stamps'] }}<span class="text-3xl">→1</span></p>
-                            <div class="relative grid grid-cols-5 gap-2" aria-hidden="true">
-                                @for ($i = 1; $i <= $audience['stamps']; $i++)
-                                    <span class="aspect-square rounded-full {{ $i < $audience['stamps'] ? 'bg-espresso-950' : 'border-2 border-dashed border-espresso-950/60' }}"></span>
-                                @endfor
+                            <p class="relative text-5xl font-extrabold leading-none tracking-tighter text-espresso-950">{{ $audience['stamps'] }}<span class="text-2xl">→1</span></p>
+                            <div class="relative flex items-center justify-between gap-3 rounded-2xl bg-espresso-950/85 px-3 py-2.5 backdrop-blur-sm">
+                                <span class="whitespace-nowrap text-xs font-semibold text-gold-300">{{ $audience['rule'] }}</span>
+                                <span class="flex flex-wrap justify-end gap-1" aria-hidden="true">
+                                    @for ($i = 1; $i <= $audience['stamps']; $i++)
+                                        <span class="h-1.5 w-1.5 rounded-full {{ $i < $audience['stamps'] ? 'bg-gold-400' : 'border border-dashed border-gold-400' }}"></span>
+                                    @endfor
+                                </span>
                             </div>
-                            <span class="relative inline-flex w-fit rounded-full bg-espresso-950 px-3 py-1 text-xs font-semibold text-gold-300">{{ $audience['rule'] }}</span>
                         </div>
                         <h3 class="mt-6 text-2xl font-bold text-gold-600">{{ $audience['title'] }}</h3>
                         <p class="mt-1 font-semibold text-espresso-900">{{ $audience['stamps'] }} vizite → {{ $audience['reward'] }}</p>
@@ -198,6 +209,9 @@
                     <h2 class="mt-4 text-4xl font-bold tracking-tight sm:text-5xl">Fiecare ștampilă e una adevărată.</h2>
                     <p class="mt-5 text-lg leading-relaxed text-espresso-200">Programul de fidelitate trebuie să aducă clienți, nu pierderi. Regulile de protecție sunt incluse, nu opționale.</p>
                     <p class="mt-10 font-script text-5xl text-gold-400">Fără ștampile „din milă”.</p>
+                    {{-- Fundalul imaginii e espresso-900; masca radială o topește în secțiune. --}}
+                    <img src="{{ asset('images/landing/anti-frauda.webp') }}" alt="" width="800" height="800" loading="lazy"
+                         class="mt-6 w-64 [mask-image:radial-gradient(circle,black_50%,transparent_70%)] motion-safe:animate-float sm:w-80">
                 </div>
                 <div class="grid gap-5 sm:grid-cols-2">
                     @foreach ($safeguards as $safeguard)
@@ -213,18 +227,28 @@
     </section>
 
     {{-- 6. CTA final --}}
-    <section class="relative isolate overflow-hidden bg-gold-500 py-24 text-espresso-950">
+    <section class="relative isolate overflow-hidden bg-gold-500 py-20 text-espresso-950 lg:py-12">
+        {{-- Marginea perforată, ca la un card de carton rupt din carnet. --}}
+        <div class="absolute inset-x-0 top-0 h-3 bg-[radial-gradient(circle_at_12px_0,theme(colors.espresso.900)_10px,transparent_10.5px)] bg-[length:24px_12px] bg-repeat-x" aria-hidden="true"></div>
         <div class="grain pointer-events-none absolute inset-0 -z-10 opacity-20 mix-blend-multiply" aria-hidden="true"></div>
-        <div class="mx-auto flex max-w-7xl flex-col items-start gap-10 px-5 sm:px-8 lg:flex-row lg:items-center lg:justify-between">
+        <div class="mx-auto grid max-w-7xl items-center gap-6 px-5 sm:px-8 lg:grid-cols-[1fr_auto]">
             <div>
-                <p class="-rotate-2 font-script text-6xl leading-none sm:text-7xl">Clienții revin.</p>
+                <p class="relative inline-block -rotate-2 font-script text-6xl leading-none sm:text-7xl">
+                    Clienții revin.
+                    <x-landing.sparkle class="absolute -right-8 -top-4 h-6 w-6 text-cream-50 motion-safe:animate-twinkle" />
+                </p>
                 <p class="mt-6 max-w-xl text-lg font-medium">Primul program e gata în câteva minute. Primii clienți îl folosesc chiar azi.</p>
+                <div class="mt-10">
+                    @auth
+                        <x-ui.button :href="route('dashboard')" variant="neutral" size="xl">Mergi la dashboard <x-ui.icon name="arrow-right" class="h-5 w-5" /></x-ui.button>
+                    @else
+                        <x-ui.button :href="route('register')" variant="neutral" size="xl">Creează-ți contul <x-ui.icon name="arrow-right" class="h-5 w-5" /></x-ui.button>
+                    @endauth
+                </div>
             </div>
-            @auth
-                <x-ui.button :href="route('dashboard')" variant="neutral" size="xl">Mergi la dashboard <x-ui.icon name="arrow-right" class="h-5 w-5" /></x-ui.button>
-            @else
-                <x-ui.button :href="route('register')" variant="neutral" size="xl">Creează-ți contul <x-ui.icon name="arrow-right" class="h-5 w-5" /></x-ui.button>
-            @endauth
+            {{-- Fundalul imaginii e gold-500; masca radială ascunde marginile. --}}
+            <img src="{{ asset('images/landing/cta-phone.webp') }}" alt="" width="900" height="900" loading="lazy"
+                 class="mx-auto w-72 [mask-image:radial-gradient(circle,black_55%,transparent_72%)] sm:w-96 lg:w-[28rem]">
         </div>
     </section>
 </x-marketing-layout>
