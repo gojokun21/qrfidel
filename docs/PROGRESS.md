@@ -5,6 +5,68 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 11b – Refactorizare UI: tokenuri semantice și componente `x-ui` (2026-10-16)
+
+În afara listei din SDD §11.4, la cererea utilizatorului.
+
+**Făcut:**
+- **Tokenuri** în `tailwind.config.js` (Tailwind rămâne 3.4):
+  - strat semantic peste paleta ADR 007: `canvas`, `surface`, `ink`, `line`, `primary`, `inverse`, `success`, `warning`, `danger`, `focus`;
+  - raze (`control`, `card`, `panel`), umbre (`card`, `overlay`), lățimi (`content`, `form`, `narrow`), `tracking-eyebrow`, `bg-glow`, `z-skip`.
+- **Componente** pe foldere:
+  - `ui/` (button, link, field, input, select, textarea, checkbox, error, label, card, stat, badge, alert, empty-state, filter-link, table, avatar, modal, icon);
+  - `layout/` (flash, sidebar-link), `loyalty/` (card cu `compact`, program-status, business-status), `brand/` (logo, wordmark).
+- **Curățenie:** au fost scoase clasele `.btn-*` / `.link` din `app.css`, componentele Breeze vechi și `admin/_status`.
+- **Layout-uri:**
+  - `x-app-layout` primește `title`, `eyebrow`, `description`, `back`, `width` și sloturile `actions` / `meta`; afișează `h1`, `<title>` și flash-ul;
+  - guest și customer primesc `title`;
+  - linkul „Sari la conținut”;
+  - drawer-ul de pe mobil mută focusul în meniu și face conținutul `inert` cât e deschis.
+- **Formulare:** `x-ui.field` + `App\View\FormControl` pun `aria-describedby` (indiciu + eroare) și `aria-invalid`; erorile au iconiță.
+- **Dialog:** `x-ui.modal` are `role="dialog"`, titlu, focus blocat în dialog și revenire pe butonul care l-a deschis.
+- **Paginare** proprie, în română (`vendor/pagination/tailwind.blade.php`).
+- **Toate view-urile migrate:** dashboard (11), staff (3), admin (2), client (7 + partiale), auth (6), profil, invitații, 429; butoanele landing-ului și ale layout-ului de marketing.
+- **Landing nou** (commit separat): imagini WebP în `public/images/landing`, ilustrații în `components/landing`.
+- **Paleta „Verde cafea”** ([ADR 016](decisions/016-paleta-verde-cafea.md), la cererea utilizatorului; înlocuiește auriul-muștar):
+  - primitive `leaf` / `honey` / `graphite` / `paper`; `primary` = verde `#1F5B45`;
+  - token nou `accent` (ambră `#D9822B`) pentru recompense, ștampile și evidențieri pe fundal închis;
+  - `Program::DEFAULT_COLOR` = ambră; `theme-color`, manifest, `offline.html` actualizate; service worker `v3`.
+- **Documentație:** `docs/ui.md` (unde sunt tokenurile, cum se schimbă global, API-ul componentelor, o pagină nouă, excepțiile CSS).
+- **Teste:** `Ui/UiComponentsTest` (câmp ↔ eroare, flash fără codurile Breeze, paginare).
+
+**Verificări:** `composer test` 855 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Verificat în Chrome pe `localhost` (desktop 1568px și iframe de 390px pentru mobil), fără overflow orizontal și fără erori în consolă:
+- dashboard, programe + wizard (pașii), echipă, rapoarte (tabelele se derulează în card), locații, jurnal, tranzacții, profil (dialogul: focus pe parolă, Escape, revenire pe buton), scanare și cereri (cu o cerere injectată local în Alpine), ecranul cardului;
+- clientul `ana@client.test` cu magic link prin Mailpit: cardurile și cardul cu QR rotativ;
+- pagina publică, invitație invalidă.
+
+**Fixuri după `/code-review high`:**
+- Numele afacerii era escapat de două ori în titlurile stărilor goale („Mike&amp;#039;s”) → props legate cu `:title`; la fel descrierile din antet (`:description`).
+- O eroare pe `role` / `location_id` din formularul de invitație colora și selecturile membrilor existenți → un control e marcat invalid doar în `x-ui.field`-ul care afișează eroarea (prop-ul `name` al câmpului devine `error`).
+- Escape pe comutatorul de afaceri nu mai închidea drawer-ul de pe mobil → Escape e oprit doar când meniul de afaceri e deschis.
+- Lista de carduri nu mai anunța progresul → `aria-label` cu „X din N ștampile”.
+- Dialogul deschis la încărcare (după o parolă greșită) nu întorcea focusul pe buton → revenire prin `aria-controls`; Tab rămâne în dialog și când focusul e pe panou.
+- Cardul de fidelitate folosește `x-ui.avatar`; bannerul „cerere trimisă” e componenta `x-loyalty.request-pending`.
+
+**Rămas / de continuat:**
+- Imaginile landing-ului și iconițele PWA au fundalul auriu inclus; trebuie regenerate în paleta nouă (ADR 016).
+- Neverificat vizual: formularul de anulare deschis (seed-ul nu are tranzacții sub 24h), panoul de admin (doar prin teste), landing-ul nou pe mobil.
+- Textele Breeze (auth, profil) sunt încă în engleză (`APP_LOCALE=en`, fără `lang/ro`).
+- `@tailwindcss/vite` (v4) e în `package.json`, dar nu e folosit; se poate scoate.
+- Imaginile landing-ului sunt generate cu Figma AI: de verificat termenii înainte de lansare.
+- Notele vechi din S10/S11 rămân valabile.
+
+**Decizii noi:**
+- [015](decisions/015-sistem-vizual-tokenuri-componente-ui.md): tokenuri semantice, componente `x-ui`, layout cu titlu/flash, formulare și dialoguri accesibile, paginare proprie, landing-ul ca excepție de direcție artistică.
+- [016](decisions/016-paleta-verde-cafea.md): paleta „Verde cafea” (verde principal, ambră pentru recompense, neutre graphite).
+
+**Probleme cunoscute:**
+- `resize_window` din Chrome nu micșorează fereastra (e maximizată); pentru mobil folosește un iframe de 390px pe aceeași origine.
+- Python pe Windows scrie CRLF cu `write_text`; normalizează cu `sed -i 's/\r$//'`.
+
+**Următoarea sesiune:** 12 – Deploy (VPS/Forge, HTTPS, cozi, scheduler) + test end-to-end real.
+
+---
+
 ## Sesiunea 11 – Rapoarte owner + admin platformă (2026-10-16)
 
 **Făcut:**
