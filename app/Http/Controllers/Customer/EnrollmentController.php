@@ -24,7 +24,8 @@ class EnrollmentController extends Controller
 
         $result = $enrollments->enroll($customer, $program);
 
-        return redirect()->route('customer.cards')->with('status', $result->created
+        // Direct pe card: progresul 0/N, QR-ul și „Adaugă pe ecranul principal” (SDD §5.1).
+        return redirect()->route('customer.cards.show', $result->card)->with('status', $result->created
             ? "Te-ai înscris în „{$program->name}”."
             : "Ești deja înscris în „{$program->name}”.");
     }

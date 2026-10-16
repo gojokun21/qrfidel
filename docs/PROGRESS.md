@@ -5,6 +5,75 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 07 – PWA client: card cu progres, QR rotativ, manifest și service worker (2026-10-16)
+
+**Făcut:**
+- `/me/cards/{card:public_id}` (`customer.cards.show`):
+  - cardul cu progresul real, recompensele disponibile și panoul QR (cu codul scurt `ABC DEF` și numărătoare);
+  - „Program oprit” pe un program inactiv sau o afacere suspendată;
+  - accesul prin `CardPolicy::own(Customer, Card)` → 404 pe cardul altcuiva.
+- `POST /me/cards/{card}/qr` (`customer.cards.qr`):
+  - JSON `{token, shortCode, issuedAt, expiresAt, refreshSeconds}`, cu `no-store`;
+  - `QrTokenService::issueForCustomer()`: proprietar, afacere și program active, apoi `issue()`;
+  - 409 cu mesaj când nu se poate emite;
+  - limitatorul numit `customer-qr`, 10/min per client (în `AppServiceProvider`).
+- `config('loyalty.qr.refresh_seconds') = 30`. Înscrierea redirecționează acum pe pagina cardului.
+- JS:
+  - `resources/js/qr-display.js` (Alpine `qrDisplay`): rotație la 30 s; pauză când tab-ul e ascuns; offline, codul rămâne până expiră; `qrcode` se încarcă într-un chunk separat;
+  - `resources/js/pwa.js`: înregistrarea SW-ului doar pe `body[data-pwa]` și `installPrompt` (prompt nativ, instrucțiuni pe iOS, „Nu acum”).
+- PWA:
+  - `public/manifest.webmanifest` (`start_url=/me`, standalone);
+  - `public/sw.js`: precache pentru offline și iconițe, cache-first pe `/build/assets/*`, network-first pe navigări, fără pagini autentificate;
+  - `public/offline.html`;
+  - `public/icons/` (SVG sursă + PNG 192/512/maskable/apple 180, generate cu Chrome headless).
+  - `layouts/partials/pwa-head.blade.php` e inclus doar în layout-ul `customer`.
+- `/me`: fiecare card e link spre pagina lui, plus banner-ul de instalare.
+- Teste:
+  - `tests/Feature/Customer/CardPageTest`, `CardQrTest` (inclusiv token și cod scurt emise prin HTTP și rezolvate de `QrTokenService::resolve()` cu un staff), `PwaTest`;
+  - `QrTokenServiceTest` extins cu `issueForCustomer`;
+  - `EnrollmentTest` actualizat pentru redirect.
+
+**Verificări:** `composer test` 559 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Verificat manual în Chrome, pe `localhost`, cu `client.s06@client.test`:
+- QR-ul randat, codul scurt s-a schimbat după 30 s (`HCQGYR` → `KWGK73`);
+- SW activ, cu scope `/`; cache-urile `shell-v1` și `assets-v1` (cu `offline.html`) populate (înainte de fixurile din review, care au trecut la `v2`);
+- Chrome a emis `beforeinstallprompt`, deci aplicația e instalabilă și butonul „Adaugă pe ecranul principal” apare;
+- fără erori în consolă.
+
+**Fixuri după `/code-review high`:**
+- **Codul scurt dictat murea la rotație:** la fiecare 30 s, `issue()` revoca imediat codul anterior. Acum codul vechi are 20 s de grație (`qr.short_code_grace_seconds`), fără să depășească valabilitatea tokenului.
+- `qrDisplay`:
+  - nu mai face cereri suprapuse (răspunsurile inversate arătau un cod deja înlocuit);
+  - la revenirea în tab nu rotește înainte de termen;
+  - mesajul „Fără conexiune” apare doar când chiar lipsește conexiunea.
+- SW-ul tratează doar navigările din zona client (nu mai dă `offline.html` pe dashboard). Cache-ul de asset-uri e limitat la 30 de intrări. `VERSION=v2`.
+- Regula „scanabil” stă doar în serviciu (`isScannable()`), iar proprietarul se verifică prin aceeași policy (404) și în serviciu.
+- iPad (UA de Mac) primește instrucțiunile de instalare.
+
+**Rămas / de continuat:**
+- Testul pe telefon cere HTTPS (de ex. `ngrok http 8000` sau `cloudflared tunnel --url http://localhost:8000`, cu `APP_URL` setat pe URL-ul tunelului). Neverificat încă pe un telefon real.
+- Navigarea offline → `offline.html` nu a fost declanșată manual (am verificat doar că pagina e în cache). De verificat din DevTools → Network → Offline.
+- Progresul de pe card nu se actualizează live după scanare: polling în S8/S9.
+- S8:
+  - dacă redeem-ul e permis pe program inactiv, `issueForCustomer()` și pagina („Program oprit”) trebuie relaxate pentru cardurile cu recompense;
+  - rămân valabile notele din S03/S06 (scan ticket, store-ul jti pe `loyalty`).
+
+**Decizii noi:**
+- [010](decisions/010-pwa-client-card-qr.md):
+  - cardul se adresează după `public_id`, cu 404 pentru cardurile străine;
+  - QR prin POST cu `no-store`;
+  - fără QR pe un program inactiv;
+  - limitatorul `customer-qr` per client;
+  - PWA doar în zona client;
+  - SW fără pagini autentificate în cache;
+  - după înscriere, redirect pe card.
+
+**Probleme cunoscute:**
+- Fără probleme noi.
+
+**Următoarea sesiune:** 08 – Staff: scanare cu camera + ecranul cardului + stamp/redeem.
+
+---
+
 ## Sesiunea 06 – Client: magic link, guard `customer`, pagina `/b/{slug}`, înscriere (2026-10-16)
 
 **Făcut:**

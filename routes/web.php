@@ -35,6 +35,9 @@ Route::name('customer.')->group(function () {
 
     Route::middleware('auth:customer')->group(function () {
         Route::get('/me', [CardController::class, 'index'])->name('cards');
+        // Cardul după public_id (ULID): id-urile numerice nu se pot enumera (ADR 010).
+        Route::get('/me/cards/{card:public_id}', [CardController::class, 'show'])->name('cards.show');
+        Route::post('/me/cards/{card:public_id}/qr', [CardController::class, 'qr'])->middleware('throttle:customer-qr')->name('cards.qr');
         Route::post('/me/logout', [MagicLinkController::class, 'destroy'])->name('logout');
     });
 });

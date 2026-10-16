@@ -4,6 +4,7 @@
 
     <div class="mt-6">
         <x-flash />
+        @include('customer.partials.install-prompt')
     </div>
 
     @if ($cards->isEmpty())
@@ -16,9 +17,11 @@
             @foreach ($cards as $card)
                 @php($program = $card->program)
                 <li>
-                    <x-loyalty-card :business="$program->business->name" :name="$program->name" :required="$program->stamps_required"
-                                    :reward="$program->reward_title" :color="$program->displayColor()" :icon="$program->stamp_icon->value"
-                                    :filled="$card->stamps_balance" />
+                    <a href="{{ route('customer.cards.show', $card) }}" class="block rounded-3xl transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gold-300">
+                        <x-loyalty-card :business="$program->business->name" :name="$program->name" :required="$program->stamps_required"
+                                        :reward="$program->reward_title" :color="$program->displayColor()" :icon="$program->stamp_icon->value"
+                                        :filled="$card->stamps_balance" />
+                    </a>
                     <div class="mt-2 flex items-center justify-between gap-3 px-1 text-sm">
                         <a href="{{ route('customer.business', $program->business) }}" class="link truncate">{{ $program->business->name }}</a>
                         @if ($card->rewards_available > 0)
