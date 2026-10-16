@@ -78,6 +78,14 @@ return [
             'lock_connection' => env('REDIS_CACHE_LOCK_CONNECTION', 'default'),
         ],
 
+        // Stări de securitate (nonce-uri de magic link consumate), pe conexiunea Redis `default`, nu pe `cache`:
+        // `php artisan cache:clear` golește doar store-ul implicit și nu trebuie să reactiveze linkuri folosite (ADR 009).
+        'loyalty' => [
+            'driver' => 'redis',
+            'connection' => 'default',
+            'lock_connection' => 'default',
+        ],
+
         'dynamodb' => [
             'driver' => 'dynamodb',
             'key' => env('AWS_ACCESS_KEY_ID'),

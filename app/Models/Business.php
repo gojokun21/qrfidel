@@ -61,6 +61,16 @@ class Business extends Model
         ];
     }
 
+    /**
+     * Afacerea activă cu slug-ul dat (pagina publică, revenirea după magic link); null pentru slug gol sau necunoscut.
+     */
+    public static function findActiveBySlug(?string $slug): ?self
+    {
+        return $slug === null || $slug === ''
+            ? null
+            : self::query()->where('slug', $slug)->where('status', BusinessStatus::Active)->first();
+    }
+
     public function isActive(): bool
     {
         return $this->status === BusinessStatus::Active;

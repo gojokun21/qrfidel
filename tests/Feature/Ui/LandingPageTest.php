@@ -11,7 +11,8 @@ it('renders the landing page for guests', function () {
         ->assertSee('id="anti-frauda"', false)
         ->assertSee('Începe gratuit')
         ->assertSee(route('login'))
-        ->assertSee(route('register'));
+        ->assertSee(route('register'))
+        ->assertSee('href="'.route('customer.login').'"', false);
 });
 
 it('shows the program examples from the business templates', function () {

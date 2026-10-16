@@ -14,4 +14,16 @@ return [
         'store' => env('LOYALTY_QR_STORE', 'redis'),
     ],
 
+    /*
+    | Magic link-ul clientului (SDD §5.1, §6, ADR 009): URL semnat valabil ttl_minutes,
+    | de unică folosință (nonce consumat în store-ul dat, separat de cache-ul golit de cache:clear).
+    | Rate limit: per_email_per_hour per email + IP, per_email_per_hour_all_ips per email din orice IP.
+    */
+    'magic_link' => [
+        'ttl_minutes' => 15,
+        'per_email_per_hour' => 5,
+        'per_email_per_hour_all_ips' => 20,
+        'store' => env('LOYALTY_MAGIC_LINK_STORE', 'loyalty'),
+    ],
+
 ];

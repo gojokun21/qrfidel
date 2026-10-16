@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Client final: cont global (un client poate avea carduri la mai multe afaceri), deci fără business_id.
- * Se loghează cu magic link pe guard-ul `customer` (Sesiunea 6).
+ * Se loghează cu magic link pe guard-ul `customer` (ADR 009).
  *
  * @property int $id
  * @property string $email
@@ -55,8 +55,16 @@ class Customer extends Authenticatable
     protected function email(): Attribute
     {
         return Attribute::make(
-            set: fn (string $value) => mb_strtolower(trim($value)),
+            set: fn (string $value) => self::normalizeEmail($value),
         );
+    }
+
+    /**
+     * Forma canonică a emailului: așa se salvează, se semnează în magic link și se numără în rate limit.
+     */
+    public static function normalizeEmail(string $email): string
+    {
+        return mb_strtolower(trim($email));
     }
 
     /**
