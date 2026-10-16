@@ -5,6 +5,48 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 04b – UI/UX: sidebar în dashboard + landing page (2026-10-16)
+
+Sesiune în afara SDD §11.4, la cererea utilizatorului. Referința vizuală e kof.ru.
+
+**Făcut:**
+- Sistem vizual (ADR 007): tokenuri `espresso` / `gold` (`#CC9933`) / `cream` în `tailwind.config.js`, fonturile Onest și Kaushan Script (Bunny Fonts), clasele `.btn-gold`, `.btn-dark`, `.btn-outline`, `.btn-danger`, `.link`, `.grain` și animațiile `marquee`, `stamp-in`, `float` (oprite la `prefers-reduced-motion`). Head-ul comun e în `layouts/partials/head.blade.php`.
+- Componente noi: `x-wordmark`, `x-icon` (SVG inline), `x-sidebar-link`, plus `x-marketing-layout`. Componentele existente au fost restilizate, iar `x-card` are prop-ul `flush`. Am scos `navigation`, `nav-link`, `responsive-nav-link`, `dropdown`, `dropdown-link` și `welcome`.
+- Sidebar în stânga (`layouts/sidebar.blade.php`), fix pe desktop și drawer pe mobil. Conține switcher-ul de afacere (doar afacerile active), linkurile după rol cu `aria-current`, profilul și deconectarea. Datele vin din `App\View\Composers\SidebarComposer`, iar rolul se citește din pivot, fără `roleIn()` per link.
+- `App\Support\Tenancy\BusinessResolver`: regula de alegere a afacerii, mutată din `EnsureBusinessMember`. Sidebar-ul o folosește doar pentru afișare pe paginile fără middleware `business` (profil, afacere nouă).
+- Landing `/` (ruta `home`): header fix translucid, hero cu titlu script și mockup animat de card „3 din 5”, bandă marquee aurie, „Cum funcționează”, „Pentru cine” (exemplele din template-uri), „Anti-fraudă”, CTA, footer negru.
+- Paginile dashboard (home, locații, echipă, afacere), profilul, invitațiile și auth folosesc paleta nouă. Home-ul are carduri KPI cu iconițe.
+- Teste: `tests/Feature/Ui/LandingPageTest` și `SidebarTest`: linkuri după rol, link activ, switcher limitat la afacerile userului și fără cele suspendate, navigație pe profil, afacere suspendată în afara contextului.
+
+**Verificări:** `composer test` 356 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Verificat manual în Chrome (desktop + 390px): landing, login, dashboard, echipă, drawer-ul pe mobil.
+
+**Fixuri după `/code-review high`:**
+- Drawer-ul închis pe mobil e `invisible`, deci nu mai primește focus.
+- Truncherea numelui și emailului în sidebar (`min-w-0`).
+- Switcher-ul nu mai oferă afaceri suspendate.
+- Header-ul landing-ului își citește starea de scroll la încărcare.
+- Onest 800 încărcat (pentru `font-extrabold`).
+- Docblock actualizat în `EnsureBusinessMember`.
+- Clasă moartă scoasă din invitație.
+- `links()` simplificat.
+
+**Rămas / de continuat:**
+- Observație din review neaplicată: pe paginile cu middleware `business`, afacerile userului se încarcă de două ori (middleware + composer). Se poate pune colecția pe `CurrentBusiness` sau ca atribut pe request.
+- Paginile de auth Breeze sunt încă în engleză (doar recolorate). Traducerea lor ar fi o sesiune mică separată.
+- Linkurile Programe (S05) și Rapoarte (S11) se adaugă în `SidebarComposer::links()`.
+- Hero-ul nu are fotografie. Se poate adăuga una ca fundal fără schimbări de structură.
+
+**Decizii noi:**
+- [007](decisions/007-sistem-vizual-sidebar-landing.md): tokenuri și fonturi, clase comune, sidebar cu view composer, `BusinessResolver`, landing fără imagini externe, `x-card flush`.
+
+**Probleme cunoscute:**
+- Fontul Yellowtail nu are `ș`/`ț`. Pentru orice font nou, verifică diacriticele românești.
+- `resize_window` din Claude in Chrome nu a redimensionat fereastra maximizată. Pentru mobil am folosit iframe-uri de 390px.
+
+**Următoarea sesiune:** 05 – Wizard programe + template-uri + previzualizare card.
+
+---
+
 ## Sesiunea 04 – Dashboard owner: afacere, locații, echipă și invitații (2026-10-16)
 
 **Făcut:**
