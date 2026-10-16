@@ -47,13 +47,13 @@ it('does not let the owner of X touch the resources of Y', function (string $cla
         ->and($owner->can('delete', $foreign))->toBeFalse();
 })->with('business resources');
 
-it('lets managers and owners list the locations of their business only', function (Role $role, bool $allowed) {
+it('lets managers and owners list the resources of their business only', function (string $class, Role $role, bool $allowed) {
     $business = Business::factory()->create();
     $user = User::factory()->withRole($business, $role)->create();
 
-    expect($user->can('viewAny', [Location::class, $business]))->toBe($allowed)
-        ->and($user->can('viewAny', [Location::class, Business::factory()->create()]))->toBeFalse();
-})->with([
+    expect($user->can('viewAny', [$class, $business]))->toBe($allowed)
+        ->and($user->can('viewAny', [$class, Business::factory()->create()]))->toBeFalse();
+})->with('business resources')->with([
     'owner' => [Role::Owner, true],
     'manager' => [Role::Manager, true],
     'staff' => [Role::Staff, false],
