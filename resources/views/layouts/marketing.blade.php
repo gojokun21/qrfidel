@@ -24,6 +24,7 @@
                     @auth
                         <a href="{{ route('dashboard') }}" class="btn-gold">Dashboard <x-icon name="arrow-right" class="h-4 w-4" /></a>
                     @else
+                        <a href="{{ route('customer.login') }}" class="px-3 py-2 text-sm font-semibold text-cream-50 transition hover:text-gold-400">Cardurile mele</a>
                         <a href="{{ route('login') }}" class="px-3 py-2 text-sm font-semibold text-cream-50 transition hover:text-gold-400">Intră în cont</a>
                         <a href="{{ route('register') }}" class="btn-gold">Începe gratuit</a>
                     @endauth
@@ -42,6 +43,7 @@
                     <a href="#cum-functioneaza" class="py-2">Cum funcționează</a>
                     <a href="#pentru-cine" class="py-2">Pentru cine</a>
                     <a href="#anti-frauda" class="py-2">Anti-fraudă</a>
+                    <a href="{{ route('customer.login') }}" class="py-2">Cardurile mele</a>
                 </nav>
                 @auth
                     <a href="{{ route('dashboard') }}" class="btn-gold w-full">Dashboard</a>

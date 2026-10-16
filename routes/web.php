@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Customer\BusinessPageController;
+use App\Http\Controllers\Customer\CardController;
+use App\Http\Controllers\Customer\EnrollmentController;
+use App\Http\Controllers\Customer\MagicLinkController;
 use App\Http\Controllers\Dashboard\BusinessController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\InvitationController;
@@ -11,6 +15,29 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'landing')->name('home');
+
+// Clientul (SDD §5.1, §8): guard `customer`, conectare cu magic link (ADR 009). Fără context de afacere:
+// contul e global, iar fiecare acțiune primește afacerea explicit.
+Route::name('customer.')->group(function () {
+    Route::get('/b/{business:slug}', BusinessPageController::class)->name('business');
+    Route::post('/b/{business:slug}/programs/{program}/enroll', EnrollmentController::class)
+        ->scopeBindings()->middleware('auth:customer')->name('enroll');
+
+    Route::middleware('guest:customer')->group(function () {
+        Route::get('/login/magic', [MagicLinkController::class, 'create'])->name('login');
+        Route::post('/login/magic', [MagicLinkController::class, 'store'])->middleware('throttle:10,1')->name('magic.send');
+    });
+
+    Route::middleware('signed')->group(function () {
+        Route::get('/login/magic/verify', [MagicLinkController::class, 'show'])->name('magic.show');
+        Route::post('/login/magic/verify', [MagicLinkController::class, 'consume'])->middleware('throttle:10,1')->name('magic.consume');
+    });
+
+    Route::middleware('auth:customer')->group(function () {
+        Route::get('/me', [CardController::class, 'index'])->name('cards');
+        Route::post('/me/logout', [MagicLinkController::class, 'destroy'])->name('logout');
+    });
+});
 
 // Dashboard owner/manager (SDD §8). Rutele cu `business` rulează în contextul afacerii curente (ADR 003).
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard')->group(function () {

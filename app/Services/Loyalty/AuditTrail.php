@@ -5,6 +5,7 @@ namespace App\Services\Loyalty;
 use App\Models\AuditLog;
 use App\Models\Business;
 use App\Models\Card;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,9 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 class AuditTrail
 {
     /**
+     * Actorul e angajatul (stamp, redeem, void) sau clientul (înscriere).
+     *
      * @param  array<string, mixed>  $payload
      */
-    public function record(User $actor, Card $card, string $action, Model $subject, array $payload = []): AuditLog
+    public function record(User|Customer $actor, Card $card, string $action, Model $subject, array $payload = []): AuditLog
     {
         return AuditLog::query()->create([
             'business_id' => $card->business_id,
