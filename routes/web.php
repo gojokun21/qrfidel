@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BusinessController as AdminBusinessController;
 use App\Http\Controllers\Customer\BusinessPageController;
 use App\Http\Controllers\Customer\CardController;
 use App\Http\Controllers\Customer\CounterController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\InvitationController;
 use App\Http\Controllers\Dashboard\LocationController;
 use App\Http\Controllers\Dashboard\ProgramController;
+use App\Http\Controllers\Dashboard\ReportController;
 use App\Http\Controllers\Dashboard\TeamController;
 use App\Http\Controllers\Dashboard\TransactionController;
 use App\Http\Controllers\InvitationAcceptController;
@@ -98,6 +100,9 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard')-
         Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
         Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
 
+        // Rapoartele (SDD §9, ADR 014): managerul legat de o locație vede doar locația lui.
+        Route::get('/reports', ReportController::class)->name('reports');
+
         // Anularea (SDD §5.6, ADR 004, 013): manager pe locația lui sau owner; regulile stau în VoidService.
         Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
         Route::post('/transactions/{transaction}/void', [TransactionController::class, 'void'])
@@ -121,6 +126,14 @@ Route::middleware(['auth', 'verified', 'has-business', 'business', 'role:staff']
     Route::get('/requests/feed', [RequestController::class, 'feed'])->name('requests.feed');
     Route::post('/requests/{stampRequest}/approve', [RequestController::class, 'approve'])->whereNumber('stampRequest')->middleware('throttle:staff-actions')->name('requests.approve');
     Route::post('/requests/{stampRequest}/reject', [RequestController::class, 'reject'])->whereNumber('stampRequest')->middleware('throttle:staff-actions')->name('requests.reject');
+});
+
+// Adminul platformei (SDD §3, ADR 014): fără middleware `business`, deci fără context de afacere și fără puteri de staff.
+Route::middleware(['auth', 'verified', 'platform-admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminBusinessController::class, 'index'])->name('index');
+    Route::get('/businesses/{business}', [AdminBusinessController::class, 'show'])->whereNumber('business')->name('businesses.show');
+    Route::post('/businesses/{business}/suspend', [AdminBusinessController::class, 'suspend'])->whereNumber('business')->name('businesses.suspend');
+    Route::post('/businesses/{business}/reactivate', [AdminBusinessController::class, 'reactivate'])->whereNumber('business')->name('businesses.reactivate');
 });
 
 // Linkul din emailul de invitație (public: invitatul poate să nu aibă încă un cont).

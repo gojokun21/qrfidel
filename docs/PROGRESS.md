@@ -5,6 +5,59 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 11 – Rapoarte owner + admin platformă (2026-10-16)
+
+**Făcut:**
+- **Rapoarte** (`ReportService` + DTO `BusinessReport`):
+  - perioada = ultimele 7/30/90 zile inclusiv azi (`?zile=`, implicit 30; o valoare necunoscută revine la 30), cu zilele tăiate în timezone-ul afacerii;
+  - KPI: clienți activi, ștampile azi, ștampile în 7 zile, ștampile, recompense emise, recompense folosite;
+  - tabele: top locații (inclusiv cele cu 0) și activitate per angajat (ștampile, folosiri, anulări);
+  - se numără doar ștampilele/folosirile neanulate; void/expire nu intră; recompensele `voided` nu sunt „emise”;
+  - managerul legat de o locație vede doar locația lui (`TransactionLog::ownLocation()`); recompensa emisă ține de locația ștampilei emitente.
+- Pagina **„Rapoarte”** (`/dashboard/reports`, manager+, link în sidebar), iar home-ul arată pentru manager+ trei cifre rapide (`ReportService::headline()`, o singură interogare) cu link spre rapoarte.
+- **Admin platformă** (`/admin`, middleware `platform-admin`, fără context de afacere):
+  - totaluri platformă, lista afacerilor (owneri, locații, carduri, ștampile pe 30 de zile), căutare nume/slug, filtru status (`PlatformOverview`);
+  - detaliul afacerii: owneri, locații, programe, rapoartele pe 30 de zile;
+  - suspendare / reactivare (`BusinessService::suspend()` / `reactivate()`): lock pe rând, idempotente pe stare, motiv opțional, audit `business.suspended` / `business.reactivated` fără IP-ul adminului; `BusinessPolicy::viewAny/reactivate`, `ChangeBusinessStatusRequest`;
+  - adminul fără afacere activă e trimis de la `/dashboard` la `/admin`; link „Admin platformă” în sidebar doar pentru admin; tot fără puteri de staff.
+- `BusinessStatus::label()`, iconițele `chart` și `globe`.
+- Teste: `Loyalty/ReportServiceTest`, `Dashboard/ReportsPageTest`, `Dashboard/ReportsSeedTest` (cifrele pe `DemoSeeder`), `Admin/AdminAccessTest`, `Admin/BusinessSuspensionTest`, `Admin/PlatformOverviewTest`; extins `Ui/SidebarTest`.
+
+**Verificări:** `composer test` 850 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Manual în Chrome pe `localhost`, după `migrate:fresh --seed`:
+- owner Cafenea → „Rapoarte”: 2 clienți activi, 0 azi, 8 în 7 zile, 1 recompensă emisă, 0 folosite, Centru 8 / Gară 0, Barista Demo 8;
+- `admin@demo.test` → login direct pe `/admin` (2 active, 0 suspendate, 2 clienți, 3 carduri, 10 ștampile);
+- suspendarea Spălătoriei cu motiv → „Afacerea a fost suspendată.”, `/b/spalatorie-demo` → 404, reactivare → audit cu motivul, fără IP.
+
+**Fixuri după `/code-review high`:**
+- Un admin care avea doar afaceri suspendate primea 403 pe `/dashboard`; acum e trimis la `/admin`.
+- IP-ul adminului apărea în „Jurnal”-ul ownerului; acum nu se mai scrie pe acțiunile adminului.
+- Home-ul calcula tot raportul pentru 3 cifre; acum `headline()`, o interogare.
+- `forMember()` primește afacerea deja rezolvată (fără SELECT în plus; refuză un membru din altă afacere).
+- Lista din admin tăia cele 30 de zile în UTC, iar detaliul în timezone-ul afacerii; acum amândouă în timezone-ul afacerii.
+- Detaliul din admin construit în serviciu (`PlatformOverview::details()`), cu autorizare prin Policy.
+- Fără motiv, payload-ul de audit e gol (nu `{"reason": null}`); recompensele emise pe locație prin `EXISTS` corelat; eticheta perioadei într-un singur loc (`ReportService::periodLabel()`).
+
+**Rămas / de continuat:**
+- În Chrome, click-urile automate pe butonul „Suspendă afacerea” nu au ajuns la buton (pagina are 1920px, captura 1568px); formularul a fost trimis cu `requestSubmit()`. Butonul nu e acoperit (`elementFromPoint`), dar merită un click de mână.
+- Seed-ul nu are folosiri de recompense, anulări sau programe cu expirare: „Recompense folosite” și „Anulări” sunt 0 pe seed (acoperite în teste).
+- Notele vechi rămân: cron `schedule:run` + worker de cozi în producție (S12), focusul pe „Motiv” în formularul de anulare, `CounterController::show` / `BusinessPageController` filtrează în controller, generator de afiș QR, testul pe telefon cu HTTPS.
+
+**Decizii noi:**
+- [014](decisions/014-rapoarte-si-admin-platforma.md):
+  - perioada și tăierea zilelor în timezone-ul afacerii;
+  - ce se numără (fără anulate, void, expire);
+  - managerul pe locația lui;
+  - admin fără context de tenant și fără puteri de staff;
+  - suspendare idempotentă pe stare, fără idempotency key, auditată fără IP.
+
+**Probleme cunoscute:**
+- Interogările rapoartelor folosesc `FILTER (WHERE …)` și `AT TIME ZONE`: merg doar pe PostgreSQL (ADR 002).
+- Git Bash strică în continuare backslash-urile din heredoc-uri (și în scripturi Python inline): pentru PHP cu namespace-uri folosește Edit/Write.
+
+**Următoarea sesiune:** 12 – Deploy (VPS/Forge, HTTPS, cozi, scheduler) + test end-to-end real.
+
+---
+
 ## Sesiunea 10 – Hardening: rate limit, audit log, joburi de expirare, void în UI (2026-10-16)
 
 **Făcut:**

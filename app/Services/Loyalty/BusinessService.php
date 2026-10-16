@@ -2,10 +2,12 @@
 
 namespace App\Services\Loyalty;
 
+use App\Enums\BusinessStatus;
 use App\Enums\Role;
 use App\Models\Business;
 use App\Models\User;
 use App\Services\Loyalty\Concerns\RequiresOwner;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -78,6 +80,45 @@ class BusinessService
 
             return $business;
         });
+    }
+
+    /**
+     * Suspendarea de către adminul platformei (SDD §3, ADR 014). Idempotentă pe stare: o afacere deja suspendată
+     * rămâne așa, fără audit nou. Întoarce false dacă nu s-a schimbat nimic.
+     */
+    public function suspend(User $admin, Business $business, ?string $reason = null): bool
+    {
+        return $this->changeStatus($admin, $business, BusinessStatus::Suspended, 'business.suspended', $reason);
+    }
+
+    public function reactivate(User $admin, Business $business, ?string $reason = null): bool
+    {
+        return $this->changeStatus($admin, $business, BusinessStatus::Active, 'business.reactivated', $reason);
+    }
+
+    private function changeStatus(User $admin, Business $business, BusinessStatus $status, string $action, ?string $reason): bool
+    {
+        if (! $admin->isPlatformAdmin()) {
+            throw new AuthorizationException('Doar adminul platformei poate suspenda sau reactiva o afacere.');
+        }
+
+        $changed = DB::transaction(function () use ($admin, $business, $status, $action, $reason): bool {
+            /** @var Business $locked */
+            $locked = Business::query()->lockForUpdate()->findOrFail($business->id);
+
+            if ($locked->status === $status) {
+                return false;
+            }
+
+            $locked->forceFill(['status' => $status])->save();
+            $this->audit->recordForBusiness($admin, $locked, $action, $locked, $reason === null ? [] : ['reason' => $reason], withIp: false);
+
+            return true;
+        });
+
+        $business->refresh();
+
+        return $changed;
     }
 
     /**
