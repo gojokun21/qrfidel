@@ -14,7 +14,6 @@ use App\Models\Location;
 use App\Models\Reward;
 use App\Models\User;
 use App\Services\Loyalty\Concerns\GuardsCardActions;
-use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Folosirea recompenselor (SDD §5.5). Recompensele câștigate rămân valabile și pe un program pus pe pauză
@@ -55,8 +54,7 @@ class RewardService
 
             $reward = Reward::query()
                 ->where('card_id', $card->id)
-                ->where('status', RewardStatus::Available)
-                ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                ->usable()
                 ->orderBy('issued_at')
                 ->orderBy('id')
                 ->first();

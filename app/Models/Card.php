@@ -143,6 +143,14 @@ class Card extends Model
     }
 
     /**
+     * Câte recompense se pot folosi acum. Fără scope de afacere: se apelează și din zona client.
+     */
+    public function usableRewardsCount(): int
+    {
+        return $this->rewards()->withoutGlobalScopes()->usable()->count();
+    }
+
+    /**
      * @return HasMany<StampRequest, $this>
      */
     public function stampRequests(): HasMany
