@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RewardStatus;
 use App\Models\Concerns\BelongsToBusiness;
 use Database\Factories\RewardFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -74,6 +75,18 @@ class Reward extends Model
             'issued_by_transaction_id' => CardTransaction::class,
             'location_id' => Location::class,
         ];
+    }
+
+    /**
+     * Recompensele care se pot folosi acum: disponibile și neexpirate (`rewards_available` de pe card e doar cache
+     * și nu scade la expirare).
+     *
+     * @param  Builder<Reward>  $query
+     */
+    public function scopeUsable(Builder $query): void
+    {
+        $query->where('status', RewardStatus::Available)
+            ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()));
     }
 
     /**

@@ -94,6 +94,17 @@ function loyaltyFixture(array $program = []): array
 }
 
 /**
+ * O recompensă disponibilă pe card (rândul din `rewards` + cache-ul `rewards_available`), opțional cu expirare.
+ */
+function giveReward(Card $card, ?DateTimeInterface $expiresAt = null): Reward
+{
+    $reward = Reward::factory()->for($card)->create(['expires_at' => $expiresAt]);
+    $card->forceFill(['rewards_available' => $card->rewards_available + 1])->save();
+
+    return $reward;
+}
+
+/**
  * Rulează în savepoint, ca o eroare Postgres să nu anuleze tranzacția testului.
  */
 function inSavepoint(Closure $callback): mixed

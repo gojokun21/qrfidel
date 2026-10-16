@@ -28,7 +28,7 @@ class QrTokenService
     /** Intră în semnătură, ca un format viitor să nu poată fi confundat cu acesta. */
     private const VERSION = 'qr1';
 
-    /** Fără 0/O și 1/I/L: codul scurt se dictează și se tastează. */
+    /** Fără 0/O și 1/I: codul scurt se dictează și se tastează. */
     private const CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
     private const CODE_LENGTH = 6;
@@ -59,7 +59,7 @@ class QrTokenService
 
     /**
      * QR-ul cerut de PWA-ul clientului (ADR 010): doar pentru cardul lui, și doar cât poate fi scanat
-     * (afacere și program active); altfel clientul ar arăta un cod pe care `resolve()` îl refuză.
+     * (afacere activă și program activ sau recompense de folosit); altfel clientul ar arăta un cod pe care `resolve()` îl refuză.
      *
      * @throws AuthorizationException
      * @throws InvalidQrToken
@@ -75,7 +75,8 @@ class QrTokenService
     }
 
     /**
-     * Cardul poate fi arătat la casă acum (afacere și program active)? Pagina cardului și emiterea folosesc aceeași regulă.
+     * Cardul poate fi arătat la casă acum (afacere activă; program activ sau recompense de folosit)?
+     * Pagina cardului și emiterea folosesc aceeași regulă.
      */
     public function isScannable(Card $card): bool
     {
@@ -182,7 +183,9 @@ class QrTokenService
         $program = Program::query()->withoutGlobalScopes()->findOrFail($card->program_id);
         $card->setRelation('program', $program);
 
-        if (! $program->isActive()) {
+        // Pe un program oprit, recompensele câștigate rămân valabile (ADR 004, ADR 011): cardul se scanează
+        // doar ca să fie folosite; ștampilarea o refuză StampService. Se numără recompensele reale, neexpirate.
+        if (! $program->isActive() && $card->usableRewardsCount() === 0) {
             throw new InvalidQrToken('Programul nu este activ.');
         }
     }

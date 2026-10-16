@@ -14,7 +14,18 @@ return [
         'short_code_grace_seconds' => 20,
         'used_ttl_seconds' => 300,
         'clock_skew_seconds' => 5,
-        'store' => env('LOYALTY_QR_STORE', 'redis'),
+        'store' => env('LOYALTY_QR_STORE', 'loyalty'),
+    ],
+
+    /*
+    | Scanarea la casă (ADR 011): resolve() dă un tichet de scanare valabil ticket_ttl_seconds, legat de card,
+    | angajat și locație; un tichet permite o ștampilare și o folosire de recompensă. Rate limit pe resolve:
+    | per_minute scanări per angajat (SDD §6).
+    */
+    'scan' => [
+        'ticket_ttl_seconds' => 300,
+        'per_minute' => 30,
+        'store' => env('LOYALTY_SCAN_STORE', 'loyalty'),
     ],
 
     /*

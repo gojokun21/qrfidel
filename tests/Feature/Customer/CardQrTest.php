@@ -33,7 +33,7 @@ it('issues a fresh QR as JSON that is never cached', function () {
     expect($response->headers->get('Cache-Control'))->toContain('no-store')
         ->and($response->getContent())->not->toContain($this->card->secret)
         ->and($response->json('token'))->toStartWith($this->card->public_id.'.')
-        ->and($response->json('shortCode'))->toMatch('/^[2-9A-HJKMNP-Z]{6}$/');
+        ->and($response->json('shortCode'))->toMatch('/^[2-9A-HJ-NP-Z]{6}$/');
 });
 
 it('issues a token that a staff member can scan', function () {
@@ -84,6 +84,13 @@ it('refuses a program that is not active with a clear message', function (Progra
 
     ($this->requestQr)()->assertStatus(409)->assertJson(['message' => 'Programul nu este activ.']);
 })->with([ProgramStatus::Paused, ProgramStatus::Archived]);
+
+it('issues a QR on a stopped program while the card has rewards to use', function () {
+    giveReward($this->card);
+    $this->program->update(['status' => ProgramStatus::Paused]);
+
+    ($this->requestQr)()->assertOk()->assertJsonStructure(['token', 'shortCode']);
+});
 
 it('refuses a suspended business with a clear message', function () {
     $this->business->status = BusinessStatus::Suspended;

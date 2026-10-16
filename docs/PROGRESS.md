@@ -5,6 +5,86 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 08 – Staff: scanare cu camera + ecranul cardului + stamp/redeem (2026-10-16)
+
+**Făcut:**
+- **Tichet de scanare** (rezolvă nota din S03):
+  - `ScanTicketService` (`issue`, `find`, `check`, `claim`, `release`) + DTO `ScanTicket`;
+  - tichetul e legat de card, angajat și locație, valabil 5 min, în store-ul `loyalty`;
+  - permite o ștampilare și o folosire de recompensă; fiecare acțiune se rezervă atomic, cu cheia de idempotency;
+  - `StaffCardActions::stamp()` / `redeem()`: tichet → rezervare → `StampService` / `RewardService` (semnături neschimbate). La un refuz de business, rezervarea se eliberează (se poate reîncerca pe aceeași scanare). Locația vine din tichet.
+  - Excepții noi: `InvalidScanTicket`, `StaffLocationMissing`.
+- **Program oprit cu recompense** (notele din S05/S07):
+  - regula „scanabil” = afacere activă și (program activ sau o recompensă reală, disponibilă și neexpirată). Se aplică în `resolve()`, `issueForCustomer()` și `isScannable()`;
+  - scope nou `Reward::usable()` (folosit și de `RewardService`) și `Card::usableRewardsCount()`;
+  - pagina clientului: „Programul e oprit – recompensele rămân valabile.”
+- `StaffLocationService`:
+  - locația fixă a membrului;
+  - altfel locația aleasă (sesiune `staff_location_id`);
+  - singura locație se alege automat.
+- HTTP (`Staff/ScanController`, `Staff/CardController`, Form Requests în `Requests/Staff`). Grup `auth`, `verified`, `has-business`, `business`, `role:staff`:
+  - `GET /staff/scan`: camera, cod scurt, alegerea locației;
+  - `POST /staff/location`;
+  - `POST /staff/scan/resolve`: limitatorul `staff-scan`, 30/min per angajat; răspunde cu redirect sau cu JSON `{redirect}`;
+  - `GET /staff/cards/{card:public_id}?ticket=…`: progres, recompense reale, ultimele 5 mișcări, email mascat; butoanele apar doar cu tichet valid;
+  - `POST …/stamp` (+1…+max) și `POST …/redeem` cu `idempotency_key` (UUID generat la randare) sau header `Idempotency-Key`.
+- Link „Scanează” în sidebar pentru toate rolurile. `TransactionType::label()`.
+- JS: `qr-scanner` (nimiq 1.4.2), componenta Alpine `qrScanner` (chunk separat):
+  - o singură cerere pe rând; codul refuzat e ignorat 15 s;
+  - reload la 401/419, mesaj în română la 429;
+  - camera se oprește când tab-ul e ascuns, inclusiv în timpul pornirii;
+  - fără HTTPS → mesaj, rămâne codul tastat.
+- jti-urile QR sunt implicit pe store-ul `loyalty` (`LOYALTY_QR_STORE=loyalty`), plus `LOYALTY_SCAN_STORE`.
+- Teste:
+  - `Loyalty/ScanTicketServiceTest`, `Loyalty/StaffCardActionsTest`, `Staff/ScanPageTest`, `Staff/CardScreenTest`;
+  - extinse: `QrTokenServiceTest`, `CardPageTest`, `CardQrTest`, `SidebarTest`;
+  - helper `giveReward()` în `tests/Pest.php`.
+- Reparat un test instabil vechi: regex-ul din `CardQrTest` excludea litera L, care e în alfabetul codului scurt (pica aleator). Comentariul alfabetului din `QrTokenService` a fost corectat.
+
+**Verificări:** `composer test` 635 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Verificat manual în Chrome, pe `localhost`, ca owner Cafenea Demo (2 locații):
+- alegerea locației „Centru”;
+- cod scurt tastat (`mw8 5t5`) → ecranul cardului 0/5 → „+1 ștampilă” → 1/5, cu „Ștampila pentru această scanare a fost dată” și mișcarea în listă;
+- încă 4 scanări (tokenuri emise din tinker) → „Card complet!”;
+- „Folosește recompensa” pe aceeași scanare → 0/5 și „Recompensă folosită”;
+- fără erori în consolă.
+
+**Fixuri după `/code-review high`:**
+- Recompensele expirate țineau cardul scanabil pe un program oprit și afișau butonul de redeem (cache-ul `rewards_available` nu scade la expirare). Acum se numără recompensele reale (`Reward::usable()`).
+- `?ticket[]=x` dădea 500; acum e ignorat.
+- O eroare tranzitorie (deadlock) elibera slotul tichetului, deci o cerere paralelă cu aceeași cheie putea lăsa loc pentru încă o ștampilă. Acum doar refuzurile de business (`LoyaltyException`, `AuthorizationException`) eliberează slotul.
+- Scanerul:
+  - nu mai intră în buclă la 419/401 și nu mai retrimite același cod refuzat (consuma limita de 30/min);
+  - corectată cursa start/stop când tab-ul se ascunde în timpul pornirii camerei.
+- Confirmarea de redeem folosește `Js::from` (titlul recompensei nu mai poate strica expresia Alpine).
+- Răspunsul JSON folosește cardul din rezultatul serviciului (fără SELECT în plus). Scoase câmpurile nefolosite din `ScanTicket`.
+
+**Rămas / de continuat:**
+- **Testul pe telefon (flux A pe telefon, rezultatul verificabil din SDD) nu e făcut:** camera cere HTTPS. De rulat cu un tunel (`cloudflared tunnel --url http://localhost:8000` sau `ngrok http 8000`, cu `APP_URL` setat): telefonul clientului arată QR-ul, telefonul angajatului îl scanează cu camera. Pe desktop camera a rămas la „Pornim camera…” (fără cameră sau permisiune), deci decodarea reală cu camera nu a fost încă exercitată.
+- **Deploy / `.env` existente:** setează `LOYALTY_QR_STORE=loyalty` și `LOYALTY_SCAN_STORE=loyalty`. Un `.env` copiat din exemplul vechi are explicit `LOYALTY_QR_STORE=redis`, iar atunci `cache:clear` șterge în continuare jti-urile. Local, `.env` a fost actualizat.
+- Progresul de pe cardul clientului tot nu se actualizează live după scanare (polling în S9).
+- Observații din review neaplicate:
+  - codificarea base64url e duplicată în `ScanTicketService` și `QrTokenService` (helper comun când se atinge zona);
+  - la pornire/oprire rapidă repetată a tab-ului, `start()` poate fi chemat de două ori pe același scanner (inofensiv în practică).
+- La verificarea manuală, un click pe „Folosește recompensa” (cu `confirm` suprascris) nu a trimis formularul; trimis cu `requestSubmit()` a mers. Probabil o problemă a extensiei de automatizare; de reverificat pe telefon.
+- Pe 429 dintr-un formular obișnuit (nu JSON), Laravel arată pagina implicită, în engleză (S10, odată cu limitatorii numiți).
+
+**Decizii noi:**
+- [011](decisions/011-staff-scan-ticket.md):
+  - tichet de scanare (o ștampilă + un redeem per scanare, locația din tichet, eliberare doar la refuz de business);
+  - ecranul cardului e de citit fără tichet;
+  - scanabil pe program oprit cu recompense reale;
+  - alegerea locației;
+  - rate limit `staff-scan` adus din S10;
+  - jti pe store-ul `loyalty`;
+  - `qr-scanner` lazy.
+
+**Probleme cunoscute:**
+- Fără probleme noi în cod. Testul pe telefon rămâne de făcut (vezi mai sus).
+
+**Următoarea sesiune:** 09 – Flux B: QR tejghea, `stamp_requests`, panou cu polling.
+
+---
+
 ## Sesiunea 07 – PWA client: card cu progres, QR rotativ, manifest și service worker (2026-10-16)
 
 **Făcut:**

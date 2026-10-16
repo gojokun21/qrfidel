@@ -425,6 +425,26 @@ describe('program and business state', function () {
         expect(($this->resolve)($token)->is($this->card))->toBeTrue();
     })->with([ProgramStatus::Paused, ProgramStatus::Archived, ProgramStatus::Draft]);
 
+    it('resolves a card with rewards on a stopped program, so the reward can still be used (ADR 004)', function (ProgramStatus $status) {
+        giveReward($this->card);
+        $token = ($this->issue)()->token;
+        $this->program->update(['status' => $status]);
+
+        expect(($this->resolve)($token)->is($this->card))->toBeTrue()
+            ->and(($this->jtiUsed)($token))->toBeTrue();
+    })->with([ProgramStatus::Paused, ProgramStatus::Archived]);
+
+    it('rejects a stopped program whose rewards have all expired, even if the cached counter says otherwise', function () {
+        giveReward($this->card, now()->subDay());
+        $token = ($this->issue)()->token;
+        $this->program->update(['status' => ProgramStatus::Paused]);
+
+        expect($this->card->rewards_available)->toBe(1)
+            ->and($this->qr->isScannable($this->card))->toBeFalse()
+            ->and(fn () => ($this->resolve)($token))->toThrow(InvalidQrToken::class, 'Programul nu este activ.')
+            ->and(($this->jtiUsed)($token))->toBeFalse();
+    });
+
     it('rejects a card of a suspended business', function () {
         $token = ($this->issue)()->token;
         $this->business->status = BusinessStatus::Suspended;
@@ -453,6 +473,19 @@ describe('issue for the customer (PWA)', function () {
         $this->program->update(['status' => ProgramStatus::Paused]);
 
         expect($this->qr->isScannable($this->card->refresh()))->toBeFalse();
+
+        giveReward($this->card);
+
+        expect($this->qr->isScannable($this->card))->toBeTrue();
+    });
+
+    it('issues a QR on a stopped program while the card has rewards to use', function () {
+        giveReward($this->card);
+        $this->program->update(['status' => ProgramStatus::Paused]);
+
+        $qr = $this->qr->issueForCustomer($this->card, $this->card->customer);
+
+        expect(($this->resolve)($qr->token)->is($this->card))->toBeTrue();
     });
 
     it('refuses a program that is not active', function (ProgramStatus $status) {
