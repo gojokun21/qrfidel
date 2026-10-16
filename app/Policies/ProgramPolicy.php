@@ -12,6 +12,11 @@ use App\Models\User;
  */
 class ProgramPolicy
 {
+    public function viewAny(User $user, Business $business): bool
+    {
+        return $user->hasRoleIn($business, Role::Manager);
+    }
+
     public function view(User $user, Program $program): bool
     {
         return $user->isMemberOf($program->business_id);

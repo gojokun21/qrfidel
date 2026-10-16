@@ -4,6 +4,7 @@ use App\Http\Controllers\Dashboard\BusinessController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\InvitationController;
 use App\Http\Controllers\Dashboard\LocationController;
+use App\Http\Controllers\Dashboard\ProgramController;
 use App\Http\Controllers\Dashboard\TeamController;
 use App\Http\Controllers\InvitationAcceptController;
 use App\Http\Controllers\ProfileController;
@@ -31,6 +32,14 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard')-
         Route::delete('/locations/{location}', [LocationController::class, 'destroy'])->name('locations.destroy');
         Route::post('/locations/{location}/counter-token', [LocationController::class, 'regenerateCounterToken'])->name('locations.counter-token');
 
+        Route::get('/programs/create', [ProgramController::class, 'create'])->name('programs.create');
+        Route::post('/programs', [ProgramController::class, 'store'])->name('programs.store');
+        Route::get('/programs/{program}/edit', [ProgramController::class, 'edit'])->name('programs.edit');
+        Route::patch('/programs/{program}', [ProgramController::class, 'update'])->name('programs.update');
+        Route::post('/programs/{program}/status', [ProgramController::class, 'status'])->name('programs.status');
+        Route::post('/programs/{program}/duplicate', [ProgramController::class, 'duplicate'])->name('programs.duplicate');
+        Route::delete('/programs/{program}', [ProgramController::class, 'destroy'])->name('programs.destroy');
+
         Route::get('/team', [TeamController::class, 'index'])->name('team.index');
         Route::patch('/team/{membership}', [TeamController::class, 'update'])->whereNumber('membership')->name('team.update');
         Route::delete('/team/{membership}', [TeamController::class, 'destroy'])->whereNumber('membership')->name('team.destroy');
@@ -40,6 +49,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard')-
     });
 
     Route::middleware(['business', 'role:manager'])->name('.')->group(function () {
+        Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
         Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
     });
 });
