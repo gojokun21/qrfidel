@@ -1,47 +1,27 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<x-guest-layout :title="__('Log in')">
+    @if (session('status'))
+        <x-ui.alert tone="success" class="mb-4">{{ session('status') }}</x-ui.alert>
+    @endif
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <x-ui.field :label="__('Email')" for="email">
+            <x-ui.input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+        </x-ui.field>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <x-ui.field :label="__('Password')" for="password">
+            <x-ui.input id="password" type="password" name="password" required autocomplete="current-password" />
+        </x-ui.field>
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+        <x-ui.checkbox id="remember_me" name="remember" :label="__('Remember me')" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-espresso-300 text-gold-600 shadow-sm focus:ring-gold-500" name="remember">
-                <span class="ms-2 text-sm text-espresso-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex flex-wrap items-center justify-end gap-4">
             @if (Route::has('password.request'))
-                <a class="text-sm link" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
+                <x-ui.link :href="route('password.request')" class="text-sm">{{ __('Forgot your password?') }}</x-ui.link>
             @endif
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+            <x-ui.button>{{ __('Log in') }}</x-ui.button>
         </div>
     </form>
 </x-guest-layout>

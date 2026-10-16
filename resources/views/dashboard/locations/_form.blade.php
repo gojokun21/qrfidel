@@ -1,16 +1,12 @@
-<div>
-    <x-input-label for="name" value="Nume" />
-    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $location->name)" required autofocus maxlength="120" />
-    <x-input-error class="mt-2" :messages="$errors->get('name')" />
-</div>
+<x-ui.field label="Nume" for="name">
+    <x-ui.input id="name" name="name" type="text" :value="old('name', $location->name)" required autofocus maxlength="120" />
+</x-ui.field>
 
-<div>
-    <x-input-label for="address" value="Adresă (opțional)" />
-    <x-text-input id="address" name="address" type="text" class="mt-1 block w-full" :value="old('address', $location->address)" maxlength="255" />
-    <x-input-error class="mt-2" :messages="$errors->get('address')" />
-</div>
+<x-ui.field label="Adresă" for="address" optional>
+    <x-ui.input id="address" name="address" type="text" :value="old('address', $location->address)" maxlength="255" />
+</x-ui.field>
 
-<div class="flex items-center gap-4">
-    <x-primary-button>Salvează</x-primary-button>
-    <a href="{{ route('dashboard.locations.index') }}" class="text-sm font-medium text-espresso-600 hover:text-espresso-900 hover:underline">Renunță</a>
+<div class="flex items-center gap-3">
+    <x-ui.button>Salvează</x-ui.button>
+    <x-ui.button :href="route('dashboard.locations.index')" variant="ghost">Renunță</x-ui.button>
 </div>

@@ -50,11 +50,11 @@
                 </p>
                 <div class="mt-10 flex flex-wrap items-center gap-4">
                     @auth
-                        <a href="{{ route('dashboard') }}" class="btn-gold px-7 py-3.5 text-base">Mergi la dashboard <x-icon name="arrow-right" class="h-5 w-5" /></a>
+                        <x-ui.button :href="route('dashboard')" size="lg">Mergi la dashboard <x-ui.icon name="arrow-right" class="h-5 w-5" /></x-ui.button>
                     @else
-                        <a href="{{ route('register') }}" class="btn-gold px-7 py-3.5 text-base">Începe gratuit <x-icon name="arrow-right" class="h-5 w-5" /></a>
+                        <x-ui.button :href="route('register')" size="lg">Începe gratuit <x-ui.icon name="arrow-right" class="h-5 w-5" /></x-ui.button>
                     @endauth
-                    <a href="#cum-functioneaza" class="btn border border-cream-50/25 px-7 py-3.5 text-base text-cream-50 hover:border-gold-400 hover:text-gold-300">Vezi cum funcționează</a>
+                    <x-ui.button href="#cum-functioneaza" variant="inverse" size="lg">Vezi cum funcționează</x-ui.button>
                 </div>
             </div>
 
@@ -78,7 +78,7 @@
                                 <p class="text-xs text-espresso-300">5 cafele = 1 gratis</p>
                             </div>
                         </div>
-                        <x-application-logo class="h-8 w-8 text-gold-500/60" />
+                        <x-brand.logo class="h-8 w-8 text-gold-500/60" />
                     </div>
 
                     <div class="mt-8 grid grid-cols-5 gap-3" role="img" aria-label="Card de fidelitate cu 3 din 5 ștampile">
@@ -87,7 +87,7 @@
                                 {{-- Animația pornește din nou de fiecare dată când `x-show` afișează ștampila. --}}
                                 <div x-show="i <= filled"
                                      class="animate-stamp-in absolute inset-0 flex items-center justify-center rounded-full bg-gold-500 text-espresso-950 shadow-lg shadow-gold-500/30">
-                                    <x-application-logo class="h-6 w-6" />
+                                    <x-brand.logo class="h-6 w-6" />
                                 </div>
                             </div>
                         </template>
@@ -102,7 +102,7 @@
                     </div>
 
                     <div class="mt-7 flex items-center gap-4 rounded-2xl bg-cream-50 p-4 text-espresso-900">
-                        <x-icon name="qr" class="h-14 w-14 shrink-0" />
+                        <x-ui.icon name="qr" class="h-14 w-14 shrink-0" />
                         <div>
                             <p class="text-xs font-medium uppercase tracking-wider text-espresso-500">Cod pentru tejghea</p>
                             <p class="font-mono text-2xl font-bold tracking-[0.25em]">K7M-Q2X</p>
@@ -113,7 +113,7 @@
         </div>
 
         <a href="#cum-functioneaza" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-cream-50/70 transition hover:text-gold-400" aria-label="Mergi mai jos">
-            <x-icon name="chevron-down" class="h-8 w-8 motion-safe:animate-bounce" />
+            <x-ui.icon name="chevron-down" class="h-8 w-8 motion-safe:animate-bounce" />
         </a>
     </section>
 
@@ -124,7 +124,7 @@
                 <div class="flex shrink-0 items-center">
                     @foreach ($marquee as $item)
                         <span class="px-8 text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">{{ $item }}</span>
-                        <x-application-logo class="h-7 w-7 shrink-0" />
+                        <x-brand.logo class="h-7 w-7 shrink-0" />
                     @endforeach
                 </div>
             @endforeach
@@ -145,7 +145,7 @@
                     <li class="group relative overflow-hidden rounded-3xl border border-espresso-100 bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-espresso-900/5">
                         <span class="absolute -right-3 -top-6 text-[9rem] font-extrabold leading-none text-cream-200 transition group-hover:text-gold-100" aria-hidden="true">{{ $loop->iteration }}</span>
                         <span class="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-espresso-900 text-gold-400">
-                            <x-icon :name="$step['icon']" class="h-7 w-7" />
+                            <x-ui.icon :name="$step['icon']" class="h-7 w-7" />
                         </span>
                         <h3 class="relative mt-8 text-xl font-bold text-espresso-900">{{ $step['title'] }}</h3>
                         <p class="relative mt-3 leading-relaxed text-espresso-600">{{ $step['text'] }}</p>
@@ -202,7 +202,7 @@
                 <div class="grid gap-5 sm:grid-cols-2">
                     @foreach ($safeguards as $safeguard)
                         <div class="rounded-3xl border border-espresso-700 bg-espresso-800/50 p-7 transition hover:border-gold-500/50">
-                            <x-icon :name="$safeguard['icon']" class="h-8 w-8 text-gold-400" />
+                            <x-ui.icon :name="$safeguard['icon']" class="h-8 w-8 text-gold-400" />
                             <h3 class="mt-6 text-lg font-bold">{{ $safeguard['title'] }}</h3>
                             <p class="mt-2 text-sm leading-relaxed text-espresso-200">{{ $safeguard['text'] }}</p>
                         </div>
@@ -221,9 +221,9 @@
                 <p class="mt-6 max-w-xl text-lg font-medium">Primul program e gata în câteva minute. Primii clienți îl folosesc chiar azi.</p>
             </div>
             @auth
-                <a href="{{ route('dashboard') }}" class="btn-dark px-8 py-4 text-base">Mergi la dashboard <x-icon name="arrow-right" class="h-5 w-5" /></a>
+                <x-ui.button :href="route('dashboard')" variant="neutral" size="xl">Mergi la dashboard <x-ui.icon name="arrow-right" class="h-5 w-5" /></x-ui.button>
             @else
-                <a href="{{ route('register') }}" class="btn-dark px-8 py-4 text-base">Creează-ți contul <x-icon name="arrow-right" class="h-5 w-5" /></a>
+                <x-ui.button :href="route('register')" variant="neutral" size="xl">Creează-ți contul <x-ui.icon name="arrow-right" class="h-5 w-5" /></x-ui.button>
             @endauth
         </div>
     </section>

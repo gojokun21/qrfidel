@@ -1,14 +1,14 @@
-<x-guest-layout>
-    <h1 class="text-lg font-medium text-espresso-900">Invitația nu poate fi folosită</h1>
-    <p class="mt-2 text-sm text-espresso-700">{{ $message }}</p>
+<x-guest-layout title="Invitație invalidă">
+    <h1 class="text-lg font-semibold text-ink">Invitația nu poate fi folosită</h1>
+    <p class="mt-2 text-sm text-ink-secondary">{{ $message }}</p>
 
     @auth
-        <form method="POST" action="{{ route('logout') }}" class="mt-4">
+        <form method="POST" action="{{ route('logout') }}" class="mt-6 flex flex-wrap items-center gap-3">
             @csrf
-            <a href="{{ route('dashboard') }}" class="text-sm link">Mergi la dashboard</a>
-            <button class="ms-4 text-sm font-medium text-espresso-600 hover:text-espresso-900 hover:underline">Ieși din cont</button>
+            <x-ui.button :href="route('dashboard')" variant="secondary">Mergi la dashboard</x-ui.button>
+            <x-ui.button variant="ghost">Ieși din cont</x-ui.button>
         </form>
     @else
-        <a href="{{ route('login') }}" class="mt-4 inline-block text-sm link">Autentificare</a>
+        <x-ui.button :href="route('login')" class="mt-6">Autentificare</x-ui.button>
     @endauth
 </x-guest-layout>

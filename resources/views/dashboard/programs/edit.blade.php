@@ -1,17 +1,7 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div>
-            <a href="{{ route('dashboard.programs.index') }}" class="text-sm text-espresso-500 hover:text-espresso-800">← Programe</a>
-            <h2 class="mt-1 flex flex-wrap items-center gap-3 text-2xl font-bold tracking-tight text-espresso-900">
-                {{ $program->name }}
-                <x-program-status :status="$program->status" />
-            </h2>
-        </div>
-    </x-slot>
+<x-app-layout :title="$program->name" :back="route('dashboard.programs.index')" back-label="Programe">
+    <x-slot:meta>
+        <x-loyalty.program-status :status="$program->status" />
+    </x-slot:meta>
 
-    <div class="py-8">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
-            @include('dashboard.programs._wizard', ['action' => route('dashboard.programs.update', $program), 'method' => 'PATCH'])
-        </div>
-    </div>
+    @include('dashboard.programs._wizard', ['action' => route('dashboard.programs.update', $program), 'method' => 'PATCH'])
 </x-app-layout>

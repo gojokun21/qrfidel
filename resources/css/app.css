@@ -2,43 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * CSS dedicat: doar ce nu se exprimă clar cu utilitare. Stilurile interfeței stau în componentele Blade
+ * (resources/views/components/ui), iar tokenurile în tailwind.config.js. Vezi docs/ui.md.
+ */
+
 @layer base {
+    /* Alpine: elementele cu x-cloak rămân ascunse până pornește Alpine (tiparul documentat de Alpine). */
     [x-cloak] {
         display: none !important;
     }
 }
 
 @layer components {
-    /* Butoanele din ADR 007; componentele Blade (`x-primary-button` etc.) folosesc aceleași clase. */
-    .btn {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
-    }
-
-    .btn-gold {
-        @apply btn bg-gold-500 text-espresso-950 shadow-sm hover:bg-gold-400 active:bg-gold-600;
-    }
-
-    .btn-dark {
-        @apply btn bg-espresso-900 text-cream-50 hover:bg-espresso-700 active:bg-espresso-950;
-    }
-
-    .btn-outline {
-        @apply btn border border-espresso-200 bg-white text-espresso-800 hover:border-espresso-300 hover:bg-cream-50;
-    }
-
-    .btn-danger {
-        @apply btn bg-red-600 text-white hover:bg-red-500 active:bg-red-700 focus-visible:ring-red-500;
-    }
-
-    .link {
-        @apply font-medium text-gold-700 underline-offset-4 hover:text-gold-800 hover:underline;
-    }
-
+    /* Textura de „hârtie” de pe fundalurile închise: un SVG cu zgomot, greu de exprimat ca utilitar. */
     .grain {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
     }
 }
 
+/* Animațiile decorative se opresc pentru cine a cerut mișcare redusă (trebuie să bată clasele animate-*). */
 @media (prefers-reduced-motion: reduce) {
     .animate-marquee,
     .animate-float,

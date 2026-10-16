@@ -12,7 +12,7 @@
                 :class="scrolled || open ? 'bg-espresso-950/90 shadow-lg shadow-black/10 backdrop-blur-md' : 'bg-transparent'"
                 class="fixed inset-x-0 top-0 z-50 transition-colors duration-300">
             <div class="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
-                <a href="{{ route('home') }}" aria-label="Creative Loyalty – acasă"><x-wordmark dark /></a>
+                <a href="{{ route('home') }}" aria-label="Creative Loyalty – acasă"><x-brand.wordmark dark /></a>
 
                 <nav class="hidden items-center gap-8 text-sm font-medium text-cream-100 md:flex" aria-label="Secțiuni">
                     <a href="#cum-functioneaza" class="transition hover:text-gold-400">Cum funcționează</a>
@@ -22,19 +22,19 @@
 
                 <div class="hidden items-center gap-3 md:flex">
                     @auth
-                        <a href="{{ route('dashboard') }}" class="btn-gold">Dashboard <x-icon name="arrow-right" class="h-4 w-4" /></a>
+                        <x-ui.button :href="route('dashboard')">Dashboard <x-ui.icon name="arrow-right" class="h-4 w-4" /></x-ui.button>
                     @else
                         <a href="{{ route('customer.login') }}" class="px-3 py-2 text-sm font-semibold text-cream-50 transition hover:text-gold-400">Cardurile mele</a>
                         <a href="{{ route('login') }}" class="px-3 py-2 text-sm font-semibold text-cream-50 transition hover:text-gold-400">Intră în cont</a>
-                        <a href="{{ route('register') }}" class="btn-gold">Începe gratuit</a>
+                        <x-ui.button :href="route('register')">Începe gratuit</x-ui.button>
                     @endauth
                 </div>
 
                 <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="false" aria-controls="meniu-mobil"
                         class="rounded-lg p-2 text-cream-50 md:hidden">
                     <span class="sr-only">Meniu</span>
-                    <x-icon name="menu" class="h-7 w-7" x-show="! open" />
-                    <x-icon name="x" class="h-7 w-7" x-show="open" x-cloak />
+                    <x-ui.icon name="menu" class="h-7 w-7" x-show="! open" />
+                    <x-ui.icon name="x" class="h-7 w-7" x-show="open" x-cloak />
                 </button>
             </div>
 
@@ -46,11 +46,11 @@
                     <a href="{{ route('customer.login') }}" class="py-2">Cardurile mele</a>
                 </nav>
                 @auth
-                    <a href="{{ route('dashboard') }}" class="btn-gold w-full">Dashboard</a>
+                    <x-ui.button :href="route('dashboard')" class="w-full">Dashboard</x-ui.button>
                 @else
                     <div class="grid grid-cols-2 gap-3">
-                        <a href="{{ route('login') }}" class="btn border border-espresso-600 text-cream-50">Intră în cont</a>
-                        <a href="{{ route('register') }}" class="btn-gold">Începe gratuit</a>
+                        <x-ui.button :href="route('login')" variant="inverse">Intră în cont</x-ui.button>
+                        <x-ui.button :href="route('register')">Începe gratuit</x-ui.button>
                     </div>
                 @endauth
             </div>
@@ -63,7 +63,7 @@
         <footer class="bg-black text-cream-100">
             <div class="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
                 <div class="space-y-4">
-                    <x-wordmark dark />
+                    <x-brand.wordmark dark />
                     <p class="max-w-xs text-sm leading-relaxed text-espresso-300">Carduri de fidelitate digitale pentru afaceri locale. Fără aplicație, fără hârtie.</p>
                 </div>
                 <div>

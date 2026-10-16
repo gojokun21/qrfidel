@@ -1,81 +1,55 @@
 {{-- Cifrele unui BusinessReport (ADR 014); folosit în „Rapoarte” și în detaliul afacerii din admin. --}}
 @php
     $periodLabel = $report->periodLabel();
-    $tiles = [
-        ['label' => 'Clienți activi', 'value' => $report->activeCustomers, 'hint' => $periodLabel, 'icon' => 'users'],
-        ['label' => 'Ștampile azi', 'value' => $report->stampsToday, 'hint' => 'De la miezul nopții', 'icon' => 'clock'],
-        ['label' => 'Ștampile în 7 zile', 'value' => $report->stampsWeek, 'hint' => 'Inclusiv azi', 'icon' => 'star'],
-        ['label' => 'Ștampile', 'value' => $report->stamps, 'hint' => $periodLabel, 'icon' => 'chart'],
-        ['label' => 'Recompense emise', 'value' => $report->rewardsIssued, 'hint' => $periodLabel, 'icon' => 'gift'],
-        ['label' => 'Recompense folosite', 'value' => $report->rewardsRedeemed, 'hint' => $periodLabel, 'icon' => 'heart'],
-    ];
 @endphp
 
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-    @foreach ($tiles as $tile)
-        <x-card class="flex flex-col">
-            <div class="flex items-center justify-between">
-                <p class="text-sm font-medium text-espresso-500">{{ $tile['label'] }}</p>
-                <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-50 text-gold-600"><x-icon :name="$tile['icon']" class="h-5 w-5" /></span>
-            </div>
-            <p class="mt-3 text-4xl font-bold tracking-tight text-espresso-900">{{ $tile['value'] }}</p>
-            <p class="mt-1 text-xs text-espresso-500">{{ $tile['hint'] }}</p>
-        </x-card>
-    @endforeach
+    <x-ui.stat label="Clienți activi" :value="$report->activeCustomers" :hint="$periodLabel" icon="users" />
+    <x-ui.stat label="Ștampile azi" :value="$report->stampsToday" hint="De la miezul nopții" icon="clock" />
+    <x-ui.stat label="Ștampile în 7 zile" :value="$report->stampsWeek" hint="Inclusiv azi" icon="star" />
+    <x-ui.stat label="Ștampile" :value="$report->stamps" :hint="$periodLabel" icon="chart" />
+    <x-ui.stat label="Recompense emise" :value="$report->rewardsIssued" :hint="$periodLabel" icon="gift" />
+    <x-ui.stat label="Recompense folosite" :value="$report->rewardsRedeemed" :hint="$periodLabel" icon="heart" />
 </div>
 
 <div class="grid gap-6 lg:grid-cols-2">
-    <section>
-        <h3 class="mb-3 text-lg font-semibold text-espresso-900">Top locații</h3>
-        <x-card flush>
-            <table class="w-full text-sm">
-                <thead class="text-left text-xs uppercase tracking-wide text-espresso-500">
-                    <tr>
-                        <th class="px-5 py-3 font-medium">Locația</th>
-                        <th class="px-5 py-3 text-right font-medium">Ștampile</th>
-                        <th class="px-5 py-3 text-right font-medium">Recompense folosite</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($report->locations as $location)
-                        <tr class="border-t border-espresso-100">
-                            <td class="px-5 py-3 font-medium text-espresso-900">{{ $location['name'] }}</td>
-                            <td class="px-5 py-3 text-right tabular-nums">{{ $location['stamps'] }}</td>
-                            <td class="px-5 py-3 text-right tabular-nums">{{ $location['redeems'] }}</td>
-                        </tr>
-                    @empty
-                        <tr class="border-t border-espresso-100"><td colspan="3" class="px-5 py-4 text-espresso-500">Nicio locație.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </x-card>
-    </section>
+    <x-ui.card flush title="Top locații">
+        <x-ui.table>
+            <x-slot:head>
+                <x-ui.table.th>Locația</x-ui.table.th>
+                <x-ui.table.th numeric>Ștampile</x-ui.table.th>
+                <x-ui.table.th numeric>Recompense folosite</x-ui.table.th>
+            </x-slot:head>
+            @forelse ($report->locations as $location)
+                <tr>
+                    <x-ui.table.td class="font-medium text-ink">{{ $location['name'] }}</x-ui.table.td>
+                    <x-ui.table.td numeric>{{ $location['stamps'] }}</x-ui.table.td>
+                    <x-ui.table.td numeric>{{ $location['redeems'] }}</x-ui.table.td>
+                </tr>
+            @empty
+                <tr><x-ui.table.td colspan="3" class="text-ink-muted">Nicio locație.</x-ui.table.td></tr>
+            @endforelse
+        </x-ui.table>
+    </x-ui.card>
 
-    <section>
-        <h3 class="mb-3 text-lg font-semibold text-espresso-900">Activitate per angajat</h3>
-        <x-card flush>
-            <table class="w-full text-sm">
-                <thead class="text-left text-xs uppercase tracking-wide text-espresso-500">
-                    <tr>
-                        <th class="px-5 py-3 font-medium">Angajat</th>
-                        <th class="px-5 py-3 text-right font-medium">Ștampile</th>
-                        <th class="px-5 py-3 text-right font-medium">Folosiri</th>
-                        <th class="px-5 py-3 text-right font-medium">Anulări</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($report->staff as $member)
-                        <tr class="border-t border-espresso-100">
-                            <td class="px-5 py-3 font-medium text-espresso-900">{{ $member['name'] }}</td>
-                            <td class="px-5 py-3 text-right tabular-nums">{{ $member['stamps'] }}</td>
-                            <td class="px-5 py-3 text-right tabular-nums">{{ $member['redeems'] }}</td>
-                            <td class="px-5 py-3 text-right tabular-nums">{{ $member['voids'] }}</td>
-                        </tr>
-                    @empty
-                        <tr class="border-t border-espresso-100"><td colspan="4" class="px-5 py-4 text-espresso-500">Nicio activitate în perioadă.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </x-card>
-    </section>
+    <x-ui.card flush title="Activitate per angajat">
+        <x-ui.table>
+            <x-slot:head>
+                <x-ui.table.th>Angajat</x-ui.table.th>
+                <x-ui.table.th numeric>Ștampile</x-ui.table.th>
+                <x-ui.table.th numeric>Folosiri</x-ui.table.th>
+                <x-ui.table.th numeric>Anulări</x-ui.table.th>
+            </x-slot:head>
+            @forelse ($report->staff as $member)
+                <tr>
+                    <x-ui.table.td class="font-medium text-ink">{{ $member['name'] }}</x-ui.table.td>
+                    <x-ui.table.td numeric>{{ $member['stamps'] }}</x-ui.table.td>
+                    <x-ui.table.td numeric>{{ $member['redeems'] }}</x-ui.table.td>
+                    <x-ui.table.td numeric>{{ $member['voids'] }}</x-ui.table.td>
+                </tr>
+            @empty
+                <tr><x-ui.table.td colspan="4" class="text-ink-muted">Nicio activitate în perioadă.</x-ui.table.td></tr>
+            @endforelse
+        </x-ui.table>
+    </x-ui.card>
 </div>
