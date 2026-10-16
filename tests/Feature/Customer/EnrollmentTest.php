@@ -117,16 +117,24 @@ describe('service', function () {
 });
 
 describe('http', function () {
-    it('enrolls a signed-in customer and shows the card 0/5 on /me', function () {
-        $this->actingAs($this->customer, 'customer')
-            ->post(route('customer.enroll', [$this->business, $this->program]))
-            ->assertRedirect(route('customer.cards'))
-            ->assertSessionHas('status', 'Te-ai înscris în „Cafele fidele”.');
+    it('enrolls a signed-in customer and shows the new card 0/5', function () {
+        $response = $this->actingAs($this->customer, 'customer')
+            ->post(route('customer.enroll', [$this->business, $this->program]));
 
         $card = Card::query()->sole();
         expect($card->customer_id)->toBe($this->customer->id)
             ->and($card->stamps_balance)->toBe(0)
             ->and($this->program->stamps_required)->toBe(5);
+
+        $response->assertRedirect(route('customer.cards.show', $card))
+            ->assertSessionHas('status', 'Te-ai înscris în „Cafele fidele”.');
+
+        $this->actingAs($this->customer, 'customer')
+            ->get(route('customer.cards.show', $card))
+            ->assertOk()
+            ->assertSee('Cafeneaua Centrală')
+            ->assertSee('Cafele fidele')
+            ->assertSee('Card de fidelitate: 0 din 5 ștampile');
 
         $this->actingAs($this->customer, 'customer')
             ->get(route('customer.cards'))
@@ -141,7 +149,7 @@ describe('http', function () {
 
         $this->actingAs($this->customer, 'customer')
             ->post(route('customer.enroll', [$this->business, $this->program]))
-            ->assertRedirect(route('customer.cards'))
+            ->assertRedirect(route('customer.cards.show', Card::query()->sole()))
             ->assertSessionHas('status', 'Ești deja înscris în „Cafele fidele”.');
 
         expect(Card::query()->count())->toBe(1);

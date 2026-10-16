@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Exceptions\InvalidQrToken;
 use App\Models\AuditLog;
 use App\Models\Card;
+use App\Models\Customer;
 use App\Models\Location;
 use App\Models\User;
 use App\Services\Loyalty\QrToken;
@@ -75,12 +76,31 @@ describe('issuing', function () {
             ->and($first->shortCode)->not->toBe($second->shortCode);
     });
 
-    it('keeps a single live short code per card: a new rotation revokes the previous code', function () {
+    it('revokes the previous short code after a short grace period, so a code being dictated still works', function () {
+        Carbon::setTestNow('2026-10-16 12:00:00');
         $first = ($this->issue)();
         $second = ($this->issue)();
+        $third = ($this->issue)();
 
+        Carbon::setTestNow(now()->addSeconds(config('loyalty.qr.short_code_grace_seconds') - 1));
+        expect(($this->resolve)($second->shortCode)->is($this->card))->toBeTrue();
+
+        Carbon::setTestNow(now()->addSeconds(2));
         expect(fn () => ($this->resolve)($first->shortCode))->toThrow(InvalidQrToken::class)
-            ->and(($this->resolve)($second->shortCode)->is($this->card))->toBeTrue()
+            ->and(($this->resolve)($third->shortCode)->is($this->card))->toBeTrue()
+            ->and(($this->resolve)($first->token)->is($this->card))->toBeTrue();
+    });
+
+    it('never extends the life of a previous code beyond its own validity', function () {
+        Carbon::setTestNow('2026-10-16 12:00:00');
+        $first = ($this->issue)();
+
+        Carbon::setTestNow(now()->addSeconds(config('loyalty.qr.ttl_seconds') - 5));
+        ($this->issue)();
+
+        // Tokenul încă e valabil (vârsta = ttl), dar codul lui scurt nu primește grație peste valabilitate.
+        Carbon::setTestNow(now()->addSeconds(5));
+        expect(fn () => ($this->resolve)($first->shortCode))->toThrow(InvalidQrToken::class, 'Cod invalid sau expirat')
             ->and(($this->resolve)($first->token)->is($this->card))->toBeTrue();
     });
 
@@ -412,5 +432,41 @@ describe('program and business state', function () {
 
         expect(fn () => ($this->resolve)($token, $this->owner))->toThrow(InvalidQrToken::class, 'Afacerea este suspendată.')
             ->and(($this->jtiUsed)($token))->toBeFalse();
+    });
+});
+
+describe('issue for the customer (PWA)', function () {
+    it('issues a token that resolves when the card belongs to the customer', function () {
+        $qr = $this->qr->issueForCustomer($this->card, $this->card->customer);
+
+        expect(($this->resolve)($qr->token)->is($this->card))->toBeTrue();
+    });
+
+    it('refuses the card of another customer', function () {
+        expect(fn () => $this->qr->issueForCustomer($this->card, Customer::factory()->create()))
+            ->toThrow(AuthorizationException::class);
+    });
+
+    it('tells whether the card can be scanned now', function () {
+        expect($this->qr->isScannable($this->card))->toBeTrue();
+
+        $this->program->update(['status' => ProgramStatus::Paused]);
+
+        expect($this->qr->isScannable($this->card->refresh()))->toBeFalse();
+    });
+
+    it('refuses a program that is not active', function (ProgramStatus $status) {
+        $this->program->update(['status' => $status]);
+
+        expect(fn () => $this->qr->issueForCustomer($this->card, $this->card->customer))
+            ->toThrow(InvalidQrToken::class, 'Programul nu este activ.');
+    })->with([ProgramStatus::Paused, ProgramStatus::Archived, ProgramStatus::Draft]);
+
+    it('refuses a suspended business', function () {
+        $this->business->status = BusinessStatus::Suspended;
+        $this->business->save();
+
+        expect(fn () => $this->qr->issueForCustomer($this->card, $this->card->customer))
+            ->toThrow(InvalidQrToken::class, 'Afacerea este suspendată.');
     });
 });
