@@ -11,6 +11,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -55,6 +56,27 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->routeIs('customer.magic.*')) {
                 return response()->view('customer.link-invalid', ['message' => (new MagicLinkInvalid)->getMessage()], 403);
             }
+        });
+
+        // Limitatorii numiți (ADR 013): mesaj în română. Un formular se întoarce pe pagina lui cu eroarea,
+        // o pagină încărcată primește errors/429, iar JSON-ul păstrează 429 + Retry-After.
+        $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
+            $headers = $e->getHeaders();
+            $minutes = max(1, (int) ceil(((int) ($headers['Retry-After'] ?? 60)) / 60));
+            $message = "Prea multe încercări. Încearcă din nou peste {$minutes} min.";
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 429, $headers);
+            }
+
+            // Paginile Breeze (verificare email, resetare parolă) nu afișează eroarea `loyalty`: primesc pagina 429.
+            if (! $request->isMethodSafe() && ! $request->routeIs('verification.*', 'password.*')) {
+                return back()
+                    ->withInput($request->except(['password', 'password_confirmation', 'current_password']))
+                    ->withErrors(['loyalty' => $message]);
+            }
+
+            return response()->view('errors.429', ['message' => $message], 429, $headers);
         });
 
         $exceptions->render(function (LoyaltyException $e, Request $request) {
