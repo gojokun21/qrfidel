@@ -5,6 +5,70 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 05 – Wizard programe + template-uri + previzualizare card (2026-10-16)
+
+**Făcut:**
+- Migrație: `programs.color` (nullable, CHECK `#RRGGBB`) și `programs.stamp_icon` (CHECK pe `App\Enums\StampIcon`: coffee, utensils, cake, car, scissors, star, heart, gift). `Program::displayColor()` / `fallbackColorFor()`: culoarea programului, altfel a brandului, altfel auriul.
+- `App\Services\Loyalty\ProgramTemplates` (+ DTO `ProgramTemplate`): Cafenea (5 → cafea gratis, 30 min, 1/zi), Restaurant (8 → desert gratis), Spălătorie (10 → spălare gratis, 1/zi), Personalizat (6). Template-ul tipului afacerii e primul și preselectat.
+- `ProgramService` (owner + audit `program.*`): `create` (ciornă sau publicat direct), `update` (sub lock; `stamps_required` nu scade dacă există carduri; arhivatul nu se editează), `changeStatus` (tranzițiile din `ProgramStatus::transitions()`, activarea cere afacerea activă), `duplicate` (ciornă „(copie)” = „versiune nouă”), `delete` (doar ciornă fără carduri). Excepția `ProgramRuleViolation`.
+- HTTP: `Dashboard\ProgramController`, `ProgramRequest`, `ProgramStatusRequest`, `ProgramPolicy::viewAny` (manager+). Rute `dashboard.programs.*`: lista pentru manager+, restul doar owner. Link „Programe” în sidebar.
+- UI:
+  - Lista: card mic, status, reguli pe scurt, număr de carduri, acțiuni după status. Stare goală cu „Creează primul program”.
+  - Wizard-ul Alpine (`resources/js/program-wizard.js`): un singur formular, pașii Tip și template → Reguli → Aspect, validare pe pas. La erori de server se deschide pasul cu eroarea. Enter trece la pasul următor. Butoanele se blochează după trimitere.
+  - Previzualizare live cu componenta `x-loyalty-card`, reutilizabilă în S7.
+  - `x-program-status`, iconuri noi în `x-icon`, `App\Support\Color` (culoarea textului lizibilă pe culoarea aleasă; aceeași regulă și în JS).
+- Seed demo: icon cafea / mașină pe programele demo.
+- Teste:
+  - `ProgramTemplatesTest`, `ProgramServiceTest`.
+  - `Dashboard/ProgramManagementTest`, inclusiv **programul creat din template-ul „Cafenea”**.
+  - `Unit/ColorTest`.
+  - Extinse: schemă (CHECK pe culoare și icon), policy `viewAny`, sidebar.
+
+**Verificări:** `composer test` 459 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Verificat manual în Chrome (desktop + 390px):
+- program publicat din template-ul Cafenea, cu culoare și icon schimbate live;
+- validarea pe pas;
+- refuzul micșorării ștampilelor pe programul demo cu carduri;
+- Enter în wizard.
+
+**Fixuri după `/code-review high`:**
+- Enter pe pașii 1–2 salva ciorna: acum avansează pasul, iar butoanele ascunse sunt `disabled`.
+- Mesajul de pauză nu mai promite folosirea recompenselor (scanarea e refuzată pe program inactiv, vezi mai jos).
+- Tranzițiile stau într-un singur loc (`ProgramStatus::transitions()`), iar lista le folosește. O ciornă cu carduri poate fi arhivată.
+- `edit` pe un program arhivat redirecționează cu mesaj.
+- Contrastul se calculează cu textul închis real (`#1c1410`), nu cu negru pur.
+- Protecție la dublu-click pe formulare.
+- Markup-ul iconurilor e cache-uit în previzualizare.
+- `Color::isHex()` / `HEX_PATTERN` și `Program::fallbackColorFor()` în loc de logică duplicată.
+- `ProgramTemplates::find()` (nefolosit) a fost scos.
+
+**Rămas / de continuat:**
+- **Important pentru S6:** înscrierea (crearea cardului) trebuie să ia lock pe program (`FOR SHARE`), altfel un card creat în paralel cu o micșorare a `stamps_required` scapă verificării (ADR 008).
+- **Pentru S8:** `QrTokenService::resolve()` refuză orice scanare pe un program care nu e activ, dar ADR 004 permite redeem pe program pus pe pauză sau arhivat. De decis la ecranul de staff: un resolve care permite doar redeem pe program inactiv.
+- Observații din review neaplicate:
+  - `store` / `duplicate` nu au idempotency key (sunt acțiuni de owner, nu de staff). Am pus doar blocarea butoanelor în UI.
+  - `current()` / `actor()` sunt copiate în 4 controllere de dashboard. Se pot muta într-un trait când se atinge zona.
+- Logo-ul afacerii (din S4, pentru „Aspect”) nu e făcut. Cardul afișează inițiala afacerii. Upload-ul de fișiere merită o sesiune separată.
+- În baza de dezvoltare, programele demo existente au iconul implicit `star` (seed-ul nou pune cafea/mașină doar după `migrate:fresh --seed`). Tot acolo a rămas programul publicat la verificarea manuală.
+
+**Decizii noi:**
+- [008](decisions/008-programe-wizard-aspect.md):
+  - coloanele `color` / `stamp_icon`;
+  - template-urile stau în cod;
+  - `stamps_required` nu scade pe niciun program cu carduri;
+  - ciclul de viață al statusului;
+  - „versiune nouă” = Duplică;
+  - ștergere doar pentru ciorne;
+  - wizard-ul e un singur formular;
+  - managerul vede lista doar pentru citire.
+
+**Probleme cunoscute:**
+- Postgres `jsonb` reordonează cheile din `audit_logs.payload`: în teste comparați payload-ul cu `toEqual` / `toMatchArray`, nu cu `toBe`.
+- În Claude in Chrome, click-urile trimise imediat după o schimbare de pas Alpine pot nimeri pe lângă element. Folosește `find` / `ref` sau o pauză între click-uri.
+
+**Următoarea sesiune:** 06 – Client: magic link, guard `customer`, pagina `/b/{slug}`, înscriere.
+
+---
+
 ## Sesiunea 04b – UI/UX: sidebar în dashboard + landing page (2026-10-16)
 
 Sesiune în afara SDD §11.4, la cererea utilizatorului. Referința vizuală e kof.ru.
