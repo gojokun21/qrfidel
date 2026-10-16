@@ -58,7 +58,7 @@ class StampService
             $this->assertRules($card, $program, $business, $quantity);
 
             $balanceBefore = $card->stamps_balance;
-            [$balanceAfter, $rewardCount] = $this->applyStamps($program, $balanceBefore + $quantity);
+            [$balanceAfter, $rewardCount] = RewardRules::applyStamps($program, $balanceBefore + $quantity);
 
             $transaction = CardTransaction::query()->create([
                 'business_id' => $card->business_id,
@@ -159,23 +159,6 @@ class StampService
         if ($today + $quantity > $program->daily_limit) {
             throw new StampRuleViolation("Limita zilnică de {$program->daily_limit} ștampile a fost atinsă (azi: {$today}).");
         }
-    }
-
-    /**
-     * Soldul după emiterea recompenselor: fără rollover, surplusul se pierde la prima recompensă.
-     *
-     * @return array{int, int} [sold nou, număr de recompense emise]
-     */
-    private function applyStamps(Program $program, int $balance): array
-    {
-        $rewards = 0;
-
-        while ($balance >= $program->stamps_required) {
-            $rewards++;
-            $balance = $program->rollover_extra ? $balance - $program->stamps_required : 0;
-        }
-
-        return [$balance, $rewards];
     }
 
     /**
