@@ -28,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('layouts.sidebar', SidebarComposer::class);
 
+        // SDD §6: scanare 30/min per angajat (face nepractică ghicirea codurilor scurte, ADR 011).
+        RateLimiter::for('staff-scan', fn (Request $request) => Limit::perMinute((int) config('loyalty.scan.per_minute'))->by('staff-scan:'.$request->user()?->getAuthIdentifier()));
+
         // QR-ul rotativ (ADR 010): PWA-ul cere 2/min; limita e per client, nu per IP (rețele mobile cu NAT).
         RateLimiter::for('customer-qr', fn (Request $request) => Limit::perMinute(10)->by('customer-qr:'.$request->user('customer')?->getAuthIdentifier()));
     }

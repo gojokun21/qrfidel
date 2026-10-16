@@ -12,6 +12,8 @@ use App\Http\Controllers\Dashboard\ProgramController;
 use App\Http\Controllers\Dashboard\TeamController;
 use App\Http\Controllers\InvitationAcceptController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Staff\CardController as StaffCardController;
+use App\Http\Controllers\Staff\ScanController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'landing')->name('home');
@@ -82,6 +84,18 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard')-
         Route::get('/programs', [ProgramController::class, 'index'])->name('programs.index');
         Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
     });
+});
+
+// Angajatul la casă (SDD §5.2, ADR 011): scanare → ecranul cardului → ștampilă / recompensă, cu tichet de scanare.
+// Cardul se adresează după public_id; global scope-ul ascunde cardurile altor afaceri (404).
+Route::middleware(['auth', 'verified', 'has-business', 'business', 'role:staff'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/scan', [ScanController::class, 'show'])->name('scan');
+    Route::post('/location', [ScanController::class, 'location'])->name('location');
+    Route::post('/scan/resolve', [ScanController::class, 'resolve'])->middleware('throttle:staff-scan')->name('scan.resolve');
+
+    Route::get('/cards/{card:public_id}', [StaffCardController::class, 'show'])->name('cards.show');
+    Route::post('/cards/{card:public_id}/stamp', [StaffCardController::class, 'stamp'])->name('cards.stamp');
+    Route::post('/cards/{card:public_id}/redeem', [StaffCardController::class, 'redeem'])->name('cards.redeem');
 });
 
 // Linkul din emailul de invitație (public: invitatul poate să nu aibă încă un cont).

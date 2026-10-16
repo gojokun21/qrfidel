@@ -23,7 +23,11 @@
     <section class="mt-6 rounded-3xl bg-white p-6 text-center shadow-xl shadow-espresso-950/5" aria-labelledby="qr-title">
         @if ($scannable)
             <h2 id="qr-title" class="font-bold text-espresso-950">Arată codul la casă</h2>
-            <p class="mt-1 text-sm text-espresso-600">Angajatul îl scanează și îți adaugă ștampila.</p>
+            @if ($program->isActive())
+                <p class="mt-1 text-sm text-espresso-600">Angajatul îl scanează și îți adaugă ștampila.</p>
+            @else
+                <p class="mt-1 text-sm text-espresso-600">Programul e oprit – recompensele rămân valabile.</p>
+            @endif
 
             <div x-data="qrDisplay($el.dataset.url)" data-url="{{ route('customer.cards.qr', $card) }}" class="mt-5">
                 <div class="relative mx-auto aspect-square w-full max-w-64">
