@@ -103,6 +103,14 @@ class Program extends Model
     }
 
     /**
+     * Câte butoane „+N ștampile” vede angajatul (ecranul cardului și panoul de cereri): până la max/vizită, cel mult 5.
+     */
+    public function quickStampCount(): int
+    {
+        return max(1, min($this->max_stamps_per_visit, 5));
+    }
+
+    /**
      * Culoarea cardului: a programului, altfel a brandului, altfel auriul platformei.
      */
     public function displayColor(): string

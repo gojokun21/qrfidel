@@ -68,6 +68,16 @@ class Customer extends Authenticatable
     }
 
     /**
+     * Emailul arătat angajatului: îl recunoaște pe client fără să-l vadă întreg („an***@client.test”).
+     */
+    public function maskedEmail(): string
+    {
+        [$local, $domain] = array_pad(explode('@', $this->email, 2), 2, '');
+
+        return mb_substr($local, 0, 2).'***@'.$domain;
+    }
+
+    /**
      * @return HasMany<Card, $this>
      */
     public function cards(): HasMany
