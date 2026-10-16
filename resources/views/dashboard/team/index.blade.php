@@ -1,25 +1,28 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Echipa</h2>
+        <h2 class="text-2xl font-bold tracking-tight text-espresso-900">Echipa</h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div class="py-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 space-y-6">
             <x-flash />
 
-            <x-card class="p-0 overflow-hidden">
-                <h3 class="px-6 pt-6 text-lg font-medium text-gray-900">Membri</h3>
+            <x-card flush>
+                <h3 class="px-6 pt-6 text-lg font-medium text-espresso-900">Membri</h3>
 
                 @foreach ($memberships as $membership)
-                    <div class="flex flex-col gap-3 p-6 lg:flex-row lg:items-center lg:justify-between {{ $loop->first ? '' : 'border-t border-gray-100' }}">
-                        <div>
-                            <p class="font-medium text-gray-900">
-                                {{ $membership->user->name }}
-                                @if ($membership->user_id === auth()->id())
-                                    <span class="text-sm text-gray-500">(tu)</span>
-                                @endif
-                            </p>
-                            <p class="text-sm text-gray-500">{{ $membership->user->email }}</p>
+                    <div class="flex flex-col gap-3 p-6 lg:flex-row lg:items-center lg:justify-between {{ $loop->first ? '' : 'border-t border-espresso-100' }}">
+                        <div class="flex min-w-0 items-center gap-4">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-espresso-900 text-sm font-bold text-gold-400">{{ mb_strtoupper(mb_substr($membership->user->name, 0, 1)) }}</span>
+                            <div class="min-w-0">
+                                <p class="font-semibold text-espresso-900">
+                                    {{ $membership->user->name }}
+                                    @if ($membership->user_id === auth()->id())
+                                        <span class="text-sm text-espresso-500">(tu)</span>
+                                    @endif
+                                </p>
+                                <p class="truncate text-sm text-espresso-500">{{ $membership->user->email }}</p>
+                            </div>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-3">
@@ -53,8 +56,8 @@
             </x-card>
 
             <x-card>
-                <h3 class="text-lg font-medium text-gray-900">Invită un membru</h3>
-                <p class="mt-1 text-sm text-gray-600">Persoana primește un email cu un link valabil {{ \App\Services\Loyalty\InvitationService::VALID_DAYS }} zile.</p>
+                <h3 class="text-lg font-medium text-espresso-900">Invită un membru</h3>
+                <p class="mt-1 text-sm text-espresso-600">Persoana primește un email cu un link valabil {{ \App\Services\Loyalty\InvitationService::VALID_DAYS }} zile.</p>
 
                 <form method="POST" action="{{ route('dashboard.invitations.store') }}" class="mt-4 grid gap-4 sm:grid-cols-4 sm:items-end"
                       x-data="{ role: @js(old('role', 'staff')) }">
@@ -90,14 +93,14 @@
             </x-card>
 
             @if ($invitations->isNotEmpty())
-                <x-card class="p-0 overflow-hidden">
-                    <h3 class="px-6 pt-6 text-lg font-medium text-gray-900">Invitații trimise</h3>
+                <x-card flush>
+                    <h3 class="px-6 pt-6 text-lg font-medium text-espresso-900">Invitații trimise</h3>
 
                     @foreach ($invitations as $invitation)
-                        <div class="flex flex-col gap-2 p-6 sm:flex-row sm:items-center sm:justify-between {{ $loop->first ? '' : 'border-t border-gray-100' }}">
+                        <div class="flex flex-col gap-2 p-6 sm:flex-row sm:items-center sm:justify-between {{ $loop->first ? '' : 'border-t border-espresso-100' }}">
                             <div>
-                                <p class="font-medium text-gray-900">{{ $invitation->email }}</p>
-                                <p class="text-sm text-gray-500">
+                                <p class="font-medium text-espresso-900">{{ $invitation->email }}</p>
+                                <p class="text-sm text-espresso-500">
                                     {{ $invitation->role->label() }}{{ $invitation->location ? ' · '.$invitation->location->name : '' }} ·
                                     @if ($invitation->isExpired())
                                         <span class="text-amber-600">expirată – trimite din nou</span>

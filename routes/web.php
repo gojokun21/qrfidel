@@ -9,9 +9,7 @@ use App\Http\Controllers\InvitationAcceptController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::view('/', 'landing')->name('home');
 
 // Dashboard owner/manager (SDD §8). Rutele cu `business` rulează în contextul afacerii curente (ADR 003).
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard')->group(function () {

@@ -12,5 +12,5 @@
 
 <div class="flex items-center gap-4">
     <x-primary-button>Salvează</x-primary-button>
-    <a href="{{ route('dashboard.locations.index') }}" class="text-sm text-gray-600 hover:underline">Renunță</a>
+    <a href="{{ route('dashboard.locations.index') }}" class="text-sm font-medium text-espresso-600 hover:text-espresso-900 hover:underline">Renunță</a>
 </div>

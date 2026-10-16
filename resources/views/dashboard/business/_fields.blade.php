@@ -22,7 +22,7 @@
             <option value="{{ $timezone }}" @selected(old('timezone', $business?->timezone ?? 'Europe/Bucharest') === $timezone)>{{ $timezone }}</option>
         @endforeach
     </x-select-input>
-    <p class="mt-1 text-sm text-gray-500">Limita zilnică de ștampile se calculează după ziua din acest fus orar.</p>
+    <p class="mt-1 text-sm text-espresso-500">Limita zilnică de ștampile se calculează după ziua din acest fus orar.</p>
     <x-input-error class="mt-2" :messages="$errors->get('timezone')" />
 </div>
 
