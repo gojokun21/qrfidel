@@ -4,6 +4,7 @@ namespace App\Http\Requests\Customer;
 
 use App\Models\Business;
 use App\Models\Customer;
+use App\Models\Location;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MagicLinkRequest extends FormRequest
@@ -21,6 +22,7 @@ class MagicLinkRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email', 'max:255'],
             'business' => ['nullable', 'string', 'max:100'],
+            'location' => ['nullable', 'string', 'max:64'],
         ];
     }
 
@@ -55,6 +57,17 @@ class MagicLinkRequest extends FormRequest
     {
         $slug = $this->input('business');
 
-        return Business::findActiveBySlug(is_string($slug) ? $slug : null);
+        return Business::findActiveBySlug(is_string($slug) ? $slug : null)
+            ?? $this->counterLocation()?->business;
+    }
+
+    /**
+     * Locația de pe tejghea de unde s-a cerut linkul (ADR 012). Un token necunoscut e ignorat.
+     */
+    public function counterLocation(): ?Location
+    {
+        $token = $this->input('location');
+
+        return Location::findByCounterToken(is_string($token) ? $token : null);
     }
 }

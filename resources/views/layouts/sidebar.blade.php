@@ -56,7 +56,7 @@
             <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-espresso-400">Meniu</p>
         @endif
         @foreach ($sidebarLinks as $link)
-            <x-sidebar-link :href="route($link['route'])" :icon="$link['icon']" :active="request()->routeIs($link['pattern'])">
+            <x-sidebar-link :href="route($link['route'])" :icon="$link['icon']" :active="request()->routeIs(...(array) $link['pattern'])">
                 {{ $link['label'] }}
             </x-sidebar-link>
         @endforeach

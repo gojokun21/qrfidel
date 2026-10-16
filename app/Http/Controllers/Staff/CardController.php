@@ -47,13 +47,7 @@ class CardController extends Controller
 
         $result = $this->actions->stamp($card, $this->actor($request), $request->ticket(), $request->integer('quantity'), $request->idempotencyKey());
 
-        /** @var Program $program */
-        $program = $card->program;
-        $status = $result->rewardsIssued === []
-            ? "Ștampilă adăugată: {$result->card->stamps_balance} din {$program->stamps_required}."
-            : "Card complet! Recompensă câștigată: {$program->reward_title}.";
-
-        return $this->done($request, $result->card, $status);
+        return $this->done($request, $result->card, $result->summary());
     }
 
     public function redeem(CardActionRequest $request, Card $card): RedirectResponse|JsonResponse

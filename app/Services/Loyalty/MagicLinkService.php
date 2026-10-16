@@ -7,6 +7,7 @@ use App\Exceptions\MagicLinkThrottled;
 use App\Mail\CustomerMagicLink;
 use App\Models\Business;
 use App\Models\Customer;
+use App\Models\Location;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class MagicLinkService
      *
      * @throws MagicLinkThrottled
      */
-    public function send(string $email, string $ip, ?Business $business = null): void
+    public function send(string $email, string $ip, ?Business $business = null, ?Location $counter = null): void
     {
         $email = Customer::normalizeEmail($email);
         $emailKey = 'magic-link:'.hash('sha256', $email);
@@ -50,13 +51,16 @@ class MagicLinkService
         }
 
         Mail::to($email)->send(new CustomerMagicLink(
-            url: $this->url($email, $business),
+            url: $this->url($email, $business, $counter),
             business: $business,
             ttlMinutes: (int) config('loyalty.magic_link.ttl_minutes'),
         ));
     }
 
-    public function url(string $email, ?Business $business): string
+    /**
+     * Cu `$counter` (QR-ul de pe tejghea, ADR 012), clientul se întoarce la tejghea după conectare.
+     */
+    public function url(string $email, ?Business $business, ?Location $counter = null): string
     {
         return URL::temporarySignedRoute(
             'customer.magic.show',
@@ -65,6 +69,7 @@ class MagicLinkService
                 'email' => Customer::normalizeEmail($email),
                 'nonce' => Str::random(40),
                 'b' => $business?->slug,
+                'l' => $counter?->counter_token,
             ]),
         );
     }

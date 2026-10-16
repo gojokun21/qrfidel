@@ -23,7 +23,10 @@
                                     <p class="text-sm text-espresso-500">{{ $location->address }}</p>
                                 @endif
                                 @can('update', $location)
-                                    <p class="mt-1 text-xs text-espresso-400">QR tejghea: <span class="font-mono break-all">{{ url('/l/'.$location->counter_token) }}</span></p>
+                                    <p class="mt-1 text-xs text-espresso-400">QR tejghea:
+                                        <a href="{{ route('customer.counter', $location->counter_token) }}" target="_blank" rel="noopener"
+                                           class="font-mono break-all hover:text-espresso-700 hover:underline">{{ route('customer.counter', $location->counter_token) }}</a>
+                                    </p>
                                 @endcan
                             </div>
                         </div>

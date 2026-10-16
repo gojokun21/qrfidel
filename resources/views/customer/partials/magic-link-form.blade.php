@@ -1,5 +1,6 @@
 {{--
-    Formularul de magic link. Cu `$business`, linkul aduce clientul înapoi pe pagina afacerii.
+    Formularul de magic link. Cu `$business`, linkul aduce clientul înapoi pe pagina afacerii;
+    cu `$counterLocation`, înapoi la tejghea (ADR 012).
     După trimitere arată confirmarea (același mesaj pentru orice email: nu dezvăluim cine are cont).
 --}}
 @if (session('magic_link_sent'))
@@ -15,6 +16,9 @@
         @csrf
         @isset($business)
             <input type="hidden" name="business" value="{{ $business->slug }}">
+        @endisset
+        @isset($counterLocation)
+            <input type="hidden" name="location" value="{{ $counterLocation->counter_token }}">
         @endisset
 
         <div>

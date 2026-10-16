@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Customer\BusinessPageController;
 use App\Http\Controllers\Customer\CardController;
+use App\Http\Controllers\Customer\CounterController;
 use App\Http\Controllers\Customer\EnrollmentController;
 use App\Http\Controllers\Customer\MagicLinkController;
 use App\Http\Controllers\Dashboard\BusinessController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Dashboard\TeamController;
 use App\Http\Controllers\InvitationAcceptController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Staff\CardController as StaffCardController;
+use App\Http\Controllers\Staff\RequestController;
 use App\Http\Controllers\Staff\ScanController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +26,11 @@ Route::name('customer.')->group(function () {
     Route::get('/b/{business:slug}', BusinessPageController::class)->name('business');
     Route::post('/b/{business:slug}/programs/{program}/enroll', EnrollmentController::class)
         ->scopeBindings()->middleware('auth:customer')->name('enroll');
+
+    // QR-ul de pe tejghea (SDD §5.3, ADR 012): locația după counter_token, cererea de ștampilă cu auto-înscriere.
+    Route::get('/l/{token}', [CounterController::class, 'show'])->name('counter');
+    Route::post('/l/{token}/programs/{program}/request', [CounterController::class, 'store'])
+        ->middleware('auth:customer')->name('counter.request');
 
     Route::middleware('guest:customer')->group(function () {
         Route::get('/login/magic', [MagicLinkController::class, 'create'])->name('login');
@@ -40,6 +47,7 @@ Route::name('customer.')->group(function () {
         // Cardul după public_id (ULID): id-urile numerice nu se pot enumera (ADR 010).
         Route::get('/me/cards/{card:public_id}', [CardController::class, 'show'])->name('cards.show');
         Route::post('/me/cards/{card:public_id}/qr', [CardController::class, 'qr'])->middleware('throttle:customer-qr')->name('cards.qr');
+        Route::get('/me/cards/{card:public_id}/status', [CardController::class, 'status'])->middleware('throttle:customer-status')->name('cards.status');
         Route::post('/me/logout', [MagicLinkController::class, 'destroy'])->name('logout');
     });
 });
@@ -96,6 +104,12 @@ Route::middleware(['auth', 'verified', 'has-business', 'business', 'role:staff']
     Route::get('/cards/{card:public_id}', [StaffCardController::class, 'show'])->name('cards.show');
     Route::post('/cards/{card:public_id}/stamp', [StaffCardController::class, 'stamp'])->name('cards.stamp');
     Route::post('/cards/{card:public_id}/redeem', [StaffCardController::class, 'redeem'])->name('cards.redeem');
+
+    // Fluxul B (SDD §5.3): panoul cu cererile de la tejghea, reîmprospătat prin polling.
+    Route::get('/requests', [RequestController::class, 'index'])->name('requests');
+    Route::get('/requests/feed', [RequestController::class, 'feed'])->name('requests.feed');
+    Route::post('/requests/{stampRequest}/approve', [RequestController::class, 'approve'])->whereNumber('stampRequest')->name('requests.approve');
+    Route::post('/requests/{stampRequest}/reject', [RequestController::class, 'reject'])->whereNumber('stampRequest')->name('requests.reject');
 });
 
 // Linkul din emailul de invitație (public: invitatul poate să nu aibă încă un cont).
