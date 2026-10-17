@@ -5,6 +5,50 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 11d – Paginile publice în stil „SaaS luminos” (2026-10-17)
+
+În afara listei din SDD §11.4, la cererea utilizatorului (referință: landing-ul AutoFlow de pe Dribbble), cu culorile LoyUp.
+
+**Făcut:**
+- **Landing nou** ([ADR 018](decisions/018-ui-paginile-publice-referinta-autoflow.md)):
+  - hero pastel într-un container rotunjit, meniul ca pastilă albă flotantă, titlu centrat;
+  - circuitul SVG cu simbolul LoyUp în centru și cipurile afacerilor, cu impulsuri animate;
+  - „Rezultate” cu arce (fapte despre produs, nu statistici inventate);
+  - bento „Cum funcționează” cu mini-interfețe: wizard, card cu ștampile, scanare, rapoarte, jurnal;
+  - „Pentru cine”, „Anti-fraudă” (QR cu inel), „Trei roluri” în locul testimonialelor, CTA închis, footer luminos.
+- **Auth:** `x-guest-layout` are fundal pastel, card alb, „Înapoi la site” și link spre cardurile clientului (doar pentru vizitatori). Login și register au titlu vizibil în română (`heading` / `subheading`).
+- **Client:** header alb, sticky. Pagina afacerii are un antet cu banda în culoarea brandului și avatarul suprapus.
+- **PWA:** `theme-color` per layout (alb în paginile publice, bleumarin în dashboard), bara de stare iOS `default`, manifest și pagina offline albe, service worker `v5`.
+- **Componente:** `x-ui.button` primește `brand`, `light` și `pill`. `x-ui.icon` primește `check`, `trending-up`, `bolt`, `scan`. Tokenuri noi: `bg-hero`, `bg-dots`, `shadow-soft`, `shadow-float`, animațiile `flow` și `drift`.
+- **Scos:** imaginile din `public/images/landing`, fontul Kaushan, banda marquee, `.grain`, componentele `rotating-badge` / `sparkle` / `squiggle` și animațiile lor.
+- **Teste:** `LandingPageTest` (secțiunile noi, un singur h1, fără imaginile/fontul vechi) și `PublicLayoutsTest` (auth, client, pagina afacerii, bara de stare PWA).
+
+**Verificări:** `composer test` 867 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK. Verificat în Chrome pe `localhost` (desktop 1568px, iframe-uri de 820 și 390px): landing, login, register, pagina afacerii. Fără overflow orizontal și fără erori în consolă.
+
+**Fixuri după `/code-review high`:**
+- bara de stare iOS cu text alb pe header-ul alb al clientului;
+- meniul rupt între 768 și 1024px: secțiunile apar abia de la `lg`;
+- id-uri SVG duplicate în ștampilele din bento;
+- animația cardului rulează doar cât e vizibil (IntersectionObserver);
+- „Sari la conținut” în layout-ul guest; linkul de client ascuns pentru staff-ul logat;
+- `Program::fallbackColorFor()` folosit pe pagina afacerii;
+- wordmark-ul ia înălțimea implicită fără regex;
+- comentariul din `head` actualizat; testul pentru „Înapoi la site”.
+
+**Rămas / de continuat:**
+- Etichetele Breeze din formularele de auth sunt încă în engleză (`lang/ro`).
+- Dashboard-ul (aplicația internă) n-a fost redesenat; preia doar culorile. Dacă se dorește același limbaj vizual, e o sesiune separată.
+- Neverificat pe un iPhone real: PWA instalat, cu bara de stare `default`.
+
+**Decizii noi:**
+- [018](decisions/018-ui-paginile-publice-referinta-autoflow.md): paginile publice în stil „SaaS luminos”; cifre doar factuale, fără testimoniale până există recenzii reale.
+
+**Probleme cunoscute:** —
+
+**Următoarea sesiune:** 12 – Deploy (VPS/Forge, HTTPS, cozi, scheduler) + test end-to-end real.
+
+---
+
 ## Sesiunea 11c – Brand LoyUp (2026-10-17)
 
 În afara listei din SDD §11.4, la cererea utilizatorului.
