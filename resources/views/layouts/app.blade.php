@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ro">
     <head>
-        @include('layouts.partials.head', ['title' => $title])
+        @include('layouts.partials.head', ['title' => $title, 'themeColor' => '#012156'])
     </head>
     <body class="bg-canvas font-sans text-ink antialiased">
         <a href="#continut" class="sr-only z-skip rounded-control bg-surface px-4 py-2 font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Sari la conținut</a>

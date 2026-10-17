@@ -46,7 +46,7 @@ resources/views/components/
   layout/    bucăți de layout: flash, sidebar-link
   loyalty/   componente de domeniu: card de fidelitate, status program / afacere, cerere în așteptare
   brand/     logo, wordmark
-  landing/   ilustrațiile landing-ului
+  landing/   ilustrațiile landing-ului (`seal`: ștampila din mockup-ul cardului)
 resources/views/layouts/    app (staff/owner/admin), customer (PWA), guest (auth), marketing (landing)
 ```
 
@@ -54,7 +54,7 @@ Componentele `ui` (prefix `x-ui.`):
 
 | Componentă | API |
 |---|---|
-| `button` | `variant`: primary · neutral · secondary · ghost · danger · danger-ghost · inverse; `size`: sm · md · lg · xl; `href` (→ `<a>`); `icon`. Implicit `type="submit"`. |
+| `button` | `variant`: primary · neutral · secondary · ghost · danger · danger-ghost · inverse · brand (gradient verde) · light (alb pe fundal pastel); `size`: sm · md · lg · xl; `href` (→ `<a>`); `icon`; `pill` (colțuri complet rotunjite). Implicit `type="submit"`. `brand`, `light` și `pill` sunt pentru paginile publice (ADR 018). |
 | `link` | link de text; `variant`: primary · muted |
 | `field` | `label`, `for` (id-ul controlului), `error` (cheia erorii, implicit `for`), `hint`, `optional`, `error-bag` |
 | `input`, `select`, `textarea` | atributele HTML obișnuite; `:invalid` opțional. În `x-ui.field` (cu `id` = `for`) primesc singure `aria-invalid` și `aria-describedby`; în afara unui câmp nu sunt marcate niciodată invalide. |
@@ -102,7 +102,7 @@ Creezi o componentă nouă doar pentru un element care se repetă sau are compor
 
 - `x-app-layout` pune titlul (`h1` și `<title>`), linkul de întoarcere (`back`, `back-label`), `eyebrow`, `description`, sloturile `actions` / `meta`, containerul (`width`: `wide` · `form` · `narrow`) și **mesajele flash**. Nu pune `x-layout.flash` în paginile acestui layout.
 - Clientul (PWA): `x-customer-layout :title="…"`. Aici fiecare pagină își pune `x-layout.flash` unde are sens.
-- Auth / invitații / erori: `x-guest-layout title="…"`.
+- Auth / invitații / erori: `x-guest-layout title="…"`; `heading` / `subheading` pun titlul vizibil în card, pentru paginile care nu au un `h1` propriu (login, register).
 - O singură acțiune `primary` pe ecran; restul `secondary` / `ghost`.
 
 ## 4. Excepții CSS rămase (și de ce)
@@ -110,12 +110,12 @@ Creezi o componentă nouă doar pentru un element care se repetă sau are compor
 | Unde | Ce | De ce |
 |---|---|---|
 | `resources/css/app.css` | `[x-cloak] { display: none !important }` | tiparul documentat de Alpine; trebuie să bată orice `display` |
-| `resources/css/app.css` | `.grain` | textura SVG cu zgomot; nu se exprimă ca utilitar |
 | `resources/css/app.css` | `prefers-reduced-motion` cu `!important` | oprește animațiile decorative indiferent de clasele `animate-*` |
 | `loyalty/card`, `customer/card` | `[&>svg]:h-full [&>svg]:w-full` | SVG-ul vine din `x-html` (iconițe, QR), deci nu i se pot pune clase |
 | `loyalty/card`, `ui/avatar`, wizard | `style="background-color: …"` | culoarea vine din datele afacerii/programului, nu din tokenuri |
 | `programs/index`, wizard | `md:grid-cols-[16rem_minmax(0,1fr)]`, `lg:grid-cols-[minmax(0,1fr)_22rem]` | grile cu o coloană fixă, folosite o dată |
-| `landing.blade.php`, `layouts/marketing.blade.php` | paleta brută, valori arbitrare (gradiente, mărimi de font) | direcție artistică proprie a landing-ului; nu face parte din interfața aplicației |
+| `landing.blade.php`, `layouts/marketing.blade.php` | paleta brută, valori arbitrare (gradiente, mărimi de font), culori hex în SVG-urile decorative | direcție artistică proprie a landing-ului (ADR 018); nu face parte din interfața aplicației |
+| paginile publice (landing, guest, customer) | `bg-hero`, `bg-dots`, `shadow-soft`, `shadow-float` | tokenurile stilului public (fundal pastel, carduri care plutesc); aplicația internă nu le folosește |
 
 ## 5. Verificare
 

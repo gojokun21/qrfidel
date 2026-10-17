@@ -94,5 +94,17 @@
         @case('gift')
             <rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M12 8v13"/><path d="M12 8C10.5 4.5 7 4 7 6.5S10.5 8 12 8Zm0 0c1.5-3.5 5-4 5-1.5S13.5 8 12 8Z"/>
             @break
+        @case('check')
+            <path d="m5 12.5 4.5 4.5L19 7.5"/>
+            @break
+        @case('trending-up')
+            <path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>
+            @break
+        @case('bolt')
+            <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>
+            @break
+        @case('scan')
+            <path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M4 12h16"/>
+            @break
     @endswitch
 </svg>

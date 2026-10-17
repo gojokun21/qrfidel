@@ -1,4 +1,4 @@
-<x-guest-layout :title="__('Log in')">
+<x-guest-layout :title="__('Log in')" heading="Bine ai revenit" subheading="Intră în contul afacerii tale.">
     @if (session('status'))
         <x-ui.alert tone="success" class="mb-4">{{ session('status') }}</x-ui.alert>
     @endif

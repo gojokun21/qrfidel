@@ -141,8 +141,6 @@ export default {
             colors: { jade, navy, steel, ...semantic },
             fontFamily: {
                 sans: ['Onest', ...defaultTheme.fontFamily.sans],
-                // Kaushan Script are ș/ț cu virgulă dedesubt (Yellowtail nu le are). Doar pe landing.
-                script: ['"Kaushan Script"', 'cursive'],
             },
             // Razele: controale (butoane, câmpuri), carduri, panouri mari (cardul de fidelitate, hero).
             borderRadius: {
@@ -154,6 +152,9 @@ export default {
             boxShadow: {
                 card: '0 1px 2px 0 rgb(26 29 27 / 0.05)',
                 overlay: '0 24px 48px -12px rgb(17 19 18 / 0.35)',
+                // Paginile publice: carduri care plutesc ușor pe fundalul deschis / pastilele flotante.
+                soft: '0 1px 2px rgb(1 33 86 / 0.04), 0 8px 24px -6px rgb(1 33 86 / 0.08)',
+                float: '0 2px 4px rgb(1 33 86 / 0.04), 0 18px 40px -12px rgb(1 33 86 / 0.18)',
             },
             // Lățimile conținutului: pagini, formulare, ecranele de lucru ale angajatului / clientului.
             maxWidth: {
@@ -169,41 +170,36 @@ export default {
                 eyebrow: '0.18em',
             },
             backgroundImage: {
-                // Lumina verde-albastră de pe fundalurile închise (auth, landing, cardul de fidelitate).
+                // Lumina verde-albastră de pe fundalurile închise (CTA-ul landing-ului).
                 glow: 'radial-gradient(ellipse at 70% 10%, rgb(1 167 96 / 0.30), transparent 55%), radial-gradient(ellipse at 0% 100%, rgb(83 115 168 / 0.25), transparent 50%)',
+                // Fundalul pastel al paginilor publice (hero, auth, CTA deschis): mentă din stânga, bleu din dreapta, alb jos.
+                hero: 'radial-gradient(60% 55% at 12% 0%, rgb(155 224 189 / 0.45), transparent 70%), radial-gradient(55% 60% at 92% 8%, rgb(176 192 220 / 0.55), transparent 70%), radial-gradient(70% 60% at 50% 100%, rgb(205 240 222 / 0.55), transparent 70%), linear-gradient(180deg, #F4FAF7 0%, #F6F8FB 100%)',
+                // Grila fină din spatele ilustrațiilor.
+                dots: 'radial-gradient(rgb(1 33 86 / 0.07) 1px, transparent 1px)',
             },
             keyframes: {
-                marquee: {
-                    from: { transform: 'translateX(0)' },
-                    to: { transform: 'translateX(-50%)' },
-                },
                 'stamp-in': {
                     '0%': { transform: 'scale(0.4) rotate(-25deg)', opacity: '0' },
                     '60%': { transform: 'scale(1.15) rotate(6deg)', opacity: '1' },
                     '100%': { transform: 'scale(1) rotate(0)', opacity: '1' },
                 },
-                float: {
-                    '0%, 100%': { transform: 'translateY(0) rotate(-4deg)' },
-                    '50%': { transform: 'translateY(-12px) rotate(-2deg)' },
+                // Impulsul care curge pe o linie a circuitului: `pathLength="100"`, `stroke-dasharray="10 190"`,
+                // deci liniuța pornește ascunsă înainte de început și se termină ascunsă după capăt.
+                flow: {
+                    from: { strokeDashoffset: '10' },
+                    to: { strokeDashoffset: '-100' },
                 },
-                // Linia de sub titlu (`pathLength="1"`, `stroke-dasharray: 1`).
-                draw: {
-                    from: { strokeDashoffset: '1' },
-                    to: { strokeDashoffset: '0' },
-                },
-                twinkle: {
-                    '0%, 100%': { transform: 'scale(1) rotate(0)', opacity: '1' },
-                    '50%': { transform: 'scale(0.6) rotate(45deg)', opacity: '0.5' },
+                // Plutire fără rotație (cipurile din hero, cardurile din bento).
+                drift: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-6px)' },
                 },
             },
             animation: {
-                marquee: 'marquee 40s linear infinite',
                 'stamp-in': 'stamp-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both',
-                float: 'float 7s ease-in-out infinite',
-                // Toate trei se folosesc doar cu `motion-safe:`.
-                'spin-slow': 'spin 24s linear infinite',
-                draw: 'draw 1.2s cubic-bezier(0.65, 0, 0.35, 1) 0.4s both',
-                twinkle: 'twinkle 3.2s ease-in-out infinite',
+                // `flow` și `drift` se folosesc doar cu `motion-safe:`.
+                flow: 'flow 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite',
+                drift: 'drift 6s ease-in-out infinite',
             },
         },
     },
