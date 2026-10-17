@@ -10,5 +10,13 @@ it('runs the test suite against PostgreSQL', function () {
 it('renders the start page', function () {
     $this->get('/')
         ->assertOk()
-        ->assertSee('Creative Loyalty');
+        ->assertSee('LoyUp');
+});
+
+it('uses LoyUp as the application name in the page title', function () {
+    expect(config('app.name'))->toBe('LoyUp');
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('· LoyUp</title>', false);
 });

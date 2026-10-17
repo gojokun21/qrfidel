@@ -1,7 +1,5 @@
 @props(['dark' => false])
 
-{{-- Logo + numele platformei. `dark` = pe fundal închis. --}}
-<span {{ $attributes->merge(['class' => 'inline-flex items-center gap-2.5']) }}>
-    <x-brand.logo class="h-9 w-9 shrink-0 text-accent" />
-    <span @class(['text-lg font-bold leading-none tracking-tight', 'text-inverse-fg' => $dark, 'text-ink' => ! $dark])>Creative <span class="text-accent">Loyalty</span></span>
-</span>
+{{-- Logo-ul LoyUp.ro (simbol + nume), din fișierul brandului. `dark` = pe fundal închis: numele devine alb. --}}
+<img src="{{ asset($dark ? 'images/brand/loyup-white.png' : 'images/brand/loyup.png') }}" alt="LoyUp.ro" width="501" height="144"
+     {{ $attributes->merge(['class' => 'h-10 w-auto']) }}>

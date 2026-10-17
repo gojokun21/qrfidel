@@ -1,7 +1,7 @@
 <x-mail::message>
 # Ai fost invitat în echipa {{ $business->name }}
 
-Ai fost invitat să te alături echipei **{{ $business->name }}** pe Creative Loyalty, cu rolul **{{ $role }}**.
+Ai fost invitat să te alături echipei **{{ $business->name }}** pe LoyUp, cu rolul **{{ $role }}**.
 
 <x-mail::button :url="$url">
 Acceptă invitația

@@ -5,20 +5,27 @@
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
-// Luminanța lui #1c1410, textul închis folosit pe card.
-const DARK_LUMINANCE = 0.0078;
+// Textul închis de pe card: bleumarinul din logo, ca App\Support\Color::DARK.
+const DARK = '#012156';
 
-// Aceeași regulă ca App\Support\Color::readableOn().
-export function readableOn(hex) {
-    if (!HEX.test(hex)) return '#1c1410';
-
+// Luminanța relativă WCAG a unei culori #RRGGBB.
+function luminance(hex) {
     const channel = (part) => {
         const c = parseInt(part, 16) / 255;
         return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
     };
-    const l = 0.2126 * channel(hex.slice(1, 3)) + 0.7152 * channel(hex.slice(3, 5)) + 0.0722 * channel(hex.slice(5, 7));
+    return 0.2126 * channel(hex.slice(1, 3)) + 0.7152 * channel(hex.slice(3, 5)) + 0.0722 * channel(hex.slice(5, 7));
+}
 
-    return (l + 0.05) / (DARK_LUMINANCE + 0.05) >= 1.05 / (l + 0.05) ? '#1c1410' : '#ffffff';
+const DARK_LUMINANCE = luminance(DARK);
+
+// Aceeași regulă ca App\Support\Color::readableOn().
+export function readableOn(hex) {
+    if (!HEX.test(hex)) return DARK;
+
+    const l = luminance(hex);
+
+    return (l + 0.05) / (DARK_LUMINANCE + 0.05) >= 1.05 / (l + 0.05) ? DARK : '#ffffff';
 }
 
 // Pe ce pas stă fiecare câmp, ca la o eroare de validare wizard-ul să se deschidă unde trebuie.

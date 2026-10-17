@@ -39,9 +39,9 @@ class Program extends Model
     use HasFactory;
 
     /**
-     * Culoarea implicită a cardului (accentul ambră din ADR 016).
+     * Culoarea implicită a cardului: verdele din logo LoyUp (ADR 017).
      */
-    public const DEFAULT_COLOR = '#D9822B';
+    public const DEFAULT_COLOR = '#01A760';
 
     /**
      * @var list<string>
@@ -111,7 +111,7 @@ class Program extends Model
     }
 
     /**
-     * Culoarea cardului: a programului, altfel a brandului, altfel auriul platformei.
+     * Culoarea cardului: a programului, altfel a brandului, altfel verdele LoyUp.
      */
     public function displayColor(): string
     {
@@ -119,7 +119,7 @@ class Program extends Model
     }
 
     /**
-     * Culoarea unui program fără culoare proprie: a brandului, altfel auriul platformei.
+     * Culoarea unui program fără culoare proprie: a brandului, altfel verdele LoyUp.
      */
     public static function fallbackColorFor(Business $business): string
     {

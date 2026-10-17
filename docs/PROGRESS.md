@@ -5,6 +5,36 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 11c – Brand LoyUp (2026-10-17)
+
+În afara listei din SDD §11.4, la cererea utilizatorului.
+
+**Făcut:**
+- Numele platformei devine **LoyUp** (`APP_NAME`, implicit și în `config/app.php`, `<title>`, manifest, PWA, mailuri, landing).
+- Paleta din logo ([ADR 017](decisions/017-brand-loyup.md)): primitive `jade` (verdele `#01A760`), `navy` (`#012156`), `steel` (neutre reci); tokenurile semantice rămân aceleași (ADR 015), doar își schimbă valorile.
+- `Color::DARK` = bleumarinul din logo; luminanța lui se calculează din constantă (PHP și `program-wizard.js`), nu mai e un număr scris de mână.
+- `Program::DEFAULT_COLOR` = `#01A760`; mostrele din wizard și indiciul culorii de brand nu mai propun bleumarinul (s-ar pierde pe cardul închis).
+- Logo: `x-brand.logo` = simbolul vectorial (SVG, `currentColor`), `x-brand.wordmark` = PNG-urile din `public/images/brand`.
+- Iconițe PWA, favicon, `theme-color`, pagina offline (toate culorile), service worker `v4`.
+
+**Verificări:** `composer test` 859 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK.
+
+**Fixuri după `/code-review high`:** mostra bleumarin din wizard (invizibilă pe card) → cyan; pagina offline avea încă neutrele graphite; `apple-touch-icon` dublat pe paginile clientului și scăpat în dashboard → doar în `pwa-head`; `green` → `jade` (coliziune cu paleta Tailwind); comentarii false despre fundalul imaginilor; docblock-uri cu „auriul platformei”; test pentru numele aplicației în `<title>`.
+
+**Rămas / de continuat:**
+- Imaginile landing-ului (`public/images/landing`) au încă fundalurile paletei vechi; se înlocuiesc în 11d (redesign-ul landing-ului).
+- Wordmark-ul e PNG (din fișierul brandului); un SVG ar fi mai clar la dimensiuni mari.
+
+**Decizii noi:**
+- [017](decisions/017-brand-loyup.md): brandul LoyUp (nume, paletă jade/navy/steel, logo).
+
+**Probleme cunoscute:**
+- Un rulaj din cinci a avut un test de mail eșuat intermitent (`assertSent` în `MailFake`); n-a mai apărut în următoarele 4 rulaje. De urmărit.
+
+**Următoarea sesiune:** 11d – UI profesional pentru landing și paginile publice (referință AutoFlow), apoi 12 – Deploy.
+
+---
+
 ## Sesiunea 11b – Refactorizare UI: tokenuri semantice și componente `x-ui` (2026-10-16)
 
 În afara listei din SDD §11.4, la cererea utilizatorului.

@@ -4,56 +4,48 @@ import forms from '@tailwindcss/forms';
 /*
  * Sistemul vizual (ADR 007, ADR 015). Documentație: docs/ui.md.
  *
- * 1. Paleta brandului „Verde cafea” (ADR 016): leaf (verdele frunzei de cafea, acțiunea principală),
- *    honey (ambra recompenselor și a ștampilelor), graphite (neutre gri-verzui), paper (fundaluri calde).
+ * 1. Paleta brandului LoyUp (ADR 017), luată din logo: jade (verdele cardului din logo, `jade-500` = #01A760),
+ *    navy (bleumarinul textului din logo, `navy-900` = #012156), steel (neutre reci, fundaluri și borduri).
  *    Paginile aplicației NU o folosesc direct; o folosesc doar tokenurile de mai jos
  *    și landing-ul (direcție artistică proprie).
  */
-const leaf = {
-    50: '#EEF6F2',
-    100: '#D5EADF',
-    200: '#ABD4C0',
-    300: '#7AB89C',
-    400: '#4A9878',
-    500: '#2E7A5E',
-    600: '#1F5B45',
-    700: '#194A39',
-    800: '#143A2D',
-    900: '#0F2C22',
+const jade = {
+    50: '#EAF8F1',
+    100: '#CDF0DE',
+    200: '#9BE0BD',
+    300: '#5ECD98',
+    400: '#2DBB7B',
+    500: '#01A760',
+    600: '#037A47',
+    700: '#036A3E',
+    800: '#05532F',
+    900: '#074027',
 };
 
-const honey = {
-    50: '#FDF5EC',
-    100: '#FAE6CF',
-    200: '#F4CB9C',
-    300: '#EDAE69',
-    400: '#E39645',
-    500: '#D9822B',
-    600: '#B96A1E',
-    700: '#93531A',
-    800: '#6F3F17',
-    900: '#4F2E13',
+const navy = {
+    50: '#EEF2F9',
+    100: '#D8E0EE',
+    200: '#B0C0DC',
+    300: '#8099C4',
+    400: '#5373A8',
+    500: '#33548E',
+    600: '#1E4078',
+    700: '#113266',
+    800: '#08285D',
+    900: '#012156',
+    950: '#01153A',
 };
 
-const graphite = {
-    50: '#F4F5F4',
-    100: '#E4E7E5',
-    200: '#CBD0CD',
-    300: '#A9B0AC',
-    400: '#848C88',
-    500: '#646C68',
-    600: '#4B524F',
-    700: '#363C39',
-    800: '#262B29',
-    900: '#1A1D1B',
-    950: '#111312',
-};
-
-const paper = {
-    DEFAULT: '#EFEDE6',
-    50: '#F7F6F2',
-    100: '#EFEDE6',
-    200: '#E4E1D8',
+const steel = {
+    DEFAULT: '#E9EDF3',
+    50: '#F6F8FB',
+    100: '#E9EDF3',
+    200: '#D3DAE4',
+    300: '#AEB8C7',
+    400: '#8794A8',
+    500: '#58657C',
+    600: '#47546A',
+    700: '#343F52',
 };
 
 /*
@@ -62,51 +54,53 @@ const paper = {
  */
 const semantic = {
     // Fundalul paginii.
-    canvas: paper[50],
+    canvas: steel[50],
     // Carduri, panouri, câmpuri; `muted` = zone de fundal secundare (pastile, rânduri evidențiate).
     surface: {
         DEFAULT: '#FFFFFF',
-        muted: paper[100],
-        strong: paper[200],
+        muted: steel[100],
+        strong: steel[200],
     },
-    // Text: `ink` titluri și text principal, `secondary` paragrafe, `muted` meta/indicii (min. 4.5:1 pe alb).
+    // Text: `ink` titluri și text principal (bleumarinul din logo), `secondary` paragrafe, `muted` meta/indicii (min. 4.5:1 pe alb).
     ink: {
-        DEFAULT: graphite[900],
-        secondary: graphite[600],
-        muted: graphite[500],
+        DEFAULT: navy[900],
+        secondary: steel[600],
+        muted: steel[500],
     },
     // Borduri: `line` separatoare și carduri, `strong` câmpuri de formular.
     line: {
-        DEFAULT: graphite[100],
-        strong: graphite[200],
+        DEFAULT: steel[100],
+        strong: steel[200],
     },
     // Acțiunea principală (verde). `fg` = textul de pe ea, `ink` = text/linkuri în culoarea brandului.
+    // Verdele din logo (`jade-500`) are doar 3.1:1 cu alb, așa că butoanele folosesc `jade-600` (5.4:1).
     primary: {
-        DEFAULT: leaf[600],
-        hover: leaf[500],
-        active: leaf[700],
+        DEFAULT: jade[600],
+        hover: jade[700],
+        active: jade[800],
         fg: '#FFFFFF',
-        soft: leaf[50],
-        line: leaf[200],
-        ink: leaf[600],
+        soft: jade[50],
+        line: jade[200],
+        ink: jade[600],
     },
-    // Accentul cald: recompense, ștampile și evidențierile de pe fundalurile închise (unde verdele nu are contrast).
+    // Accentul: verdele exact din logo. Recompense, ștampile și evidențierile de pe fundalurile închise
+    // (pe bleumarin are 5:1); textul de pe el e bleumarin.
     accent: {
-        DEFAULT: honey[500],
-        hover: honey[400],
-        fg: graphite[950],
-        soft: honey[50],
-        line: honey[200],
-        ink: honey[700],
+        DEFAULT: jade[500],
+        hover: jade[400],
+        fg: navy[900],
+        soft: jade[50],
+        line: jade[200],
+        ink: jade[700],
     },
-    // Acțiuni neutre închise și zonele închise (sidebar, header client, cardul de fidelitate).
+    // Acțiuni neutre închise și zonele închise (sidebar, header client, cardul de fidelitate): bleumarinul din logo.
     inverse: {
-        DEFAULT: graphite[900],
-        deep: graphite[950],
-        raised: graphite[800],
-        line: graphite[700],
-        fg: paper[50],
-        muted: graphite[300],
+        DEFAULT: navy[900],
+        deep: navy[950],
+        raised: navy[800],
+        line: navy[700],
+        fg: steel[50],
+        muted: navy[200],
     },
     success: {
         DEFAULT: '#047857',
@@ -128,8 +122,9 @@ const semantic = {
         line: '#FECACA',
         ink: '#7F1D1D',
     },
-    // Inelul de focus: contrast ≥ 3:1 și pe alb, și pe fundalurile închise.
-    focus: leaf[500],
+    // Inelul de focus: contrast ≥ 3:1 și pe alb/canvas (3.3:1), și pe bleumarin (4.4:1). Verdele exact din logo
+    // are doar 2.95:1 pe canvas, de aceea o nuanță puțin mai închisă.
+    focus: '#019C59',
 };
 
 /** @type {import('tailwindcss').Config} */
@@ -143,7 +138,7 @@ export default {
 
     theme: {
         extend: {
-            colors: { leaf, honey, graphite, paper, ...semantic },
+            colors: { jade, navy, steel, ...semantic },
             fontFamily: {
                 sans: ['Onest', ...defaultTheme.fontFamily.sans],
                 // Kaushan Script are ș/ț cu virgulă dedesubt (Yellowtail nu le are). Doar pe landing.
@@ -174,8 +169,8 @@ export default {
                 eyebrow: '0.18em',
             },
             backgroundImage: {
-                // Lumina verde-ambră de pe fundalurile închise (auth, landing, cardul de fidelitate).
-                glow: 'radial-gradient(ellipse at 70% 10%, rgb(46 122 94 / 0.35), transparent 55%), radial-gradient(ellipse at 0% 100%, rgb(217 130 43 / 0.15), transparent 50%)',
+                // Lumina verde-albastră de pe fundalurile închise (auth, landing, cardul de fidelitate).
+                glow: 'radial-gradient(ellipse at 70% 10%, rgb(1 167 96 / 0.30), transparent 55%), radial-gradient(ellipse at 0% 100%, rgb(83 115 168 / 0.25), transparent 50%)',
             },
             keyframes: {
                 marquee: {

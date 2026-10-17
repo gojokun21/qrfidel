@@ -7,16 +7,11 @@ namespace App\Support;
  */
 final class Color
 {
-    public const DARK = '#1c1410';
+    public const DARK = '#012156';
 
     public const LIGHT = '#ffffff';
 
     public const HEX_PATTERN = '/^#[0-9a-fA-F]{6}$/';
-
-    /**
-     * Luminanța relativă a lui DARK (#1c1410).
-     */
-    private const DARK_LUMINANCE = 0.0078;
 
     /**
      * Culoarea textului lizibilă pe fundalul dat: închis sau alb, după contrastul WCAG mai bun.
@@ -27,16 +22,25 @@ final class Color
             return self::DARK;
         }
 
+        $luminance = self::luminance($m[1], $m[2], $m[3]);
+        $dark = self::luminance(substr(self::DARK, 1, 2), substr(self::DARK, 3, 2), substr(self::DARK, 5, 2));
+
+        // Contrastul real cu textul închis folosit (DARK), nu cu negru pur.
+        return ($luminance + 0.05) / ($dark + 0.05) >= 1.05 / ($luminance + 0.05) ? self::DARK : self::LIGHT;
+    }
+
+    /**
+     * Luminanța relativă WCAG a unei culori date pe canale hex („01”, „21”, „56”).
+     */
+    private static function luminance(string $r, string $g, string $b): float
+    {
         $channel = function (string $part): float {
             $c = hexdec($part) / 255;
 
             return $c <= 0.03928 ? $c / 12.92 : (($c + 0.055) / 1.055) ** 2.4;
         };
 
-        $luminance = 0.2126 * $channel($m[1]) + 0.7152 * $channel($m[2]) + 0.0722 * $channel($m[3]);
-
-        // Contrastul real cu textul închis folosit (DARK), nu cu negru pur.
-        return ($luminance + 0.05) / (self::DARK_LUMINANCE + 0.05) >= 1.05 / ($luminance + 0.05) ? self::DARK : self::LIGHT;
+        return 0.2126 * $channel($r) + 0.7152 * $channel($g) + 0.0722 * $channel($b);
     }
 
     public static function isHex(?string $value): bool

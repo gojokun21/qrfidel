@@ -5,7 +5,7 @@ use App\Models\User;
 it('renders the landing page for guests', function () {
     $this->get(route('home'))
         ->assertOk()
-        ->assertSee('Creative Loyalty')
+        ->assertSee('LoyUp')
         ->assertSee('id="cum-functioneaza"', false)
         ->assertSee('id="pentru-cine"', false)
         ->assertSee('id="anti-frauda"', false)

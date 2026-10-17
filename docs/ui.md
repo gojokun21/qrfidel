@@ -1,6 +1,6 @@
 # Interfața: sistem vizual și componente
 
-Ghid scurt pentru cine modifică frontend-ul. Decizia de design e în [ADR 015](decisions/015-sistem-vizual-tokenuri-componente-ui.md); paleta în [ADR 016](decisions/016-paleta-verde-cafea.md).
+Ghid scurt pentru cine modifică frontend-ul. Decizia de design e în [ADR 015](decisions/015-sistem-vizual-tokenuri-componente-ui.md); paleta în [ADR 017](decisions/017-brand-loyup.md).
 
 Stack: Blade + Alpine.js + **Tailwind 3.4** (PostCSS, `@tailwindcss/forms`). Nu există alt framework de UI.
 
@@ -10,7 +10,7 @@ Totul stă în **`tailwind.config.js`**:
 
 | Ce | Unde | Exemple de clase |
 |---|---|---|
-| Paleta brandului (leaf, honey, graphite, paper – ADR 016) | constantele `leaf`, `honey`, `graphite`, `paper` | doar în tokenuri și pe landing |
+| Paleta brandului (jade, navy, steel – ADR 017) | constantele `jade`, `navy`, `steel` | doar în tokenuri și pe landing |
 | Culori semantice | obiectul `semantic` | vezi tabelul de mai jos |
 | Raze | `borderRadius` | `rounded-control` (butoane, câmpuri), `rounded-card`, `rounded-panel` |
 | Umbre | `boxShadow` | `shadow-card`, `shadow-overlay` (dialoguri, meniuri) |
@@ -27,7 +27,7 @@ Culorile semantice (rolul, nu nuanța):
 | text | `ink`, `ink-secondary`, `ink-muted` | titluri/text principal; paragrafe; meta și indicii |
 | bordură | `line`, `line-strong` | separatoare și carduri; câmpuri de formular |
 | principal | `primary` (+ `hover`, `active`, `fg`, `soft`, `line`, `ink`) | acțiunea principală (verde), linkuri (`text-primary-ink`) |
-| accent | `accent` (+ `hover`, `fg`, `soft`, `line`, `ink`) | recompense, ștampile, evidențieri pe fundal închis (ambră) |
+| accent | `accent` (+ `hover`, `fg`, `soft`, `line`, `ink`) | recompense, ștampile, evidențieri pe fundal închis (verdele din logo) |
 | zone închise | `inverse` (+ `deep`, `raised`, `line`, `fg`, `muted`) | sidebar, header client, cardul de fidelitate, butonul `neutral` |
 | stări | `success`, `warning`, `danger` (+ `soft`, `line`, `ink`) | mesaje, badge-uri, acțiuni distructive |
 | focus | `focus` | `focus-visible:ring-focus` |
