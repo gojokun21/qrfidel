@@ -29,7 +29,7 @@
     ];
     $stepTitles = [1 => 'Tip și template', 2 => 'Reguli', 3 => 'Aspect'];
     // Culorile propuse pentru card (date de conținut, nu tokenuri ale interfeței).
-    $swatches = ['#D9822B', '#1F5B45', '#7c2d12', '#b91c1c', '#be185d', '#7e22ce', '#1d4ed8', '#0f766e'];
+    $swatches = ['#01A760', '#0891b2', '#7c2d12', '#b91c1c', '#be185d', '#7e22ce', '#1d4ed8', '#0f766e'];
 @endphp
 
 <form method="POST" action="{{ $action }}" novalidate x-data="programWizard(@js($config))" @submit="submit($event)" @keydown.enter="enter($event)" x-ref="wizard" class="scroll-mt-6">

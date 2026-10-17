@@ -9,7 +9,7 @@
 
         <header class="bg-inverse-deep">
             <div class="mx-auto flex h-16 max-w-xl items-center justify-between gap-4 px-4">
-                <a href="{{ auth('customer')->check() ? route('customer.cards') : route('home') }}" aria-label="Creative Loyalty – acasă"
+                <a href="{{ auth('customer')->check() ? route('customer.cards') : route('home') }}" aria-label="LoyUp – acasă"
                    class="rounded-control focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"><x-brand.wordmark dark /></a>
 
                 @auth('customer')

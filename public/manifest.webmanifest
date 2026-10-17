@@ -1,6 +1,6 @@
 {
-    "name": "Creative Loyalty – cardurile mele",
-    "short_name": "Loyalty",
+    "name": "LoyUp – cardurile mele",
+    "short_name": "LoyUp",
     "description": "Cardurile tale de fidelitate: ștampile, recompense și codul QR de arătat la casă.",
     "lang": "ro",
     "id": "/me",
@@ -8,8 +8,8 @@
     "scope": "/",
     "display": "standalone",
     "orientation": "portrait",
-    "background_color": "#F7F6F2",
-    "theme_color": "#1A1D1B",
+    "background_color": "#F6F8FB",
+    "theme_color": "#012156",
     "icons": [
         { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
         { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

@@ -8,7 +8,10 @@ it('picks dark text on light backgrounds and white text on dark ones', function 
     'gold' => ['#CC9933', Color::DARK],
     'white' => ['#ffffff', Color::DARK],
     'yellow' => ['#facc15', Color::DARK],
+    'navy' => ['#012156', Color::LIGHT],
     'espresso' => ['#1c1410', Color::LIGHT],
+    // Verdele din logo LoyUp: bleumarinul are 4.9:1, albul doar 3.1:1.
+    'logo green' => ['#01A760', Color::DARK],
     'blue' => ['#1d4ed8', Color::LIGHT],
     'brick' => ['#7c2d12', Color::LIGHT],
     // Aproape de prag: contrastul se măsoară cu textul închis real, nu cu negru pur.
@@ -25,6 +28,10 @@ it('recognises #RRGGBB colors only', function (?string $value, bool $valid) {
     ['red', false],
     [null, false],
 ]);
+
+it('uses the LoyUp navy as the dark text color', function () {
+    expect(Color::DARK)->toBe('#012156');
+});
 
 it('falls back to dark text for an invalid color', function () {
     expect(Color::readableOn('red'))->toBe(Color::DARK);
