@@ -2,7 +2,7 @@
 
 {{--
     Inițiala unui nume (afacere, membru) într-un pătrat rotunjit. Decorativă: numele apare oricum în text.
-    `color` = culoare hex (brandul afacerii); textul își alege singur contrastul. Fără `color` → auriul brandului.
+    `color` = culoare hex (brandul afacerii); textul își alege singur contrastul. Fără `color` → culoarea principală.
 --}}
 @php
     $sizes = ['sm' => 'h-7 w-7 rounded-lg text-xs', 'md' => 'h-10 w-10 rounded-control text-base', 'lg' => 'h-14 w-14 rounded-card text-2xl'];

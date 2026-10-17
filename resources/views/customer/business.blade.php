@@ -1,11 +1,20 @@
 <x-customer-layout :title="$business->name">
-    <div class="flex items-center gap-4">
-        <x-ui.avatar :name="$business->name" size="lg" :color="$business->brand_color ?? \App\Models\Program::DEFAULT_COLOR" />
-        <div class="min-w-0">
-            <h1 class="break-words text-2xl font-bold text-ink">{{ $business->name }}</h1>
-            <p class="text-sm text-ink-secondary">Program de fidelitate</p>
+    @php($brandColor = \App\Models\Program::fallbackColorFor($business))
+    {{-- Antetul afacerii: banda în culoarea brandului (hex validat la salvare), avatarul suprapus. --}}
+    <header class="overflow-hidden rounded-[1.75rem] border border-line bg-white shadow-soft">
+        <div class="relative h-24" style="background-color: {{ $brandColor }}">
+            <div class="absolute inset-0 bg-gradient-to-br from-white/25 to-black/10" aria-hidden="true"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(rgb(255_255_255/0.22)_1px,transparent_1px)] bg-[length:16px_16px]" aria-hidden="true"></div>
         </div>
-    </div>
+        <div class="px-5 pb-5">
+            <x-ui.avatar :name="$business->name" size="lg" :color="$brandColor" class="relative -mt-8 ring-4 ring-white" />
+            <h1 class="mt-3 break-words text-2xl font-semibold tracking-tight text-ink">{{ $business->name }}</h1>
+            <p class="mt-0.5 flex items-center gap-1.5 text-sm text-ink-secondary">
+                <x-ui.icon name="gift" class="h-4 w-4 text-primary-ink" />
+                Program de fidelitate
+            </p>
+        </div>
+    </header>
 
     <x-layout.flash />
 

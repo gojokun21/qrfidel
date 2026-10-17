@@ -1,4 +1,4 @@
-<x-guest-layout :title="__('Register')">
+<x-guest-layout :title="__('Register')" heading="Creează contul afacerii" subheading="Primul program de fidelitate e gata în câteva minute.">
     <form method="POST" action="{{ route('register') }}" class="space-y-5">
         @csrf
 

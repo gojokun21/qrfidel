@@ -6,7 +6,7 @@
  *   prin /b/{slug} și /login/magic), dar dashboard-ul staff-ului și restul rămân neatinse.
  * Paginile autentificate și răspunsurile QR nu se păstrează niciodată în cache (date personale, CSRF).
  */
-const VERSION = 'v4';
+const VERSION = 'v5';
 const SHELL = `shell-${VERSION}`;
 const ASSETS = `assets-${VERSION}`;
 const OFFLINE_URL = '/offline.html';
