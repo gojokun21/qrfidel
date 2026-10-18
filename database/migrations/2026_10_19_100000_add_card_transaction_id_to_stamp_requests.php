@@ -21,7 +21,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE stamp_requests DROP CONSTRAINT IF EXISTS stamp_requests_approved_transaction_check');
+        DB::statement('ALTER TABLE stamp_requests DROP CHECK stamp_requests_approved_transaction_check');
 
         Schema::table('stamp_requests', function (Blueprint $table) {
             $table->dropConstrainedForeignId('card_transaction_id');

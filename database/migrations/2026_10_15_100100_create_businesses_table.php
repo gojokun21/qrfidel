@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('brand_color', 7)->nullable();
             $table->string('timezone', 64)->default('Europe/Bucharest');
             $table->string('status', 20)->default('active');
-            $table->timestamps();
+            $table->datetimes();
         });
 
         DB::statement("ALTER TABLE businesses ADD CONSTRAINT businesses_type_check CHECK (type IN ('cafe', 'restaurant', 'carwash', 'other'))");
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('address')->nullable();
             $table->string('counter_token', 40)->unique();
-            $table->timestamps();
+            $table->datetimes();
         });
 
         Schema::create('business_user', function (Blueprint $table) {
@@ -39,7 +39,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('role', 20);
             $table->foreignId('location_id')->nullable()->constrained()->nullOnDelete();
-            $table->timestamps();
+            $table->datetimes();
 
             $table->unique(['business_id', 'user_id']);
             $table->index('user_id');

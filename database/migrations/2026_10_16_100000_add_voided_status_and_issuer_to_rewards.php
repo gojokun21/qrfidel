@@ -19,14 +19,14 @@ return new class extends Migration
             $table->index('issued_by_transaction_id');
         });
 
-        DB::statement('ALTER TABLE rewards DROP CONSTRAINT rewards_status_check');
+        DB::statement('ALTER TABLE rewards DROP CHECK rewards_status_check');
         DB::statement("ALTER TABLE rewards ADD CONSTRAINT rewards_status_check CHECK (status IN ('available', 'redeemed', 'expired', 'voided'))");
     }
 
     public function down(): void
     {
         DB::statement("UPDATE rewards SET status = 'expired' WHERE status = 'voided'");
-        DB::statement('ALTER TABLE rewards DROP CONSTRAINT rewards_status_check');
+        DB::statement('ALTER TABLE rewards DROP CHECK rewards_status_check');
         DB::statement("ALTER TABLE rewards ADD CONSTRAINT rewards_status_check CHECK (status IN ('available', 'redeemed', 'expired'))");
 
         Schema::table('rewards', function (Blueprint $table) {
