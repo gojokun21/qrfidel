@@ -96,7 +96,7 @@ describe('service', function () {
 
         app(EnrollmentService::class)->enroll($this->customer, $this->program);
 
-        expect(collect($queries)->contains(fn (string $sql) => str_contains($sql, 'from "programs"') && str_contains($sql, 'for share')))->toBeTrue();
+        expect(collect($queries)->contains(fn (string $sql) => str_contains($sql, 'from `programs`') && str_contains($sql, 'lock in share mode')))->toBeTrue();
     });
 
     it('blocks lowering stamps_required once a customer enrolled', function () {

@@ -21,8 +21,8 @@ it('produces a single stamp when two staff members approve the same request at o
     $startAt = sprintf('%.6F', microtime(true) + 3);
     $env = [
         'APP_ENV' => 'testing',
-        'DB_CONNECTION' => 'pgsql',
-        'DB_DATABASE' => config('database.connections.pgsql.database'),
+        'DB_CONNECTION' => 'mysql',
+        'DB_DATABASE' => config('database.connections.mysql.database'),
         'DB_URL' => '',
         'CACHE_STORE' => 'array',
         'SESSION_DRIVER' => 'array',

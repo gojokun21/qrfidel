@@ -4,8 +4,11 @@ use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\ParallelTesting;
 
-it('runs the test suite against PostgreSQL', function () {
-    expect(DB::connection()->getDriverName())->toBe('pgsql')
+it('runs the test suite against MySQL 8, like the hosting', function () {
+    expect(DB::connection()->getDriverName())->toBe('mysql')
+        ->and(DB::scalar('select version()'))->toStartWith('8.0.')
+        ->and(DB::scalar('select @@transaction_isolation'))->toBe('READ-COMMITTED')
+        ->and(config('database.connections.mysql.collation'))->toBe('utf8mb4_0900_as_cs')
         ->and(DB::connection()->getDatabaseName())->toStartWith('creative_loyalty_test');
 });
 

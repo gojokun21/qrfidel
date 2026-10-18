@@ -105,7 +105,7 @@ function giveReward(Card $card, ?DateTimeInterface $expiresAt = null): Reward
 }
 
 /**
- * Rulează în savepoint, ca o eroare Postgres să nu anuleze tranzacția testului.
+ * Rulează în savepoint, ca o eroare SQL să nu strice tranzacția testului.
  */
 function inSavepoint(Closure $callback): mixed
 {
