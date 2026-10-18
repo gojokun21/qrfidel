@@ -52,7 +52,7 @@ class ExpirationService
                 ->whereNotNull('cards.last_stamp_at')
                 ->whereNotNull('programs.stamps_expire_days')
                 ->where('businesses.status', BusinessStatus::Active)
-                ->whereRaw('cards.last_stamp_at <= ?::timestamp - make_interval(days => programs.stamps_expire_days)', [now()->format('Y-m-d H:i:s')])
+                ->whereRaw('cards.last_stamp_at <= DATE_SUB(?, INTERVAL programs.stamps_expire_days DAY)', [now()->format('Y-m-d H:i:s')])
                 ->chunkById(self::CHUNK, function (Collection $cards) use (&$expired) {
                     foreach ($cards as $card) {
                         $expired += $this->expireCardStamps($card->id) ? 1 : 0;
@@ -95,7 +95,7 @@ class ExpirationService
 
     /**
      * Cererile pending trecute de termen devin `expired` (până acum expirarea era doar „leneșă”, ADR 012).
-     * Un UPDATE în bloc: Postgres reverifică condiția după lock, deci o cerere aprobată între timp nu se atinge.
+     * Un UPDATE în bloc: InnoDB reverifică condiția pe versiunea curentă, după lock, deci o cerere aprobată între timp nu se atinge.
      *
      * @return int numărul de cereri expirate
      */

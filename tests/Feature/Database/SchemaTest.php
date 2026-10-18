@@ -91,6 +91,14 @@ it('keeps customer emails unique regardless of case', function () {
     ]));
 })->throws(QueryException::class);
 
+it('treats emails that differ only by accents as different customers', function () {
+    // Colația e sensibilă la diacritice: altfel ion@gmaíl.com ar primi contul lui ion@gmail.com prin magic link.
+    Customer::factory()->create(['email' => 'ion@gmail.com']);
+    Customer::factory()->create(['email' => 'ion@gmaíl.com']);
+
+    expect(Customer::query()->where('email', 'ion@gmail.com')->count())->toBe(1);
+});
+
 it('keeps business slugs unique', function () {
     Business::factory()->create(['slug' => 'cafenea']);
 
@@ -203,4 +211,42 @@ it('allows a new invitation once the previous one is revoked or accepted', funct
     Invitation::factory()->create(['email' => 'a@exemplu.test']);
 
     expect(Invitation::query()->count())->toBe(4);
+});
+
+it('refuses an owner invitation tied to a location', function () {
+    $business = Business::factory()->create();
+
+    inSavepoint(fn () => Invitation::factory()->for($business)->create([
+        'role' => 'owner',
+        'location_id' => Location::factory()->for($business)->create()->id,
+    ]));
+})->throws(QueryException::class, 'invitations_owner_without_location');
+
+it('refuses turning a location invitation into an owner one', function () {
+    $business = Business::factory()->create();
+    $invitation = Invitation::factory()->for($business)->create([
+        'role' => 'staff',
+        'location_id' => Location::factory()->for($business)->create()->id,
+    ]);
+
+    inSavepoint(fn () => DB::table('invitations')->where('id', $invitation->id)->update(['role' => 'owner']));
+})->throws(QueryException::class, 'invitations_owner_without_location');
+
+it('keeps every card_transactions column frozen in the append-only trigger', function () {
+    // Triggerul MySQL listează coloanele explicit: o coloană nouă trebuie adăugată și acolo.
+    $trigger = DB::scalar(
+        'select ACTION_STATEMENT from information_schema.TRIGGERS where TRIGGER_SCHEMA = database() and TRIGGER_NAME = ?',
+        ['card_transactions_append_only_update'],
+    );
+
+    $columns = collect(DB::select(
+        'select COLUMN_NAME as name from information_schema.COLUMNS where TABLE_SCHEMA = database() and TABLE_NAME = ?',
+        ['card_transactions'],
+    ))->pluck('name')->reject(fn (string $column) => $column === 'voided_by_id');
+
+    expect($columns)->not->toBeEmpty();
+
+    foreach ($columns as $column) {
+        expect($trigger)->toContain("NEW.{$column} <=> OLD.{$column}");
+    }
 });

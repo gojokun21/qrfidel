@@ -54,7 +54,7 @@ class AuditLog extends Model
     }
 
     /**
-     * Jurnal append-only (ADR 013), garantat și de un trigger Postgres.
+     * Jurnal append-only (ADR 013), garantat și de un trigger MySQL.
      */
     protected static function booted(): void
     {

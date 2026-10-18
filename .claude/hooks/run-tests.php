@@ -7,7 +7,7 @@
  */
 const MAX_BLOCKS = 3;
 const DB_HOST = '127.0.0.1';
-const DB_PORT = 5436;
+const DB_PORT = 3307;
 
 $root = dirname(__DIR__, 2);
 $input = json_decode((string) stream_get_contents(STDIN), true);
@@ -59,7 +59,7 @@ $block = function (string $message) use ($blocksFile): never {
 
 $socket = @fsockopen(DB_HOST, DB_PORT, $errno, $errstr, 2);
 if ($socket === false) {
-    $block('Postgres nu răspunde pe '.DB_HOST.':'.DB_PORT." – testele nu au rulat.\n"
+    $block('MySQL nu răspunde pe '.DB_HOST.':'.DB_PORT." – testele nu au rulat.\n"
         ."Nu e o problemă de cod: pornește Docker Desktop și rulează `docker compose up -d`, apoi reia.\n");
 }
 fclose($socket);

@@ -7,12 +7,12 @@
 
 ## Stack
 - Laravel 12 (PHP 8.2 local, 8.3 în producție – vezi `docs/decisions/001`), Blade + Alpine.js + Tailwind (Vite), Breeze (auth staff, guard `web`).
-- PostgreSQL 16, Redis 7 (client `predis`), Mailpit – toate în Docker (`docker-compose.yml`).
-- Teste: Pest 3 pe Postgres (baza `creative_loyalty_test`), rulate în paralel. Calitate: Pint (preset laravel), Larastan level 6.
+- MySQL 8.0.37 (ca pe hostingul cPanel `loyup.ro` – vezi `docs/decisions/020`), Redis 7 (client `predis`), Mailpit – toate în Docker (`docker-compose.yml`).
+- Teste: Pest 3 pe MySQL (baza `creative_loyalty_test`), rulate în paralel. Calitate: Pint (preset laravel), Larastan level 6.
 
 ## Comenzi
 ```
-docker compose up -d          # Postgres :5436, Redis :6379, Mailpit :1025 / UI :8025
+docker compose up -d          # MySQL :3307, Redis :6379, Mailpit :1025 / UI :8025
 composer test                 # config:clear + Pest --parallel
 ./vendor/bin/pint             # formatare (--test doar verifică)
 ./vendor/bin/phpstan analyse  # sau: composer analyse
@@ -39,10 +39,11 @@ php artisan serve             # http://localhost:8000
 - Skill `/session-close`: checklistul de final de sesiune.
 
 ## Note de mediu (Windows)
-- PHP vine din XAMPP (`C:\xampp\php`); `pdo_pgsql`, `pgsql`, `sodium` sunt activate în `php.ini` (backup: `php.ini.bak`).
-- Pe mașină rulează și PostgreSQL 17/18 nativ (5432/5433) și alte containere (5434/5435) – de aceea proiectul folosește **portul 5436**.
+- PHP vine din XAMPP (`C:\xampp\php`); `pdo_mysql` și `sodium` sunt activate în `php.ini` (backup: `php.ini.bak`).
+- Pe mașină rulează și alte baze (PostgreSQL nativ, alte containere); MySQL din XAMPP ar folosi 3306 – de aceea proiectul folosește **portul 3307**.
 - Dacă testele pică cu erori de conexiune: pornește Docker Desktop, apoi `docker compose up -d`.
-- Baza de test e creată de `docker/postgres/init.sql` doar la prima inițializare a volumului. Dacă lipsește („database creative_loyalty_test does not exist”): `docker compose exec postgres createdb -U loyalty creative_loyalty_test`.
+- Baza de test e creată de `docker/mysql/init.sql` doar la prima inițializare a volumului. Dacă lipsește („Unknown database creative_loyalty_test”): `docker compose exec -T mysql mysql -uroot -proot < docker/mysql/init.sql` (creează baza și drepturile pentru testele paralele).
+- Schema MySQL: triggere append-only (`card_transactions`, `audit_logs`, `invitations`) și indexuri funcționale în loc de indexuri parțiale. O coloană nouă în `card_transactions` se adaugă și în triggerul ei (ADR 020).
 - Porturile Docker sunt legate doar de `127.0.0.1` (parolele din compose sunt doar pentru dezvoltare).
 - Nu rula `php artisan config:cache` local: testele refuză să pornească (protecție în `tests/Pest.php`, altfel ar goli baza de dezvoltare).
 - `tests/` nu e analizat de PHPStan (Pest leagă `$this` dinamic în closure-uri).

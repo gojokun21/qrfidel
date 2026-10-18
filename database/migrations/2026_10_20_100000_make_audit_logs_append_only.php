@@ -11,22 +11,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::unprepared(<<<'SQL'
-            CREATE OR REPLACE FUNCTION audit_logs_append_only() RETURNS trigger AS $$
-            BEGIN
-                RAISE EXCEPTION 'audit_logs is append-only (% refused on id %)', TG_OP, OLD.id;
-            END;
-            $$ LANGUAGE plpgsql;
+        foreach (['UPDATE', 'DELETE'] as $operation) {
+            $name = 'audit_logs_append_only_'.strtolower($operation);
 
-            CREATE TRIGGER audit_logs_append_only
-                BEFORE UPDATE OR DELETE ON audit_logs
-                FOR EACH ROW EXECUTE FUNCTION audit_logs_append_only();
-            SQL);
+            DB::unprepared(<<<SQL
+                CREATE TRIGGER {$name} BEFORE {$operation} ON audit_logs
+                FOR EACH ROW
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'audit_logs is append-only ({$operation} refused)'
+                SQL);
+        }
     }
 
     public function down(): void
     {
-        DB::unprepared('DROP TRIGGER IF EXISTS audit_logs_append_only ON audit_logs');
-        DB::unprepared('DROP FUNCTION IF EXISTS audit_logs_append_only()');
+        DB::unprepared('DROP TRIGGER IF EXISTS audit_logs_append_only_update');
+        DB::unprepared('DROP TRIGGER IF EXISTS audit_logs_append_only_delete');
     }
 };

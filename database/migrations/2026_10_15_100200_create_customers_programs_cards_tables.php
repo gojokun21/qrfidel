@@ -13,13 +13,13 @@ return new class extends Migration
             $table->id();
             $table->string('email');
             $table->string('name')->nullable();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->dateTime('email_verified_at')->nullable();
             $table->rememberToken();
-            $table->timestamps();
+            $table->datetimes();
         });
 
         // Unic indiferent de majuscule (modelul salvează oricum emailul cu litere mici).
-        DB::statement('CREATE UNIQUE INDEX customers_email_unique ON customers (LOWER(email))');
+        DB::statement('CREATE UNIQUE INDEX customers_email_unique ON customers ((lower(email)))');
 
         Schema::create('programs', function (Blueprint $table) {
             $table->id();
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->boolean('rollover_extra')->default(false);
             $table->string('status', 20)->default('draft');
             $table->text('terms')->nullable();
-            $table->timestamps();
+            $table->datetimes();
 
             $table->index(['business_id', 'status']);
         });
@@ -62,8 +62,8 @@ return new class extends Migration
             $table->text('secret');
             $table->integer('stamps_balance')->default(0);
             $table->integer('rewards_available')->default(0);
-            $table->timestamp('last_stamp_at')->nullable();
-            $table->timestamps();
+            $table->dateTime('last_stamp_at')->nullable();
+            $table->datetimes();
 
             $table->unique(['program_id', 'customer_id']);
             $table->index('customer_id');

@@ -17,14 +17,14 @@ return new class extends Migration
             $table->string('stamp_icon', 20)->default('star')->after('color');
         });
 
-        DB::statement("ALTER TABLE programs ADD CONSTRAINT programs_color_check CHECK (color IS NULL OR color ~ '^#[0-9a-fA-F]{6}$')");
+        DB::statement("ALTER TABLE programs ADD CONSTRAINT programs_color_check CHECK (color IS NULL OR REGEXP_LIKE(color, '^#[0-9a-fA-F]{6}$'))");
         DB::statement("ALTER TABLE programs ADD CONSTRAINT programs_stamp_icon_check CHECK (stamp_icon IN ('coffee', 'utensils', 'cake', 'car', 'scissors', 'star', 'heart', 'gift'))");
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE programs DROP CONSTRAINT IF EXISTS programs_stamp_icon_check');
-        DB::statement('ALTER TABLE programs DROP CONSTRAINT IF EXISTS programs_color_check');
+        DB::statement('ALTER TABLE programs DROP CHECK programs_stamp_icon_check');
+        DB::statement('ALTER TABLE programs DROP CHECK programs_color_check');
 
         Schema::table('programs', function (Blueprint $table) {
             $table->dropColumn(['color', 'stamp_icon']);

@@ -9,11 +9,11 @@ Checklistul de la pașii 4–6 din `docs/SDD.md` §11.2. Execută pașii **în o
 
 ## 0. Context
 - `git branch --show-current` trebuie să fie `session/NN-nume`. Dacă ești pe `main` cu modificări necomise, creează acum branch-ul sesiunii (`git checkout -b session/NN-nume`) și continuă.
-- `docker compose ps` – postgres și redis trebuie să fie `healthy` (altfel `docker compose up -d`).
+- `docker compose ps` – mysql și redis trebuie să fie `healthy` (altfel `docker compose up -d`).
 
 ## 1. Verificări (toate verzi)
 ```
-composer test                 # Pest --parallel pe Postgres
+composer test                 # Pest --parallel pe MySQL
 ./vendor/bin/pint --test      # dacă pică: ./vendor/bin/pint, apoi din nou --test
 composer analyse              # PHPStan level 6, 0 erori
 npm run build
