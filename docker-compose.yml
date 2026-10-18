@@ -1,21 +1,25 @@
 # Servicii locale pentru dezvoltare: docker compose up -d
 services:
-  postgres:
-    image: postgres:16-alpine
+  # Aceeași versiune ca pe hosting (cPanel, MySQL 8.0.37) – vezi docs/decisions/020.
+  mysql:
+    image: mysql:8.0.37
     environment:
-      POSTGRES_DB: creative_loyalty
-      POSTGRES_USER: loyalty
-      POSTGRES_PASSWORD: secret
+      MYSQL_DATABASE: creative_loyalty
+      MYSQL_USER: loyalty
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    # Ca pe hosting: binlog oprit, deci userul aplicației (fără SUPER) poate crea triggerele append-only.
+    command: ["--skip-log-bin"]
     ports:
-      - "127.0.0.1:5436:5432"
+      - "127.0.0.1:3307:3306"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U loyalty -d creative_loyalty"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uloyalty", "-psecret"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 20
 
   redis:
     image: redis:7-alpine
@@ -36,5 +40,5 @@ services:
       - "127.0.0.1:8025:8025"
 
 volumes:
-  postgres-data:
+  mysql-data:
   redis-data:

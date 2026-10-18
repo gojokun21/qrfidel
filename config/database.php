@@ -54,11 +54,19 @@ return [
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            // Sensibilă la majuscule și diacritice, ca Postgres: `ion@gmaíl.com` nu e `ion@gmail.com`.
+            // Unde contează doar majusculele, codul compară explicit cu lower() (ADR 020).
+            'collation' => env('DB_COLLATION', 'utf8mb4_0900_as_cs'),
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
-            'engine' => null,
+            'engine' => 'InnoDB',
+            // READ COMMITTED, ca Postgres: fiecare instrucțiune vede ultimele date commit-uite, iar căutările
+            // cu lock pe un interval gol nu iau gap lock-uri (fără deadlock între inserări paralele).
+            'isolation_level' => 'READ COMMITTED',
+            // Sesiunea în UTC, ca aplicația: CURRENT_TIMESTAMP și valorile scrise din PHP rămân comparabile,
+            // indiferent de fusul orar al serverului de hosting.
+            'timezone' => '+00:00',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
