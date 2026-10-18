@@ -28,6 +28,9 @@ class PlatformOverview
 
     public const STAMPS_DAYS = 30;
 
+    /** @var \Illuminate\Support\Collection<int, string>|null Timezone-urile afacerilor, o dată per request. */
+    private ?\Illuminate\Support\Collection $timezones = null;
+
     public function __construct(private readonly ReportService $reports) {}
 
     /**
@@ -73,7 +76,9 @@ class PlatformOverview
             ->with(['members' => fn ($query) => $query->wherePivot('role', Role::Owner->value)->orderBy('users.name')])
             ->when($search !== '', function (Builder $query) use ($search) {
                 $like = '%'.addcslashes($search, '\\%_').'%';
-                $query->where(fn (Builder $match) => $match->where('name', 'ilike', $like)->orWhere('slug', 'ilike', $like));
+                $query->where(fn (Builder $match) => $match
+                    ->whereRaw('lower(name) like ?', [mb_strtolower($like)])
+                    ->orWhereRaw('lower(slug) like ?', [mb_strtolower($like)]));
             })
             ->when($status !== null, fn (Builder $query) => $query->where('status', $status))
             ->orderBy('name')
@@ -98,19 +103,32 @@ class PlatformOverview
 
     /**
      * Ștampilele neanulate din ultimele 30 de zile, inclusiv azi, cu ziua tăiată la miezul nopții în timezone-ul
-     * afacerii (coloana `$timezoneColumn`). `created_at` e în UTC, fără timezone.
+     * afacerii (coloana `$timezoneColumn`). `created_at` e în UTC.
+     *
+     * Pragul se calculează în PHP pentru fiecare timezone folosit de afaceri (sunt puține), nu în SQL:
+     * CONVERT_TZ din MySQL are nevoie de tabelele de fusuri orare, care pe hosting pot lipsi.
      *
      * @return Builder<CardTransaction>
      */
     private function recentStamps(string $timezoneColumn): Builder
     {
-        $since = "((date_trunc('day', (?::timestamp AT TIME ZONE 'UTC') AT TIME ZONE {$timezoneColumn}) - interval '"
-            .(self::STAMPS_DAYS - 1)." days') AT TIME ZONE {$timezoneColumn}) AT TIME ZONE 'UTC'";
+        $since = fn (string $timezone) => CarbonImmutable::now($timezone)->startOfDay()
+            ->subDays(self::STAMPS_DAYS - 1)->utc()->format('Y-m-d H:i:s');
+
+        $timezones = $this->timezones ??= Business::query()->distinct()->pluck('timezone');
 
         return CardTransaction::query()
             ->withoutGlobalScopes()
             ->where('card_transactions.type', TransactionType::Stamp)
             ->whereNull('card_transactions.voided_by_id')
-            ->whereRaw("card_transactions.created_at >= {$since}", [CarbonImmutable::now('UTC')->format('Y-m-d H:i:s')]);
+            ->when(
+                $timezones->isEmpty(),
+                fn (Builder $query) => $query->whereRaw('1 = 0'),
+                fn (Builder $query) => $query->whereRaw(
+                    "card_transactions.created_at >= CASE {$timezoneColumn} "
+                        .$timezones->map(fn () => 'WHEN ? THEN ?')->implode(' ').' END',
+                    $timezones->flatMap(fn (string $timezone) => [$timezone, $since($timezone)])->all(),
+                ),
+            );
     }
 }

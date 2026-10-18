@@ -114,11 +114,11 @@ class ReportService
         return $this->counted($business, $locationId, $from->min($week))
             ->join('cards', 'cards.id', '=', 'card_transactions.card_id')
             ->selectRaw(
-                'COALESCE(SUM(card_transactions.quantity) FILTER (WHERE card_transactions.type = ? AND card_transactions.created_at >= ?), 0) AS stamps_today,
-                 COALESCE(SUM(card_transactions.quantity) FILTER (WHERE card_transactions.type = ? AND card_transactions.created_at >= ?), 0) AS stamps_week,
-                 COALESCE(SUM(card_transactions.quantity) FILTER (WHERE card_transactions.type = ? AND card_transactions.created_at >= ?), 0) AS stamps,
-                 COUNT(*) FILTER (WHERE card_transactions.type = ? AND card_transactions.created_at >= ?) AS redeems,
-                 COUNT(DISTINCT cards.customer_id) FILTER (WHERE card_transactions.created_at >= ?) AS customers',
+                'COALESCE(SUM(CASE WHEN card_transactions.type = ? AND card_transactions.created_at >= ? THEN card_transactions.quantity END), 0) AS stamps_today,
+                 COALESCE(SUM(CASE WHEN card_transactions.type = ? AND card_transactions.created_at >= ? THEN card_transactions.quantity END), 0) AS stamps_week,
+                 COALESCE(SUM(CASE WHEN card_transactions.type = ? AND card_transactions.created_at >= ? THEN card_transactions.quantity END), 0) AS stamps,
+                 COUNT(CASE WHEN card_transactions.type = ? AND card_transactions.created_at >= ? THEN 1 END) AS redeems,
+                 COUNT(DISTINCT CASE WHEN card_transactions.created_at >= ? THEN cards.customer_id END) AS customers',
                 [
                     TransactionType::Stamp->value, $today->utc(),
                     TransactionType::Stamp->value, $week->utc(),
@@ -174,7 +174,7 @@ class ReportService
         $activity = $this->counted($business, $locationId, $from)
             ->whereNotNull('location_id')
             ->groupBy('location_id')
-            ->selectRaw('location_id, COALESCE(SUM(quantity) FILTER (WHERE type = ?), 0) AS stamps, COUNT(*) FILTER (WHERE type = ?) AS redeems', [
+            ->selectRaw('location_id, COALESCE(SUM(CASE WHEN type = ? THEN quantity END), 0) AS stamps, COUNT(CASE WHEN type = ? THEN 1 END) AS redeems', [
                 TransactionType::Stamp->value, TransactionType::Redeem->value,
             ])
             ->toBase()
@@ -216,9 +216,9 @@ class ReportService
             ->groupBy('staff_user_id')
             ->selectRaw(
                 'staff_user_id,
-                 COALESCE(SUM(quantity) FILTER (WHERE type = ?), 0) AS stamps,
-                 COUNT(*) FILTER (WHERE type = ?) AS redeems,
-                 COUNT(*) FILTER (WHERE type = ?) AS voids',
+                 COALESCE(SUM(CASE WHEN type = ? THEN quantity END), 0) AS stamps,
+                 COUNT(CASE WHEN type = ? THEN 1 END) AS redeems,
+                 COUNT(CASE WHEN type = ? THEN 1 END) AS voids',
                 [TransactionType::Stamp->value, TransactionType::Redeem->value, TransactionType::Void->value],
             )
             ->toBase()

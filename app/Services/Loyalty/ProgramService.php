@@ -168,7 +168,7 @@ class ProgramService
             });
         } catch (QueryException $e) {
             // Un card apărut între verificare și ștergere: FK-ul restrict o oprește.
-            if ($e->getCode() === '23503') {
+            if (($e->errorInfo[1] ?? null) === 1451) { // MySQL: rândul părinte are încă referințe
                 throw $this->inUse();
             }
 

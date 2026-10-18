@@ -14,7 +14,7 @@ use LogicException;
 
 /**
  * Jurnal append-only: tranzacțiile nu se modifică și nu se șterg, doar se anulează printr-o tranzacție inversă.
- * Singura modificare permisă e setarea o singură dată a voided_by_id (garantat și de un trigger Postgres).
+ * Singura modificare permisă e setarea o singură dată a voided_by_id (garantat și de un trigger MySQL).
  *
  * @property int $id
  * @property int $business_id
