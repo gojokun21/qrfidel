@@ -212,3 +212,26 @@ Prescurtări: O = owner, M = manager, S = angajat (staff), C = client, A = admin
 2. **B2–B4** (paginile de eroare și ieșirea din 403/419), pentru că pun personalul sau clienții în fundături, în engleză, în momente critice.
 
 B5–B8 și observațiile pot intra într-o sesiune ulterioară de finisare.
+
+## Status după reparații (sesiunea 11h, [ADR 021](../../decisions/021-fixuri-qa-idempotency-erori-remember.md))
+| Problemă | Status | Cum |
+|---|---|---|
+| B1 – afaceri duplicate | Rezolvat | `idempotency_key` + `IdempotentCreation` (lock); butonul se dezactivează. Reverificat: dublu-click → 1 afacere; 3 POST-uri simultane cu aceeași cheie → 1 afacere. |
+| B2 – 419 brut | Rezolvat | `errors/419` în română, cu „Înapoi” și acțiuni de cont. |
+| B3 – 403 fără ieșire | Rezolvat | `errors/403` cu „Profil” și „Deconectare” pentru staff-ul logat. Reverificat pe afacerea suspendată. |
+| B4 – pagini de eroare implicite | Rezolvat | `errors/403, 404, 419, 500, 503` pe `x-error-page`. |
+| B5 – verify-email în engleză | Rezolvat | Cheia adăugată în `lang/ro.json`. |
+| B6 – enumerarea conturilor | Rezolvat | Același mesaj pentru orice email. |
+| B7 – locații / programe duplicate | Rezolvat | Același mecanism ca la B1; reverificat cu 2 POST-uri simultane → 1 locație. |
+| B8 – email rupt, câmp „Motiv” îngust | Rezolvat | `break-words` pe emailuri; formularul de anulare pe două rânduri, câmpul pe toată lățimea. |
+| Atributul `rollover_extra` | Rezolvat | „păstrarea ștampilelor în plus”. |
+| „Fără pauză” lângă „Pe pauză” | Rezolvat | „Ștampile fără așteptare” / „N min între ștampile”. |
+| Magic link folosit, deschis prin GET | Rezolvat | Pagina „Linkul nu mai e valabil” direct. |
+| Anularea invitației fără confirmare | Rezolvat | `confirm()` ca la celelalte acțiuni distructive. |
+| `/reset-password` fără titlu | Rezolvat | Titlul „Alege o parolă nouă”. |
+| Bara de scroll albă în meniul mobil | Rezolvat | `scrollbar-color` pe tonurile sidebar-ului. |
+| Logo cu `tabindex=-1` | Intenționat | Evită două opriri identice (comentariul din `layouts/guest`). |
+| Selectorul de afaceri al adminului | Intenționat | ADR 014: adminul își poate crea afaceri de test. |
+| Managerul poate crea o afacere proprie | Intenționat | Onboarding self-serve, pentru orice user verificat. |
+| Polling doar cu tabul vizibil | Intenționat | Economisește bateria. |
+| **Nou, găsit la reverificare:** 419 la login după logout, cu un client ținut minte în același browser | Rezolvat | `ResolveRememberedUsers` relogează din cookie-ul „remember” înainte de randare (Laravel 12 regenerează tokenul la relogare). Reprodus cu un script, apoi 3/3 reușite după fix. |

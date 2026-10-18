@@ -24,7 +24,7 @@ php artisan serve             # http://localhost:8000
 ## Convenții (obligatorii)
 - Logica de business stă **doar** în `app/Services/Loyalty`. Controllerele rămân subțiri: validare (Form Request), autorizare (Policy), apel de serviciu, răspuns.
 - Orice tabel de business are `business_id` + global scope prin trait-ul `BelongsToBusiness`; accesul trece și prin Policies.
-- Orice acțiune de staff (stamp, redeem, void, aprobare cerere) are **idempotency key**.
+- Orice acțiune de staff (stamp, redeem, void, aprobare cerere) are **idempotency key**. Și formularele de creare ale ownerului (afacere, locație, program) trimit `idempotency_key` (`x-ui.idempotency-key` + `IdempotentCreation`, ADR 021).
 - `card_transactions` e jurnal append-only: tranzacțiile **nu se șterg și nu se modifică**, doar se anulează (void = tranzacție inversă). Soldul de pe `cards` e cache.
 - Testele Pest se scriu **înainte** de implementare pentru regulile din sesiune.
 - Abaterile de la SDD primesc un ADR în `docs/decisions/NNN-titlu.md`.
