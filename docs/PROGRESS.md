@@ -5,6 +5,60 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 11f – MySQL pentru hosting (2026-10-18)
+
+În afara listei din SDD §11.4: hostingul `loyup.ro` (cPanel) nu are PostgreSQL, ci MySQL 8.0.37. Proiectul trece pe MySQL ([ADR 020](decisions/020-mysql-in-loc-de-postgres.md)).
+
+**Făcut:**
+- **Docker:** `mysql:8.0.37` pe portul 3307, cu `--skip-log-bin`, ca pe hosting; `docker/mysql/init.sql` creează baza de test și drepturile pentru testele paralele. Serviciul `postgres` a fost scos. `.env`, `.env.example` și `phpunit.xml` folosesc `mysql`.
+- **Conexiunea MySQL:**
+  - sesiunea în UTC (`timezone +00:00`), InnoDB;
+  - izolarea **READ COMMITTED** și colația **`utf8mb4_0900_as_cs`**, ca semantica din Postgres;
+  - coloanele de timp sunt **DATETIME**, fiindcă TIMESTAMP se oprește în 2038.
+- **Migrațiile**, rescrise pe loc (producția nu exista):
+  - triggere `SIGNAL` pentru `card_transactions` (cu lista explicită de coloane) și `audit_logs`;
+  - indexuri funcționale în locul celor parțiale (o cerere pending per card, o invitație activă per email);
+  - trigger pentru „ownerul fără locație” (MySQL nu acceptă CHECK pe o coloană cu SET NULL);
+  - `json`, `REGEXP_LIKE`, `DROP CHECK`.
+- **Servicii:**
+  - `FILTER` → `CASE` în `ReportService`; `ilike` → `like`; `make_interval` → `DATE_SUB`;
+  - pragul de 30 de zile din panoul de admin se calculează în PHP pentru fiecare timezone (fără `CONVERT_TZ`);
+  - eroarea FK `1451` înlocuiește `23503`.
+- **Bug prins de testul de concurență:** `createOrFirst` nu vedea cardul creat în paralel (snapshot REPEATABLE READ). Rezolvat la rădăcină prin READ COMMITTED.
+- **Fixuri după `/code-review high`:**
+  - colația accent-insensitive permitea preluarea contului prin magic link (`ion@gmaíl.com` → `ion@gmail.com`);
+  - deadlock-uri din gap lock-uri la cereri și invitații paralele;
+  - limita TIMESTAMP din 2038;
+  - căutarea din admin, case-insensitive cu `lower()`;
+  - timezone-urile se citesc o dată per request;
+  - instrucțiunile de recuperare a bazei de test includ și drepturile.
+- **Teste noi:**
+  - triggerul append-only acoperă toate coloanele din `card_transactions`;
+  - o invitație de owner nu poate avea locație (la insert și la update);
+  - emailurile care diferă doar prin diacritice sunt clienți diferiți;
+  - suita rulează pe MySQL 8.0, cu READ COMMITTED.
+- **Docs:** CLAUDE.md, skill-ul `/session-close` și hook-ul `run-tests` (portul 3307) actualizate.
+
+**Verificări:** `composer test` 882 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK · testele de concurență verzi de 5 ori la rând.
+
+**Rămas / de continuat:**
+- Deploy-ul pe `loyup.ro`:
+  - creat baza și userul MySQL din cPanel;
+  - clonat repo-ul în afara `public_html`;
+  - `composer install --no-dev`, `.env` de producție, `migrate --force`, `public/build`;
+  - document root pe `public/`.
+
+**Decizii noi:**
+- [020](decisions/020-mysql-in-loc-de-postgres.md): MySQL 8 în loc de PostgreSQL.
+
+**Probleme cunoscute:**
+- Triggerele cer ca `log_bin` să rămână OFF pe hosting, cum e acum. Altfel `migrate` pică cu eroarea 1419.
+- Containerul și volumul `postgres` vechi rămân local până la ștergerea lor manuală (`docker compose up -d --remove-orphans`, apoi `docker volume rm`).
+
+**Următoarea sesiune:** 12 – Deploy pe `loyup.ro` (cPanel, MySQL) + test end-to-end real.
+
+---
+
 ## Sesiunea 11e – Landing după Figma și cardul „pro” (2026-10-18)
 
 În afara listei din SDD §11.4, la cererea utilizatorului: landing-ul exact după designul din Figma („Landing v3”) și finisarea UI-ului.
