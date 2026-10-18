@@ -1,7 +1,6 @@
 <section aria-labelledby="update-password-title">
     <header>
         <h2 id="update-password-title" class="text-base font-semibold text-ink">{{ __('Update Password') }}</h2>
-        <p class="mt-1 text-sm text-ink-muted">{{ __('Ensure your account is using a long, random password to stay secure.') }}</p>
     </header>
 
     <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-5">

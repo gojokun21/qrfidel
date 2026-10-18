@@ -11,10 +11,12 @@
 ])
 
 {{--
-    Cardul de fidelitate al clientului: ștampile, progres „X din N”, recompensă.
+    Cardul de fidelitate al clientului, în stilul unui pass de wallet: suprafață plină în culoarea programului,
+    afacerea și programul sus, sloturile de ștampile, recompensa jos. Progresul se vede o singură dată, din sloturi.
     Cu `live`, textul și ștampilele urmăresc obiectul Alpine `preview` din părinte (wizard-ul de programe);
     valorile din props sunt randarea inițială (și cea fără JavaScript). `compact` = varianta din liste.
     Culoarea programului vine din date (inline), nu din tokenuri: fiecare afacere își alege culoarea.
+    Cerneala (`$ink`) e alb sau bleumarin, după contrast; ștampilele pline o inversează (fond = cerneală).
 --}}
 @php
     $required = max(1, (int) $required);
@@ -22,58 +24,52 @@
     $ink = \App\Support\Color::readableOn($color);
 @endphp
 
-<div {{ $attributes->class(['relative overflow-hidden rounded-panel bg-gradient-to-br from-inverse-raised to-inverse-deep text-inverse-fg shadow-overlay', 'p-4' => $compact, 'p-6' => ! $compact]) }}
+<div {{ $attributes->class(['relative overflow-hidden rounded-panel shadow-float ring-1 ring-inset ring-black/10', 'p-4' => $compact, 'p-5' => ! $compact]) }}
+     style="background-color: {{ $color }}; color: {{ $ink }}"
      role="img" aria-label="Card de fidelitate: {{ $filled }} din {{ $required }} ștampile"
-     @if ($live) :aria-label="`Card de fidelitate: ${preview.filled} din ${preview.required} ștampile`" @endif>
-    <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-25 blur-2xl"
-         style="background-color: {{ $color }}" @if ($live) :style="{ backgroundColor: preview.color }" @endif></div>
-
-    <div class="relative flex items-center gap-3">
-        @if ($live)
-            <x-ui.avatar :name="$business" :color="$color" x-bind:style="{ backgroundColor: preview.color, color: preview.ink }" />
-        @else
-            <x-ui.avatar :name="$business" :color="$color" />
-        @endif
+     @if ($live)
+         :style="{ backgroundColor: preview.color, color: preview.ink }"
+         :aria-label="`Card de fidelitate: ${preview.filled} din ${preview.required} ștampile`"
+     @endif>
+    <div class="flex min-w-0 items-center gap-3">
+        <span aria-hidden="true" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-control text-base font-bold"
+              style="background-color: {{ $ink }}; color: {{ $color }}"
+              @if ($live) :style="{ backgroundColor: preview.ink, color: preview.color }" @endif>{{ mb_strtoupper(mb_substr($business, 0, 1)) }}</span>
         <div class="min-w-0">
-            <p class="truncate font-semibold">{{ $business }}</p>
-            <p class="truncate text-xs text-inverse-muted" @if ($live) x-text="preview.name || 'Numele programului'" @endif>{{ $name }}</p>
+            <p class="truncate font-semibold leading-tight">{{ $business }}</p>
+            <p class="mt-0.5 truncate text-xs opacity-75" @if ($live) x-text="preview.name || 'Numele programului'" @endif>{{ $name }}</p>
         </div>
     </div>
 
+    <div @class(['h-px bg-current opacity-20', 'my-4' => $compact, 'my-5' => ! $compact])></div>
+
     @if ($live)
-        <div class="relative mt-6 grid gap-2.5" :class="preview.required > 10 ? 'grid-cols-10' : 'grid-cols-5'">
+        <div class="grid gap-2.5" :class="preview.required > 10 ? 'grid-cols-10' : 'grid-cols-5'">
             <template x-for="i in preview.required" :key="i">
                 <div class="flex aspect-square items-center justify-center rounded-full transition-colors"
-                     :class="i <= preview.filled ? 'shadow-md' : 'border-2 border-dashed border-ink-muted'"
-                     :style="i <= preview.filled ? { backgroundColor: preview.color, color: preview.ink } : {}">
+                     :class="i <= preview.filled ? '' : 'border-[1.5px] border-current opacity-30'"
+                     :style="i <= preview.filled ? { backgroundColor: preview.ink, color: preview.color } : {}">
                     {{-- Excepție: SVG-ul vine din x-html, deci dimensiunea se pune pe copil cu un variant arbitrar. --}}
                     <span class="flex h-1/2 w-1/2 items-center justify-center [&>svg]:h-full [&>svg]:w-full" x-show="i <= preview.filled" x-html="preview.iconSvg"></span>
                 </div>
             </template>
         </div>
     @else
-        <div @class(['relative grid', 'mt-6 gap-2.5' => ! $compact, 'mt-4 gap-2' => $compact, 'grid-cols-10' => $required > 10, 'grid-cols-5' => $required <= 10])>
+        <div @class(['grid', 'gap-2.5' => ! $compact, 'gap-2' => $compact, 'grid-cols-10' => $required > 10, 'grid-cols-5' => $required <= 10])>
             @for ($i = 1; $i <= $required; $i++)
                 @if ($i <= $filled)
-                    <div class="flex aspect-square items-center justify-center rounded-full shadow-md" style="background-color: {{ $color }}; color: {{ $ink }}">
+                    <div class="flex aspect-square items-center justify-center rounded-full" style="background-color: {{ $ink }}; color: {{ $color }}">
                         <x-ui.icon :name="$icon" class="h-1/2 w-1/2" />
                     </div>
                 @else
-                    <div class="aspect-square rounded-full border-2 border-dashed border-ink-muted"></div>
+                    <div class="aspect-square rounded-full border-[1.5px] border-current opacity-30"></div>
                 @endif
             @endfor
         </div>
     @endif
 
-    <div class="relative mt-5 flex items-end justify-between gap-3">
-        <p @class(['font-bold tracking-tight', 'text-2xl' => $compact, 'text-3xl' => ! $compact])>
-            <span @if ($live) x-text="preview.filled" @endif>{{ $filled }}</span><span class="text-lg font-semibold text-inverse-muted"> din <span @if ($live) x-text="preview.required" @endif>{{ $required }}</span></span>
-        </p>
-        <p class="min-w-0 truncate text-right text-sm font-semibold" style="color: {{ $color }}" @if ($live) :style="{ color: preview.color }" x-text="preview.reward || 'Recompensa'" @endif>{{ $reward }}</p>
-    </div>
-    <div class="relative mt-3 h-2 overflow-hidden rounded-full bg-inverse-line">
-        <div class="h-full rounded-full transition-all duration-500"
-             style="width: {{ round($filled / $required * 100) }}%; background-color: {{ $color }}"
-             @if ($live) :style="{ width: (preview.filled / preview.required * 100) + '%', backgroundColor: preview.color }" @endif></div>
-    </div>
+    <p @class(['flex min-w-0 items-center gap-2 text-sm font-semibold', 'mt-4' => $compact, 'mt-5' => ! $compact])>
+        <x-ui.icon name="gift" class="h-4 w-4 shrink-0 opacity-70" />
+        <span class="truncate" @if ($live) x-text="preview.reward || 'Recompensa'" @endif>{{ $reward }}</span>
+    </p>
 </div>

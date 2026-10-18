@@ -21,7 +21,6 @@
                     <h2 class="min-w-0 break-words text-lg font-semibold text-ink">{{ $program->name }}</h2>
                     <x-loyalty.program-status :status="$program->status" />
                 </div>
-                <p class="mt-1 text-sm text-ink-secondary">{{ $program->stamps_required }} ștampile → {{ $program->reward_title }}</p>
 
                 <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
                     <li>{{ $program->cooldown_minutes > 0 ? 'Pauză '.$program->cooldown_minutes.' min' : 'Fără pauză' }}</li>

@@ -66,7 +66,7 @@
             @endif
         </section>
     @else
-        <x-ui.card title="Scanează din nou" description="Ștampilele și recompensele se dau doar după o scanare recentă a codului clientului.">
+        <x-ui.card title="Scanează din nou">
             <x-ui.button :href="route('staff.scan')" icon="qr">Deschide scanerul</x-ui.button>
         </x-ui.card>
     @endif

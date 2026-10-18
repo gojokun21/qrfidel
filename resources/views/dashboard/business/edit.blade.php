@@ -8,7 +8,7 @@
 
             <div>
                 <p class="text-sm font-medium text-ink">Adresa publică</p>
-                <p class="mt-1 break-all font-mono text-sm text-ink-secondary">{{ url('/b/'.$business->slug) }}</p>
+                <p class="mt-1 break-all text-sm text-ink-secondary">{{ url('/b/'.$business->slug) }}</p>
             </div>
 
             <x-ui.button>Salvează</x-ui.button>

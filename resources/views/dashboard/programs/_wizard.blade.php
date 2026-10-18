@@ -29,7 +29,7 @@
     ];
     $stepTitles = [1 => 'Tip și template', 2 => 'Reguli', 3 => 'Aspect'];
     // Culorile propuse pentru card (date de conținut, nu tokenuri ale interfeței).
-    $swatches = ['#01A760', '#0891b2', '#7c2d12', '#b91c1c', '#be185d', '#7e22ce', '#1d4ed8', '#0f766e'];
+    $swatches = \App\Support\Color::SWATCHES;
 @endphp
 
 <form method="POST" action="{{ $action }}" novalidate x-data="programWizard(@js($config))" @submit="submit($event)" @keydown.enter="enter($event)" x-ref="wizard" class="scroll-mt-6">
@@ -65,7 +65,6 @@
                 <section x-ref="step-1" x-show="step === 1" class="space-y-6" aria-labelledby="step-1-title">
                     <div>
                         <h2 id="step-1-title" class="text-lg font-semibold text-ink">Alege un punct de pornire</h2>
-                        <p class="mt-1 text-sm text-ink-muted">Template-ul completează regulile. Le poți schimba pe toate în pașii următori.</p>
                     </div>
 
                     <div class="grid gap-3 sm:grid-cols-2">
@@ -88,7 +87,7 @@
                     <input type="hidden" name="template" :value="selected ?? ''">
                     <x-ui.error :messages="$errors->get('template')" />
 
-                    <x-ui.field label="Numele programului" for="name" hint="Așa îl văd clienții, de exemplu „5 cafele = 1 gratis”.">
+                    <x-ui.field label="Numele programului" for="name">
                         <x-ui.input id="name" name="name" type="text" x-model="form.name" required maxlength="120" />
                     </x-ui.field>
                 </section>
@@ -98,7 +97,6 @@
             <section x-ref="step-2" x-show="step === 2" @if ($creating) x-cloak @endif class="space-y-6" aria-labelledby="step-2-title">
                 <div>
                     <h2 id="step-2-title" class="text-lg font-semibold text-ink">Reguli</h2>
-                    <p class="mt-1 text-sm text-ink-muted">Câte ștampile, cât de des și cât sunt valabile. Regulile anti-fraudă se aplică la fiecare ștampilă.</p>
                 </div>
 
                 @unless ($creating)
@@ -115,27 +113,27 @@
                 @endif
 
                 <div class="grid gap-6 sm:grid-cols-2">
-                    <x-ui.field label="Ștampile necesare" for="stamps_required" hint="După atâtea ștampile clientul primește recompensa.">
+                    <x-ui.field label="Ștampile necesare" for="stamps_required">
                         <x-ui.input id="stamps_required" name="stamps_required" type="number" x-model="form.stamps_required" required min="{{ $minStamps }}" max="50" />
                     </x-ui.field>
 
-                    <x-ui.field label="Ștampile pe vizită (maxim)" for="max_stamps_per_visit" hint="Câte poate da angajatul odată (de ex. 2 cafele cumpărate).">
+                    <x-ui.field label="Ștampile pe vizită (maxim)" for="max_stamps_per_visit">
                         <x-ui.input id="max_stamps_per_visit" name="max_stamps_per_visit" type="number" x-model="form.max_stamps_per_visit" required min="1" ::max="form.stamps_required" />
                     </x-ui.field>
 
-                    <x-ui.field label="Pauză între ștampile (minute)" for="cooldown_minutes" hint="0 = fără pauză. Oprește ștampilele puse de două ori la rând.">
+                    <x-ui.field label="Pauză între ștampile (minute)" for="cooldown_minutes">
                         <x-ui.input id="cooldown_minutes" name="cooldown_minutes" type="number" x-model="form.cooldown_minutes" required min="0" max="10080" />
                     </x-ui.field>
 
-                    <x-ui.field label="Limită zilnică de ștampile" for="daily_limit" hint="Gol = fără limită. Se numără după fusul orar al afacerii.">
+                    <x-ui.field label="Limită zilnică de ștampile" for="daily_limit">
                         <x-ui.input id="daily_limit" name="daily_limit" type="number" x-model="form.daily_limit" ::min="form.max_stamps_per_visit" max="50" placeholder="Fără limită" />
                     </x-ui.field>
 
-                    <x-ui.field label="Ștampilele expiră după (zile)" for="stamps_expire_days" hint="Gol = nu expiră. Se numără de la ultima ștampilă.">
+                    <x-ui.field label="Ștampilele expiră după (zile)" for="stamps_expire_days">
                         <x-ui.input id="stamps_expire_days" name="stamps_expire_days" type="number" x-model="form.stamps_expire_days" min="1" max="3650" placeholder="Nu expiră" />
                     </x-ui.field>
 
-                    <x-ui.field label="Recompensa expiră după (zile)" for="reward_expire_days" hint="Gol = nu expiră.">
+                    <x-ui.field label="Recompensa expiră după (zile)" for="reward_expire_days">
                         <x-ui.input id="reward_expire_days" name="reward_expire_days" type="number" x-model="form.reward_expire_days" min="1" max="3650" placeholder="Nu expiră" />
                     </x-ui.field>
                 </div>
@@ -143,8 +141,7 @@
                 <div>
                     <input type="hidden" name="rollover_extra" value="0">
                     <x-ui.checkbox name="rollover_extra" value="1" x-model="form.rollover_extra"
-                                   label="Păstrează ștampilele în plus"
-                                   description="Dacă la ultima vizită se depășește pragul, surplusul trece pe cardul următor." />
+                                   label="Păstrează ștampilele în plus" />
                     <x-ui.error :messages="$errors->get('rollover_extra')" class="mt-2" />
                 </div>
             </section>
@@ -153,7 +150,6 @@
             <section x-ref="step-3" x-show="step === 3" x-cloak class="space-y-6" aria-labelledby="step-3-title">
                 <div>
                     <h2 id="step-3-title" class="text-lg font-semibold text-ink">Aspect</h2>
-                    <p class="mt-1 text-sm text-ink-muted">Ce primește clientul și cum arată cardul lui.</p>
                 </div>
 
                 <x-ui.field label="Recompensa" for="reward_title">
@@ -236,7 +232,6 @@
                             :reward="$config['form']['reward_title']"
                             :color="\App\Support\Color::isHex($config['form']['color']) ? $config['form']['color'] : $config['fallbackColor']"
                             :icon="$config['form']['stamp_icon']" />
-            <p class="mt-3 text-sm text-ink-muted">Așa vede clientul cardul în telefon, după câteva vizite.</p>
         </aside>
     </div>
 </form>

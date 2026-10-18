@@ -1,9 +1,6 @@
 <section aria-labelledby="delete-account-title" class="space-y-5">
     <header>
         <h2 id="delete-account-title" class="text-base font-semibold text-ink">{{ __('Delete Account') }}</h2>
-        <p class="mt-1 text-sm text-ink-muted">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
-        </p>
     </header>
 
     <x-ui.button type="button" variant="danger" aria-controls="modal-confirm-user-deletion" aria-haspopup="dialog" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')">

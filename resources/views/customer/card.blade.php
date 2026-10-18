@@ -50,11 +50,9 @@
         <section aria-labelledby="qr-title">
             @if ($scannable)
                 <h2 id="qr-title" class="font-bold text-ink">Arată codul la casă</h2>
-                @if ($program->isActive())
-                    <p class="mt-1 text-sm text-ink-secondary">Angajatul îl scanează și îți adaugă ștampila.</p>
-                @else
+                @unless ($program->isActive())
                     <p class="mt-1 text-sm text-ink-secondary">Programul e oprit – recompensele rămân valabile.</p>
-                @endif
+                @endunless
 
                 <div x-data="qrDisplay($el.dataset.url)" data-url="{{ route('customer.cards.qr', $card) }}" class="mt-5">
                     <div class="relative mx-auto aspect-square w-full max-w-64">
@@ -71,7 +69,7 @@
                     <template x-if="shortCode && !expired">
                         <div class="mt-4">
                             <p class="text-xs uppercase tracking-eyebrow text-ink-muted">Sau dictează codul</p>
-                            <p class="mt-1 font-mono text-3xl font-bold tracking-eyebrow text-ink" x-text="formattedCode"></p>
+                            <p class="mt-1 tabular-nums text-3xl font-bold tracking-eyebrow text-ink" x-text="formattedCode"></p>
                         </div>
                     </template>
 

@@ -5,8 +5,8 @@
 
 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
     <x-ui.stat label="Clienți activi" :value="$report->activeCustomers" :hint="$periodLabel" icon="users" />
-    <x-ui.stat label="Ștampile azi" :value="$report->stampsToday" hint="De la miezul nopții" icon="clock" />
-    <x-ui.stat label="Ștampile în 7 zile" :value="$report->stampsWeek" hint="Inclusiv azi" icon="star" />
+    <x-ui.stat label="Ștampile azi" :value="$report->stampsToday" icon="clock" />
+    <x-ui.stat label="Ștampile în 7 zile" :value="$report->stampsWeek" icon="star" />
     <x-ui.stat label="Ștampile" :value="$report->stamps" :hint="$periodLabel" icon="chart" />
     <x-ui.stat label="Recompense emise" :value="$report->rewardsIssued" :hint="$periodLabel" icon="gift" />
     <x-ui.stat label="Recompense folosite" :value="$report->rewardsRedeemed" :hint="$periodLabel" icon="heart" />

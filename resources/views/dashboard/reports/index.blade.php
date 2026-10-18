@@ -1,6 +1,6 @@
 {{-- „Rapoarte” (manager+, SDD §9, ADR 014). --}}
 <x-app-layout title="Rapoarte"
-              :description="$report->periodLabel().', de la '.$report->from->format('d.m.Y').' ('.$business->timezone.'). Ștampilele și recompensele anulate nu se numără.'">
+              :description="$report->periodLabel().', de la '.$report->from->format('d.m.Y').' ('.$business->timezone.')'">
     @if ($restrictedTo)
         <x-slot:actions>
             <x-ui.badge>

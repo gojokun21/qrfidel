@@ -8,7 +8,7 @@
         <div class="min-w-0">
             <p class="text-sm font-medium text-ink-muted">Pagina publică</p>
             <a href="{{ url('/b/'.$business->slug) }}" target="_blank" rel="noopener"
-               class="mt-1 block break-all font-mono text-sm text-ink underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:text-base">{{ url('/b/'.$business->slug) }}</a>
+               class="mt-1 block break-all text-sm text-ink underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:text-base">{{ url('/b/'.$business->slug) }}</a>
         </div>
         <x-ui.icon name="link" class="hidden h-8 w-8 shrink-0 text-primary sm:block" />
     </x-ui.card>
@@ -40,10 +40,7 @@
     @can('update', $business)
         @if ($locationsCount === 0)
             <div class="flex flex-col gap-4 rounded-card border-2 border-dashed border-primary-line bg-primary-soft p-6 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-lg font-semibold text-ink">Primul pas</p>
-                    <p class="mt-1 text-ink-secondary">Începe prin a adăuga prima locație, apoi invită-ți echipa.</p>
-                </div>
+                <p class="text-lg font-semibold text-ink">Primul pas</p>
                 <x-ui.button :href="route('dashboard.locations.create')" icon="plus" class="shrink-0">Adaugă o locație</x-ui.button>
             </div>
         @endif

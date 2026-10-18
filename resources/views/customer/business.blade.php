@@ -38,14 +38,11 @@
                                     :filled="$card?->stamps_balance ?? 0" />
 
                     <div class="mt-4 px-1">
-                        <h2 id="program-{{ $program->id }}" class="font-bold text-ink">{{ $program->name }}</h2>
-                        <p class="mt-1 text-sm text-ink-secondary">
-                            {{ $program->stamps_required }} ștampile → <strong class="text-ink">{{ $program->reward_title }}</strong>
-                        </p>
+                        <h2 id="program-{{ $program->id }}" class="sr-only">{{ $program->name }}</h2>
                         @if ($program->reward_description)
-                            <p class="mt-1 text-sm text-ink-secondary">{{ $program->reward_description }}</p>
+                            <p class="text-sm text-ink-secondary">{{ $program->reward_description }}</p>
                         @endif
-                        <ul class="mt-3 flex flex-wrap gap-2">
+                        <ul @class(['flex flex-wrap gap-2', 'mt-3' => $program->reward_description])>
                             <li><x-ui.badge>Maximum {{ $program->max_stamps_per_visit }} pe vizită</x-ui.badge></li>
                             @if ($program->daily_limit)
                                 <li><x-ui.badge>Maximum {{ $program->daily_limit }} pe zi</x-ui.badge></li>

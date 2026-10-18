@@ -4,6 +4,7 @@ use App\Enums\Role;
 use App\Models\AuditLog;
 use App\Models\Business;
 use App\Models\User;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
 
@@ -34,12 +35,16 @@ it('marks only the field that failed, not same-named controls in other forms', f
         ->tap(fn ($response) => expect(substr_count((string) $response->getContent(), 'aria-invalid="true"'))->toBe(1));
 });
 
-it('describes a field by its hint and leaves valid fields unmarked', function () {
+it('describes a field by its hint', function () {
+    $this->blade('<x-ui.field label="Fusul orar" for="timezone" hint="Indiciu"><x-ui.input id="timezone" name="timezone" /></x-ui.field>')
+        ->assertSee('aria-describedby="timezone-hint"', false)
+        ->assertSee('id="timezone-hint"', false);
+});
+
+it('leaves valid fields unmarked', function () {
     $this->actingAs($this->owner)
         ->get(route('dashboard.business.edit'))
         ->assertOk()
-        ->assertSee('aria-describedby="timezone-hint"', false)
-        ->assertSee('id="timezone-hint"', false)
         ->assertDontSee('aria-invalid', false);
 });
 
@@ -63,4 +68,14 @@ it('renders the pagination in Romanian with the current page marked', function (
         ->assertOk()
         ->assertSee('aria-label="Paginare"', false)
         ->assertSeeInOrder(['← Înapoi', 'aria-current="page">2</span>', 'Înainte →'], false);
+});
+
+it('uses the brand font everywhere, never a monospace one', function () {
+    $offenders = collect(File::allFiles(resource_path('views')))
+        ->filter(fn ($file) => str_contains($file->getContents(), 'font-mono'))
+        ->map(fn ($file) => $file->getRelativePathname())
+        ->values()
+        ->all();
+
+    expect($offenders)->toBe([]);
 });

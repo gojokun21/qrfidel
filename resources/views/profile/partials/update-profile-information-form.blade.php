@@ -1,7 +1,6 @@
 <section aria-labelledby="profile-information-title">
     <header>
         <h2 id="profile-information-title" class="text-base font-semibold text-ink">{{ __('Profile Information') }}</h2>
-        <p class="mt-1 text-sm text-ink-muted">{{ __("Update your account's profile information and email address.") }}</p>
     </header>
 
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
