@@ -38,7 +38,7 @@ it('shows the card with its progress and the rotating QR', function () {
         ->assertSee('Cafeneaua Centrală')
         ->assertSee('Cafele fidele')
         ->assertSee('O cafea gratis')
-        ->assertSee('Card de fidelitate: 3 din 5 ștampile')
+        ->assertSee(': 3 din 5 ștampile')
         ->assertSee('qrDisplay', false)
         ->assertSee(route('customer.cards.qr', $this->card), false)
         ->assertDontSee($this->card->secret);

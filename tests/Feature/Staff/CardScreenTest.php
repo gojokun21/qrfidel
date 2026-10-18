@@ -47,7 +47,7 @@ describe('card screen', function () {
             ->assertSee(substr($this->card->customer->email, 0, 2).'***@')
             ->assertDontSee($this->card->customer->email)
             ->assertSee($this->program->name)
-            ->assertSee('Card de fidelitate: 2 din 5 ștampile')
+            ->assertSee(': 2 din 5 ștampile')
             ->assertSee('+1 ștampilă')
             ->assertSee($this->location->name)
             ->assertSee('name="idempotency_key"', false)
@@ -61,7 +61,7 @@ describe('card screen', function () {
     it('shows the card but no actions without a valid scan', function () {
         ($this->show)('expired-or-forged')
             ->assertOk()
-            ->assertSee('Card de fidelitate: 2 din 5 ștampile')
+            ->assertSee(': 2 din 5 ștampile')
             ->assertSee('Scanează din nou')
             ->assertDontSee('+1 ștampilă');
 

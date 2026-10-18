@@ -3,7 +3,8 @@
     $timezone = $business->timezone;
 @endphp
 
-<x-app-layout title="Tranzacții">
+<x-app-layout title="Tranzacții"
+              :description="'Ștampilele și recompensele se pot anula în primele '.\App\Services\Loyalty\VoidService::WINDOW_HOURS.' de ore; o ștampilă doar dacă e ultima de pe card.'">
     <form method="GET" action="{{ route('dashboard.transactions.index') }}" class="flex flex-wrap items-end gap-3" aria-label="Filtre">
         @if ($locations->isNotEmpty())
             <x-ui.field label="Locația" for="location">

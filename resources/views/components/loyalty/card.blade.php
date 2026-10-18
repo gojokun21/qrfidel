@@ -12,7 +12,8 @@
 
 {{--
     Cardul de fidelitate al clientului, în stilul unui pass de wallet: suprafață plină în culoarea programului,
-    afacerea și programul sus, sloturile de ștampile, recompensa jos. Progresul se vede o singură dată, din sloturi.
+    afacerea, programul și progresul „X din N” sus (SDD §1), sloturile de ștampile, recompensa jos.
+    Sub role="img", aria-label-ul spune tot: programul, progresul și recompensa.
     Cu `live`, textul și ștampilele urmăresc obiectul Alpine `preview` din părinte (wizard-ul de programe);
     valorile din props sunt randarea inițială (și cea fără JavaScript). `compact` = varianta din liste.
     Culoarea programului vine din date (inline), nu din tokenuri: fiecare afacere își alege culoarea.
@@ -26,19 +27,21 @@
 
 <div {{ $attributes->class(['relative overflow-hidden rounded-panel shadow-float ring-1 ring-inset ring-black/10', 'p-4' => $compact, 'p-5' => ! $compact]) }}
      style="background-color: {{ $color }}; color: {{ $ink }}"
-     role="img" aria-label="Card de fidelitate: {{ $filled }} din {{ $required }} ștampile"
+     role="img" aria-label="Card de fidelitate {{ $name }}: {{ $filled }} din {{ $required }} ștampile, recompensa: {{ $reward }}"
      @if ($live)
          :style="{ backgroundColor: preview.color, color: preview.ink }"
-         :aria-label="`Card de fidelitate: ${preview.filled} din ${preview.required} ștampile`"
+         :aria-label="`Card de fidelitate ${preview.name}: ${preview.filled} din ${preview.required} ștampile, recompensa: ${preview.reward}`"
      @endif>
     <div class="flex min-w-0 items-center gap-3">
         <span aria-hidden="true" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-control text-base font-bold"
               style="background-color: {{ $ink }}; color: {{ $color }}"
               @if ($live) :style="{ backgroundColor: preview.ink, color: preview.color }" @endif>{{ mb_strtoupper(mb_substr($business, 0, 1)) }}</span>
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
             <p class="truncate font-semibold leading-tight">{{ $business }}</p>
             <p class="mt-0.5 truncate text-xs opacity-75" @if ($live) x-text="preview.name || 'Numele programului'" @endif>{{ $name }}</p>
         </div>
+        <p class="shrink-0 text-sm font-semibold tabular-nums"
+           @if ($live) x-text="`${preview.filled} din ${preview.required}`" @endif>{{ $filled }} din {{ $required }}</p>
     </div>
 
     <div @class(['h-px bg-current opacity-20', 'my-4' => $compact, 'my-5' => ! $compact])></div>

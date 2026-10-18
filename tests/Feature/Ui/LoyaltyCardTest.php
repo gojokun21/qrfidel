@@ -17,23 +17,22 @@ function loyaltyCard(array $props = []): string
     );
 }
 
-it('shows the progress only once, through the stamp slots', function () {
+it('names the program, progress and reward for screen readers and shows the count', function () {
     $html = loyaltyCard();
 
     expect($html)
-        ->toContain('Card de fidelitate: 3 din 5 ștampile')
-        ->toContain('Cafea gratis')
+        ->toContain('aria-label="Card de fidelitate 5 cafele = 1 gratis: 3 din 5 ștampile, recompensa: Cafea gratis"')
+        ->toContain('>3 din 5</p>')
         ->not->toContain('Mai ai nevoie de')
         ->not->toContain('Recompensă<')
-        ->not->toContain('>Ștampile<')
-        ->not->toContain('/<span>5</span>');
+        ->not->toContain('>Ștampile<');
 
     expect(substr_count($html, 'aspect-square'))->toBe(5);
 });
 
 it('keeps a complete card free of extra status text', function () {
     expect(loyaltyCard(['filled' => 5]))
-        ->toContain('Card de fidelitate: 5 din 5 ștampile')
+        ->toContain('5 din 5 ștampile')
         ->not->toContain('Completat');
 });
 
