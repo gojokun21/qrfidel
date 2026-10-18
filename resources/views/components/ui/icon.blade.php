@@ -71,7 +71,7 @@
             @break
         {{-- Iconurile ștampilelor (App\Enums\StampIcon). --}}
         @case('coffee')
-            <path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9Z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c-.6.8-.6 1.7 0 2.5M12 3c-.6.8-.6 1.7 0 2.5"/><path d="M3 21h14"/>
+            <path d="M5.5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5V9Z"/><path d="M17.5 10H19a2.5 2.5 0 0 1 0 5h-1.5"/><path d="M9.5 3c-.6.8-.6 1.7 0 2.5M13.5 3c-.6.8-.6 1.7 0 2.5"/><path d="M4.5 21h14"/>
             @break
         @case('utensils')
             <path d="M6 3v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3"/><path d="M8 12v9"/><path d="M17 21V3c-2 1-3.5 3.5-3.5 7 0 2 1 3 3.5 3"/>
@@ -105,6 +105,28 @@
             @break
         @case('scan')
             <path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M16 4h3a1 1 0 0 1 1 1v3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><path d="M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M4 12h16"/>
+            @break
+        {{-- Iconurile landing-ului (Figma „Landing v3”), cu traseele din design scalate pe grila de 24. --}}
+        @case('shield-check')
+            <g transform="scale(1.2)"><path d="M10 2.5 4.167 5v4.167c0 3.75 2.5 7.083 5.833 8.333 3.333-1.25 5.833-4.583 5.833-8.333V5L10 2.5Z"/><path d="m7.5 10 1.667 1.667L12.5 8.333"/></g>
+            @break
+        @case('click')
+            <g transform="scale(1.2)"><path d="m7.5 7.5 9.167 3.333-4.167 1.667-1.667 4.167L7.5 7.5Z"/><path d="M4.167 2.5v1.667m0 0V5m0-.833H2.5m1.667 0H5m6.667-.834-1.25 1.25m-7.084 7.084 1.25-1.25"/></g>
+            @break
+        @case('list-lines')
+            <g transform="scale(1.2)"><path d="M7.5 5h9.167M7.5 10h9.167M7.5 15h9.167M3.333 5h.009M3.333 10h.009M3.333 15h.009"/></g>
+            @break
+        @case('bar-chart')
+            <g transform="scale(1.0909)"><path d="M3.667 18.333V9.167m0 9.166h5.5m-5.5 0H1.833m7.334 0V3.667m0 14.666h5.5m0 0v-6.416m0 6.416h5.5"/></g>
+            @break
+        @case('scan-frame')
+            <g transform="scale(1.0909)"><path d="M3.667 7.333V5.5A1.833 1.833 0 0 1 5.5 3.667h1.833m7.334 0H16.5A1.833 1.833 0 0 1 18.333 5.5v1.833m0 7.334V16.5a1.833 1.833 0 0 1-1.833 1.833h-1.833m-7.334 0H5.5A1.833 1.833 0 0 1 3.667 16.5v-1.833M3.667 11h14.666"/></g>
+            @break
+        @case('smartphone')
+            <g transform="scale(1.0909)"><path d="M8.25 1.833h5.5a2.75 2.75 0 0 1 2.75 2.75v12.834a2.75 2.75 0 0 1-2.75 2.75h-5.5a2.75 2.75 0 0 1-2.75-2.75V4.583a2.75 2.75 0 0 1 2.75-2.75Z"/><path d="M10.083 16.5h1.834"/></g>
+            @break
+        @case('check-bold')
+            <g transform="scale(1.8462)"><path d="M2.708 6.771 5.146 9.208l5.146-5.146" stroke-width="2"/></g>
             @break
     @endswitch
 </svg>

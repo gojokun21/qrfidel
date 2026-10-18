@@ -47,7 +47,7 @@
         </ul>
     </x-ui.card>
 
-    <x-ui.card title="Invită un membru" :description="'Persoana primește un email cu un link valabil '.\App\Services\Loyalty\InvitationService::VALID_DAYS.' zile.'">
+    <x-ui.card title="Invită un membru">
         <form method="POST" action="{{ route('dashboard.invitations.store') }}" class="grid gap-4 sm:grid-cols-4 sm:items-start"
               x-data="{ role: @js(old('role', 'staff')) }">
             @csrf

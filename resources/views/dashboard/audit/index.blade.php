@@ -3,8 +3,7 @@
     $timezone = app(\App\Support\Tenancy\CurrentBusiness::class)->get()?->timezone ?? config('app.timezone');
 @endphp
 
-<x-app-layout title="Jurnal de activitate"
-              description="Tot ce s-a făcut în afacere: ștampile, recompense, anulări, cereri, echipă și setări.">
+<x-app-layout title="Jurnal de activitate">
     <nav class="flex flex-wrap gap-2" aria-label="Categorii">
         <x-ui.filter-link :href="route('dashboard.audit.index')" :active="$category === null">Toate</x-ui.filter-link>
         @foreach ($categories as $key => $label)
@@ -31,7 +30,7 @@
                         <div class="min-w-0">
                             <p class="font-semibold text-ink">{{ \App\Support\AuditActions::label($log->action) }}</p>
                             <p class="break-words text-sm text-ink-secondary">
-                                {{ $actorName }}@if ($log->ip_address) · <span class="font-mono text-xs">{{ $log->ip_address }}</span>@endif
+                                {{ $actorName }}@if ($log->ip_address) · <span class="tabular-nums text-xs">{{ $log->ip_address }}</span>@endif
                             </p>
                         </div>
                         <time class="shrink-0 text-xs text-ink-muted" datetime="{{ $log->created_at?->toIso8601String() }}">

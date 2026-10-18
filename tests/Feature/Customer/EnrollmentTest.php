@@ -134,14 +134,14 @@ describe('http', function () {
             ->assertOk()
             ->assertSee('Cafeneaua Centrală')
             ->assertSee('Cafele fidele')
-            ->assertSee('Card de fidelitate: 0 din 5 ștampile');
+            ->assertSee(': 0 din 5 ștampile');
 
         $this->actingAs($this->customer, 'customer')
             ->get(route('customer.cards'))
             ->assertOk()
             ->assertSee('Cafeneaua Centrală')
             ->assertSee('Cafele fidele')
-            ->assertSee('Card de fidelitate: 0 din 5 ștampile');
+            ->assertSee(': 0 din 5 ștampile');
     });
 
     it('does not create a second card when the customer enrolls twice', function () {

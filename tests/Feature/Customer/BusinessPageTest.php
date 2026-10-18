@@ -23,7 +23,7 @@ it('shows the business and its active programs to guests', function () {
         ->assertSee('Cafele fidele')
         ->assertSee('O cafea gratis')
         ->assertSee('Valabil doar pentru cafeaua la pahar.')
-        ->assertSee('Card de fidelitate: 0 din 5 ștampile');
+        ->assertSee(': 0 din 5 ștampile');
 });
 
 it('hides programs that are not active', function (ProgramStatus $status) {
@@ -79,7 +79,7 @@ it('shows the real progress when the customer is already enrolled', function () 
 
     $this->actingAs($customer, 'customer')
         ->get(route('customer.business', $this->business))
-        ->assertSee('Card de fidelitate: 3 din 5 ștampile')
+        ->assertSee(': 3 din 5 ștampile')
         ->assertSee('Ești înscris')
         ->assertDontSee('action="'.route('customer.enroll', [$this->business, $this->program]).'"', false);
 });

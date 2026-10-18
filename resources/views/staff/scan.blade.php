@@ -27,7 +27,7 @@
                 @csrf
                 <x-ui.field label="Sau tastează codul dictat de client" for="code">
                     <div class="flex gap-3">
-                        <x-ui.input id="code" name="code" class="font-mono text-lg uppercase tracking-eyebrow"
+                        <x-ui.input id="code" name="code" class="tabular-nums text-lg uppercase tracking-eyebrow"
                                     autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="255"
                                     placeholder="ABC DEF" required />
                         <x-ui.button class="shrink-0">Verifică</x-ui.button>

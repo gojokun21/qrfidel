@@ -21,10 +21,7 @@
                 <x-ui.card x-show="requests.length === 0">
                     <div class="flex items-center gap-4">
                         <span class="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-primary" aria-hidden="true"></span>
-                        <div>
-                            <p class="font-semibold text-ink">Nicio cerere acum</p>
-                            <p class="mt-1 text-sm text-ink-muted">Cererile de la tejghea apar aici automat, la câteva secunde.</p>
-                        </div>
+                        <p class="font-semibold text-ink">Nicio cerere acum</p>
                     </div>
                 </x-ui.card>
 

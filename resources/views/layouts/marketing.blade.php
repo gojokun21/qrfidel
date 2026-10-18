@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('layouts.partials.head', ['title' => $title ?? ''])
+        @vite('resources/js/landing.js')
         @isset($description)
             <meta name="description" content="{{ $description }}">
         @endisset
@@ -13,34 +14,35 @@
             $sections = ['#cum-functioneaza' => 'Cum funcționează', '#pentru-cine' => 'Pentru cine', '#anti-frauda' => 'Anti-fraudă'];
         @endphp
 
-        {{-- Meniul: o pastilă albă care plutește peste hero și devine opacă după primul scroll. --}}
+        {{-- Meniul-pastilă (Figma „Landing v3”): stă în containerul hero-ului; după 16px de scroll urcă și devine compact. --}}
         <header x-data="{ scrolled: false, open: false }" x-init="scrolled = window.scrollY > 16" @scroll.window="scrolled = window.scrollY > 16"
                 @keydown.escape.window="open = false"
-                class="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-5">
-            <div :class="scrolled || open ? 'bg-white/95 shadow-float' : 'bg-white/70 shadow-soft'"
-                 class="mx-auto max-w-6xl rounded-[1.75rem] border border-white/80 backdrop-blur-xl transition-[background-color,box-shadow] duration-300">
-                <div class="grid h-16 grid-cols-[1fr_auto] items-center gap-4 pl-5 pr-2 lg:grid-cols-[1fr_auto_1fr] lg:pl-6">
-                    <nav class="hidden items-center gap-7 text-sm font-medium text-ink-secondary lg:flex" aria-label="Secțiuni">
+                :class="scrolled && '-translate-y-4 lg:-translate-y-6'"
+                class="fixed inset-x-0 top-7 z-50 px-7 transition-transform duration-300 lg:top-9 lg:px-16">
+            <div :class="scrolled || open ? 'shadow-float' : 'shadow-[0_8px_12px_rgb(1_33_86/0.08),0_1px_1px_rgb(1_33_86/0.04)]'"
+                 class="mx-auto max-w-[82rem] rounded-[1.75rem] bg-white transition-shadow duration-300">
+                <div class="flex items-center justify-between gap-4 py-2.5 pl-[1.375rem] pr-2.5">
+                    <a href="{{ route('home') }}" aria-label="LoyUp – acasă" class="rounded-control focus:outline-none focus-visible:ring-2 focus-visible:ring-focus">
+                        <x-brand.lockup />
+                    </a>
+
+                    <nav class="hidden items-center gap-9 text-[0.9375rem] font-medium text-steel-600 lg:flex" aria-label="Secțiuni">
                         @foreach ($sections as $href => $label)
                             <a href="{{ $href }}" class="rounded-sm transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-focus">{{ $label }}</a>
                         @endforeach
+                        <a href="{{ route('customer.login') }}" class="rounded-sm transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-focus">Cardurile mele</a>
                     </nav>
 
-                    <a href="{{ route('home') }}" aria-label="LoyUp – acasă" class="rounded-control justify-self-start focus:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:justify-self-center">
-                        <x-brand.wordmark class="h-8 w-auto" />
-                    </a>
-
-                    <div class="flex items-center justify-end gap-2">
+                    <div class="flex items-center gap-5">
                         @auth
-                            <x-ui.button :href="route('dashboard')" variant="brand" pill class="hidden md:inline-flex">Dashboard <x-ui.icon name="arrow-right" class="h-4 w-4" /></x-ui.button>
+                            <x-marketing.button :href="route('dashboard')" variant="navy" size="sm" class="hidden md:inline-flex">Dashboard</x-marketing.button>
                         @else
-                            <a href="{{ route('customer.login') }}" class="hidden rounded-full px-3 py-2 text-sm font-semibold text-ink-secondary transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-focus xl:inline-flex">Cardurile mele</a>
-                            <x-ui.button :href="route('login')" variant="light" pill class="hidden md:inline-flex">Intră în cont</x-ui.button>
-                            <x-ui.button :href="route('register')" variant="brand" pill class="hidden md:inline-flex">Începe gratuit</x-ui.button>
+                            <a href="{{ route('login') }}" class="hidden rounded-sm text-[0.9375rem] font-semibold text-ink transition hover:text-jade-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus md:inline">Intră în cont</a>
+                            <x-marketing.button :href="route('register')" variant="navy" size="sm" class="hidden md:inline-flex">Începe gratuit</x-marketing.button>
                         @endauth
 
                         <button type="button" @click="open = ! open" :aria-expanded="open.toString()" aria-expanded="false" aria-controls="meniu-mobil"
-                                class="flex h-12 w-12 items-center justify-center rounded-full text-ink transition hover:bg-surface-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:hidden">
+                                class="flex h-11 w-11 items-center justify-center rounded-full text-ink transition hover:bg-steel-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-focus lg:hidden">
                             <span class="sr-only">Meniu</span>
                             <x-ui.icon name="menu" class="h-6 w-6" x-show="! open" />
                             <x-ui.icon name="x" class="h-6 w-6" x-show="open" x-cloak />
@@ -48,7 +50,7 @@
                     </div>
                 </div>
 
-                <div id="meniu-mobil" x-show="open" x-cloak x-transition.opacity @click="open = false" class="border-t border-line px-5 pb-5 lg:hidden">
+                <div id="meniu-mobil" x-show="open" x-cloak x-transition.opacity @click="open = false" class="border-t border-steel-100 px-5 pb-5 lg:hidden">
                     <nav class="flex flex-col py-3 text-base font-medium text-ink" aria-label="Meniu">
                         @foreach ($sections as $href => $label)
                             <a href="{{ $href }}" class="py-2.5">{{ $label }}</a>
@@ -56,58 +58,56 @@
                         <a href="{{ route('customer.login') }}" class="py-2.5">Cardurile mele</a>
                     </nav>
                     @auth
-                        <x-ui.button :href="route('dashboard')" variant="brand" pill class="w-full">Dashboard</x-ui.button>
+                        <x-marketing.button :href="route('dashboard')" variant="navy" class="w-full">Dashboard</x-marketing.button>
                     @else
                         <div class="grid grid-cols-2 gap-3">
-                            <x-ui.button :href="route('login')" variant="light" pill>Intră în cont</x-ui.button>
-                            <x-ui.button :href="route('register')" variant="brand" pill>Începe gratuit</x-ui.button>
+                            <x-marketing.button :href="route('login')" variant="light">Intră în cont</x-marketing.button>
+                            <x-marketing.button :href="route('register')" variant="navy">Începe gratuit</x-marketing.button>
                         </div>
                     @endauth
                 </div>
             </div>
         </header>
 
-        <main id="continut" tabindex="-1" class="focus:outline-none">
+        <main id="continut" tabindex="-1" class="mx-auto max-w-[90rem] focus:outline-none">
             {{ $slot }}
         </main>
 
-        <footer class="border-t border-line bg-white">
-            <div class="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:grid-cols-2 sm:px-8 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+        <footer class="mx-auto max-w-[90rem] px-5 pb-10 pt-16 sm:px-8 lg:px-[7.5rem] lg:pt-[4.5rem]">
+            <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[21.25rem_1fr_1fr_1fr] lg:gap-16">
                 <div class="space-y-4">
-                    <x-brand.wordmark class="h-9 w-auto" />
-                    <p class="max-w-xs text-sm leading-relaxed text-ink-secondary">Carduri de fidelitate digitale pentru afaceri locale. Fără aplicație, fără hârtie.</p>
+                    <x-brand.lockup size="lg" />
+                    <p class="max-w-xs text-[0.9375rem] leading-relaxed text-steel-600">Carduri de fidelitate digitale pentru afaceri locale. Fără aplicație, fără hârtie.</p>
                 </div>
                 <div>
-                    <h2 class="text-sm font-semibold text-ink">Produs</h2>
-                    <ul class="mt-4 space-y-3 text-sm text-ink-secondary">
+                    <h2 class="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink">Produs</h2>
+                    <ul class="mt-3 space-y-3 text-[0.9375rem] text-steel-600">
                         @foreach ($sections as $href => $label)
-                            <li><a href="{{ $href }}" class="transition hover:text-primary-ink">{{ $label }}</a></li>
+                            <li><a href="{{ $href }}" class="transition hover:text-jade-700">{{ $label }}</a></li>
                         @endforeach
                     </ul>
                 </div>
                 <div>
-                    <h2 class="text-sm font-semibold text-ink">Cont</h2>
-                    <ul class="mt-4 space-y-3 text-sm text-ink-secondary">
+                    <h2 class="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink">Cont</h2>
+                    <ul class="mt-3 space-y-3 text-[0.9375rem] text-steel-600">
                         @auth
-                            <li><a href="{{ route('dashboard') }}" class="transition hover:text-primary-ink">Dashboard</a></li>
-                            <li><a href="{{ route('profile.edit') }}" class="transition hover:text-primary-ink">Profil</a></li>
+                            <li><a href="{{ route('dashboard') }}" class="transition hover:text-jade-700">Dashboard</a></li>
+                            <li><a href="{{ route('profile.edit') }}" class="transition hover:text-jade-700">Profil</a></li>
                         @else
-                            <li><a href="{{ route('login') }}" class="transition hover:text-primary-ink">Intră în cont</a></li>
-                            <li><a href="{{ route('register') }}" class="transition hover:text-primary-ink">Creează cont de afacere</a></li>
+                            <li><a href="{{ route('login') }}" class="transition hover:text-jade-700">Intră în cont</a></li>
+                            <li><a href="{{ route('register') }}" class="transition hover:text-jade-700">Creează cont de afacere</a></li>
                         @endauth
-                        <li><a href="{{ route('customer.login') }}" class="transition hover:text-primary-ink">Cardurile mele</a></li>
+                        <li><a href="{{ route('customer.login') }}" class="transition hover:text-jade-700">Cardurile mele</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h2 class="text-sm font-semibold text-ink">Pentru clienți</h2>
-                    <p class="mt-4 text-sm leading-relaxed text-ink-secondary">Scanează QR-ul de la tejghea sau intră pe pagina afacerii și primești cardul pe email, în câteva secunde.</p>
+                    <h2 class="text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-ink">Pentru clienți</h2>
+                    <p class="mt-3 text-[0.9375rem] leading-relaxed text-steel-600">Scanează QR-ul de la tejghea sau intră pe pagina afacerii și primești cardul pe email, în câteva secunde.</p>
                 </div>
             </div>
-            <div class="border-t border-line">
-                <div class="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
-                    <p>© {{ now()->year }} LoyUp. Toate drepturile rezervate.</p>
-                    <p>Făcut pentru cafenele, restaurante, spălătorii și frizerii.</p>
-                </div>
+            <div class="mt-12 flex flex-col gap-2 border-t border-steel-100 pt-6 text-sm text-steel-500 sm:flex-row sm:justify-between">
+                <p>© {{ now()->year }} LoyUp. Toate drepturile rezervate.</p>
+                <p>Făcut pentru cafenele, restaurante, spălătorii și frizerii.</p>
             </div>
         </footer>
     </body>

@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\ParallelTesting;
 
 it('runs the test suite against PostgreSQL', function () {
     expect(DB::connection()->getDriverName())->toBe('pgsql')
@@ -19,4 +21,18 @@ it('uses LoyUp as the application name in the page title', function () {
     $this->get('/')
         ->assertOk()
         ->assertSee('· LoyUp</title>', false);
+});
+
+it('migrates again when a parallel worker gets its test database recreated', function () {
+    // Laravel șterge și recreează baza unui worker la orice eroare de conexiune (TestDatabases::ensureTestDatabaseExists);
+    // fără reset, RefreshDatabase crede că schema există și testele pică cu „relation ... does not exist”.
+    $callbacks = (fn () => $this->setUpTestDatabaseCallbacks)->call(app(ParallelTesting::class));
+
+    RefreshDatabaseState::$migrated = true;
+    foreach ($callbacks as $callback) {
+        app()->call($callback, ['database' => 'creative_loyalty_test_test_1', 'token' => '1']);
+    }
+
+    expect($callbacks)->not->toBeEmpty()
+        ->and(RefreshDatabaseState::$migrated)->toBeFalse();
 });

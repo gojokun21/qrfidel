@@ -186,3 +186,16 @@ it('never generates a slug ending in a hyphen', function () {
 
     expect($slug)->toBe(str_repeat('a', 49));
 });
+
+it('offers a color picker next to the hex field for the brand color', function () {
+    $business = Business::factory()->create(['brand_color' => '#7c2d12']);
+    $owner = User::factory()->withRole($business, Role::Owner)->create();
+
+    $this->actingAs($owner)->get(route('dashboard.business.edit'))
+        ->assertOk()
+        ->assertSee('type="color"', false)
+        ->assertSee('aria-label="Culoarea #01a760"', false)
+        ->assertSee('data-color="#7c2d12"', false)
+        ->assertSee('name="brand_color"', false)
+        ->assertSee('x-model="color"', false);
+});

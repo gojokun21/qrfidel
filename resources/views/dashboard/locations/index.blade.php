@@ -24,7 +24,7 @@
                                 @can('update', $location)
                                     <p class="mt-1 text-xs text-ink-muted">QR tejghea:
                                         <a href="{{ route('customer.counter', $location->counter_token) }}" target="_blank" rel="noopener"
-                                           class="break-all font-mono hover:text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus">{{ route('customer.counter', $location->counter_token) }}</a>
+                                           class="break-all hover:text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus">{{ route('customer.counter', $location->counter_token) }}</a>
                                     </p>
                                 @endcan
                             </div>

@@ -1,5 +1,5 @@
 {{-- Panoul adminului de platformă (ADR 014): totaluri și lista afacerilor. --}}
-<x-app-layout title="Admin platformă" description="Toate afacerile de pe platformă. Ștampilele anulate nu se numără.">
+<x-app-layout title="Admin platformă">
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <x-ui.stat label="Afaceri active" :value="$totals['businesses_active']" />
         <x-ui.stat label="Afaceri suspendate" :value="$totals['businesses_suspended']" />
@@ -38,7 +38,7 @@
                                     <x-loyalty.business-status :status="$business->status" />
                                 </p>
                                 <p class="break-words text-sm text-ink-secondary">
-                                    <span class="font-mono text-xs">/b/{{ $business->slug }}</span> · {{ $business->type->label() }}
+                                    <span class="text-xs">/b/{{ $business->slug }}</span> · {{ $business->type->label() }}
                                     @if ($business->members->isNotEmpty())
                                         · {{ $business->members->map(fn ($owner) => $owner->email)->join(', ') }}
                                     @endif

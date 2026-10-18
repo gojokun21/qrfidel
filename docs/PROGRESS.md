@@ -5,6 +5,56 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunea 11e – Landing după Figma și cardul „pro” (2026-10-18)
+
+În afara listei din SDD §11.4, la cererea utilizatorului: landing-ul exact după designul din Figma („Landing v3”) și finisarea UI-ului.
+
+**Făcut:**
+- **Landing nou** ([ADR 019](decisions/019-landing-figma-v3.md)), pe secțiunile din Figma:
+  - hero cu fotografie, Cifre, Cum funcționează, Pentru cine, Anti-fraudă, Roluri, CTA cu ilustrație, footer;
+  - imaginile sunt în `public/images/marketing/*.webp`;
+  - `x-brand.lockup` și `x-marketing.button`, plus iconițe noi în `x-ui.icon`.
+- **Animații GSAP** (`resources/js/landing.js`, doar pe layout-ul de marketing): titlul pe rânduri, parallax, contoare, pașii fixați pe desktop, intrări pe rând. Totul e oprit la `prefers-reduced-motion`.
+- **Cardul de fidelitate** (`x-loyalty.card`) în stil wallet pass: culoarea programului, cerneală lizibilă, sloturi cu iconița programului, recompensa jos.
+- **Brand:**
+  - selectorul de culoare al afacerii folosește `Color::SWATCHES`;
+  - textele din dashboard și din formularele de profil au fost curățate.
+- **Teste:** `LoyaltyCardTest` e nou; `LandingPageTest`, `UiComponentsTest` și `BusinessOnboardingTest` au fost actualizate.
+- **`tests/TestCase.php`:** în rularea paralelă, după ce o bază de worker e recreată, migrațiile rulează din nou.
+
+**Fixuri după `/code-review high`:**
+- cardul:
+  - `aria-label` numește programul, progresul și recompensa;
+  - progresul „X din N” e din nou vizibil (SDD §1);
+- landing:
+  - fotografia și pașii, respectiv rolurile, stau alăturat abia de la `xl`, ca la 1024–1280px coloana de text să nu se îngusteze;
+  - pinul de la „Cum funcționează” e activ doar la ≥1280px lățime și ≥820px înălțime;
+  - `steps()` se creează înaintea parallax-ului (ordinea de refresh din ScrollTrigger);
+  - `gsap.matchMedia` înlocuiește `ScrollTrigger.matchMedia`, care e depreciat;
+  - `scroll-smooth` a fost scos (intra în conflict cu pinul);
+  - contoarele deja vizibile la încărcare nu mai sar la 0;
+- testul pentru `landing.js` folosește Vite în mod hot, deci nu mai depinde de un build proaspăt;
+- textele de ajutor au revenit:
+  - adresa publică nu se mai poate schimba după creare;
+  - fereastra de anulare a tranzacțiilor.
+
+**Verificări:** `composer test` 878 teste verzi · Pint OK · PHPStan level 6 – 0 erori · `npm run build` OK.
+
+**Rămas / de continuat:**
+- Selectorul de culoare e duplicat (`business/_fields` și `programs/_wizard`) → de extras într-o componentă.
+- Titlul hero apare o clipă înainte de animație (scriptul e deferred). Soluția e o clasă `js` pusă devreme, plus o stare inițială în CSS.
+- Fixurile pentru landing n-au fost verificate vizual în browser în această sesiune.
+
+**Decizii noi:**
+- [019](decisions/019-landing-figma-v3.md): landing-ul după Figma „Landing v3”, imagini generate, GSAP ca dependență de producție.
+
+**Probleme cunoscute:**
+- Hostingul `loyup.ro` e cPanel. Trebuie verificat dacă are PostgreSQL / `pdo_pgsql`. Dacă nu, varianta e o sesiune de suport MySQL (triggere, indexuri parțiale, `FILTER`, `ilike`, `date_trunc`), cu ADR.
+
+**Următoarea sesiune:** 12 – Deploy (hosting `loyup.ro`: verificare PHP 8.3 și bază de date; eventual 11f – suport MySQL) + test end-to-end real.
+
+---
+
 ## Sesiunea 11d – Paginile publice în stil „SaaS luminos” (2026-10-17)
 
 În afara listei din SDD §11.4, la cererea utilizatorului (referință: landing-ul AutoFlow de pe Dribbble), cu culorile LoyUp.

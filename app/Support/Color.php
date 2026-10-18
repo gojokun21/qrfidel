@@ -13,6 +13,9 @@ final class Color
 
     public const HEX_PATTERN = '/^#[0-9a-fA-F]{6}$/';
 
+    /** Culorile propuse în selectoare (brandul afacerii, cardul programului). */
+    public const SWATCHES = ['#01a760', '#0891b2', '#7c2d12', '#b91c1c', '#be185d', '#7e22ce', '#1d4ed8', '#0f766e'];
+
     /**
      * Culoarea textului lizibilă pe fundalul dat: închis sau alb, după contrastul WCAG mai bun.
      */
