@@ -8,6 +8,7 @@ use App\Models\CardTransaction;
 use App\Models\Location;
 use App\Models\Program;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->business = Business::factory()->create();
@@ -31,7 +32,7 @@ it('lets managers see the locations but not change them', function () {
 
     $this->actingAs($manager)->get(route('dashboard.locations.index'))->assertOk()->assertSee('Centru');
     $this->actingAs($manager)->get(route('dashboard.locations.create'))->assertForbidden();
-    $this->actingAs($manager)->post(route('dashboard.locations.store'), ['name' => 'Nouă'])->assertForbidden();
+    $this->actingAs($manager)->post(route('dashboard.locations.store'), ['idempotency_key' => (string) Str::uuid(), 'name' => 'Nouă'])->assertForbidden();
     $this->actingAs($manager)->patch(route('dashboard.locations.update', $location), ['name' => 'X'])->assertForbidden();
     $this->actingAs($manager)->delete(route('dashboard.locations.destroy', $location))->assertForbidden();
 });
@@ -44,7 +45,7 @@ it('forbids staff from the locations pages', function () {
 
 it('lets the owner create a location with a counter token', function () {
     $this->actingAs($this->owner)
-        ->post(route('dashboard.locations.store'), ['name' => 'Gară', 'address' => 'Bd. Gării 10'])
+        ->post(route('dashboard.locations.store'), ['idempotency_key' => (string) Str::uuid(), 'name' => 'Gară', 'address' => 'Bd. Gării 10'])
         ->assertRedirect(route('dashboard.locations.index'))
         ->assertSessionHasNoErrors();
 
@@ -59,7 +60,7 @@ it('lets the owner create a location with a counter token', function () {
 
 it('validates the location name', function () {
     $this->actingAs($this->owner)
-        ->post(route('dashboard.locations.store'), ['name' => ''])
+        ->post(route('dashboard.locations.store'), ['idempotency_key' => (string) Str::uuid(), 'name' => ''])
         ->assertSessionHasErrors('name');
 
     expect(Location::query()->count())->toBe(0);
@@ -69,7 +70,7 @@ it('ignores a business id sent with the location', function () {
     $foreign = Business::factory()->create();
 
     $this->actingAs($this->owner)
-        ->post(route('dashboard.locations.store'), ['name' => 'Gară', 'business_id' => $foreign->id]);
+        ->post(route('dashboard.locations.store'), ['idempotency_key' => (string) Str::uuid(), 'name' => 'Gară', 'business_id' => $foreign->id]);
 
     expect(Location::query()->withoutGlobalScopes()->sole()->business_id)->toBe($this->business->id);
 });

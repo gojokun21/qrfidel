@@ -25,6 +25,7 @@ class StoreBusinessRequest extends FormRequest
             'type' => ['required', Rule::enum(BusinessType::class)],
             'timezone' => ['required', 'timezone:all'],
             'brand_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'idempotency_key' => ['required', 'uuid'],
         ];
     }
 

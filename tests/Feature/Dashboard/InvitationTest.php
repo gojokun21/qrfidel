@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     Mail::fake();
@@ -47,7 +48,7 @@ function inviteAndCaptureToken(object $test, array $data = []): string
 
 it('owner creates a location and invites an employee who joins the team', function () {
     $this->actingAs($this->owner)
-        ->post(route('dashboard.locations.store'), ['name' => 'Gară'])
+        ->post(route('dashboard.locations.store'), ['idempotency_key' => (string) Str::uuid(), 'name' => 'Gară'])
         ->assertSessionHasNoErrors();
     $location = Location::query()->where('name', 'Gară')->sole();
 

@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\MessageBag;
+use Illuminate\Support\Str;
 use Illuminate\Support\ViewErrorBag;
 
 beforeEach(function () {
@@ -17,7 +18,7 @@ it('links an invalid field to its error message for screen readers', function ()
     $this->actingAs($this->owner)
         ->from(route('dashboard.locations.create'))
         ->followingRedirects()
-        ->post(route('dashboard.locations.store'), ['name' => ''])
+        ->post(route('dashboard.locations.store'), ['idempotency_key' => (string) Str::uuid(), 'name' => ''])
         ->assertOk()
         ->assertSee('id="name"', false)
         ->assertSee('aria-invalid="true"', false)

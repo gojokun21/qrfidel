@@ -7,6 +7,7 @@ use App\Http\Requests\Dashboard\LocationRequest;
 use App\Models\Business;
 use App\Models\Location;
 use App\Models\User;
+use App\Services\Loyalty\IdempotentCreation;
 use App\Services\Loyalty\LocationService;
 use App\Support\Tenancy\CurrentBusiness;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,7 @@ use Illuminate\View\View;
 
 class LocationController extends Controller
 {
-    public function __construct(private LocationService $locations) {}
+    public function __construct(private LocationService $locations, private IdempotentCreation $idempotent) {}
 
     public function index(CurrentBusiness $currentBusiness): View
     {
@@ -43,7 +44,9 @@ class LocationController extends Controller
 
         /** @var array{name: string, address?: string|null} $data */
         $data = $request->validated();
-        $this->locations->create($this->actor($request), $business, $data);
+        $actor = $this->actor($request);
+        $this->idempotent->once($actor, 'location', $request->string('idempotency_key')->value(),
+            fn () => $this->locations->create($actor, $business, $data));
 
         return redirect()->route('dashboard.locations.index')->with('status', 'Locația a fost adăugată.');
     }

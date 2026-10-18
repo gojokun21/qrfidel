@@ -169,8 +169,9 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'idempotency_key' => [
+            'required' => 'Formularul nu mai e valabil. Reîncarcă pagina și încearcă din nou.',
+            'uuid' => 'Formularul nu mai e valabil. Reîncarcă pagina și încearcă din nou.',
         ],
     ],
 
@@ -193,6 +194,7 @@ return [
         'password' => 'parolă',
         'quantity' => 'cantitate',
         'reason' => 'motiv',
+        'rollover_extra' => 'păstrarea ștampilelor în plus',
         'role' => 'rol',
         'slug' => 'adresă publică',
         'status' => 'stare',

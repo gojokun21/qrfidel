@@ -36,6 +36,8 @@
     @csrf
     @if ($method !== 'POST')
         @method($method)
+    @else
+        <x-ui.idempotency-key />
     @endif
 
     {{-- Iconurile ștampilelor, copiate de previzualizare (`x-html`). --}}

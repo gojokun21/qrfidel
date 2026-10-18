@@ -7,6 +7,7 @@
 </x-ui.field>
 
 <div class="flex items-center gap-3">
-    <x-ui.button>Salvează</x-ui.button>
+    {{-- `sending` vine din x-data-ul formularului (creare sau editare). --}}
+    <x-ui.button ::disabled="sending">Salvează</x-ui.button>
     <x-ui.button :href="route('dashboard.locations.index')" variant="ghost">Renunță</x-ui.button>
 </div>
