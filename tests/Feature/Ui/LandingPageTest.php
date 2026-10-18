@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\Vite;
 
 it('renders the landing page for guests', function () {
     $this->get(route('home'))
@@ -72,6 +73,13 @@ it('keeps the call to action illustration decorative and lazy', function () {
 });
 
 it('loads the landing animations only on the marketing pages', function () {
-    $this->get(route('home'))->assertOk()->assertSee('assets/landing-', false)->assertSee('data-anim="steps"', false);
-    $this->get(route('login'))->assertOk()->assertDontSee('assets/landing-', false);
+    // Vite în mod „hot”: testul nu depinde de un `npm run build` proaspăt.
+    $hot = tempnam(sys_get_temp_dir(), 'vite-hot');
+    file_put_contents($hot, 'http://vite.test');
+    Vite::useHotFile($hot);
+
+    $this->get(route('home'))->assertOk()->assertSee('resources/js/landing.js', false)->assertSee('data-anim="steps"', false);
+    $this->get(route('login'))->assertOk()->assertDontSee('resources/js/landing.js', false);
+
+    unlink($hot);
 });

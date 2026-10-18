@@ -42,6 +42,10 @@ function counters() {
         const { prefix = '', suffix = '' } = el.dataset;
         const state = { value: 0 };
 
+        // Deja pe ecran la încărcare: rămâne valoarea finală (altfel ar sări vizibil la 0).
+        if (el.getBoundingClientRect().top < window.innerHeight * 0.9) return;
+        el.textContent = `${prefix}0${suffix}`;
+
         gsap.to(state, {
             value: target,
             duration: 1.4,
@@ -62,20 +66,19 @@ function steps() {
         [items, bars].forEach((group) => group.forEach((el, i) => { el.dataset.active = String(i === index); }));
     };
 
-    // Doar pe desktop: secțiunea se fixează cât derulezi prin pași. Pe telefon, pașii rămân așa cum sunt.
-    ScrollTrigger.matchMedia({
-        '(min-width: 1024px)': () => {
-            activate(0);
-            const trigger = ScrollTrigger.create({
-                trigger: section,
-                start: 'top top',
-                end: `+=${items.length * 45}%`,
-                pin: true,
-                onUpdate: (self) => activate(Math.min(items.length - 1, Math.floor(self.progress * items.length))),
-            });
+    // Doar pe desktop, unde fotografia și pașii stau alăturat și secțiunea încape pe ecran: se fixează cât
+    // derulezi prin pași. Pe ecrane mai mici, pașii rămân așa cum sunt (pasul 03 activ).
+    gsap.matchMedia().add('(min-width: 1280px) and (min-height: 820px)', () => {
+        activate(0);
+        ScrollTrigger.create({
+            trigger: section,
+            start: 'top top',
+            end: `+=${items.length * 45}%`,
+            pin: true,
+            onUpdate: (self) => activate(Math.min(items.length - 1, Math.floor(self.progress * items.length))),
+        });
 
-            return () => { trigger.kill(); activate(items.length - 1); };
-        },
+        return () => activate(items.length - 1);
     });
 }
 
@@ -93,9 +96,11 @@ function stagger() {
 }
 
 if (!reduceMotion) {
+    // steps() primul: ScrollTrigger se recalculează în ordinea creării, iar triggerele de sub secțiunea
+    // fixată trebuie să vadă spațiul adăugat de pin.
     hero();
+    steps();
     parallax();
     counters();
-    steps();
     stagger();
 }

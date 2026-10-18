@@ -99,8 +99,8 @@
                 <p class="max-w-[26.25rem] text-[1.0625rem] leading-relaxed text-steel-600">Fără aplicații de instalat și fără hardware nou: telefonul angajatului e scannerul, telefonul clientului e cardul.</p>
             </div>
 
-            <div class="mt-12 flex flex-col gap-10 lg:mt-14 lg:flex-row lg:items-center lg:gap-16">
-                <div class="aspect-[640/580] w-full overflow-hidden rounded-[1.75rem] lg:w-[40rem] lg:shrink-0">
+            <div class="mt-12 flex flex-col gap-10 lg:mt-14 xl:flex-row xl:items-center xl:gap-16">
+                <div class="aspect-[640/580] w-full overflow-hidden rounded-[1.75rem] xl:w-[40rem] xl:shrink-0">
                     <img src="{{ $img('scan-counter') }}" alt="Angajatul scanează cu telefonul cardul de pe telefonul clientului" width="1280" height="853" loading="lazy" decoding="async"
                          class="h-full w-full object-cover">
                 </div>
@@ -192,8 +192,8 @@
 
     {{-- 6. Roluri: fotografia cu cele trei roluri în stânga, lista rolurilor în dreapta. --}}
     <section id="roluri" class="scroll-mt-28 px-5 py-20 sm:px-8 lg:px-[7.5rem] lg:py-28">
-        <div class="mx-auto flex max-w-[75rem] flex-col gap-12 lg:flex-row lg:items-center lg:gap-20">
-            <div class="aspect-[540/640] w-full overflow-hidden rounded-[1.75rem] lg:w-[33.75rem] lg:shrink-0">
+        <div class="mx-auto flex max-w-[75rem] flex-col gap-12 xl:flex-row xl:items-center xl:gap-20">
+            <div class="aspect-[540/640] w-full overflow-hidden rounded-[1.75rem] xl:w-[33.75rem] xl:shrink-0">
                 <img data-anim="parallax" src="{{ $img('roles') }}" alt="Angajata scanează cardul unei cliente, iar patronul urmărește programul pe tabletă" width="928" height="1152" loading="lazy" decoding="async"
                      class="h-full w-full scale-110 object-cover">
             </div>
