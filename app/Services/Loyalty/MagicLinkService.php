@@ -100,11 +100,24 @@ class MagicLinkService
         // Nonce-ul trăiește cât linkul plus un minut de toleranță; `add` e SET NX, deci câștigă o singură folosire.
         $ttl = now()->addMinutes((int) config('loyalty.magic_link.ttl_minutes') + 1);
 
-        if (! $this->store()->add('magic-link:nonce:'.hash('sha256', $nonce), true, $ttl)) {
+        if (! $this->store()->add(self::nonceKey($nonce), true, $ttl)) {
             throw new MagicLinkInvalid;
         }
 
         return $customer;
+    }
+
+    /**
+     * Linkul a fost deja folosit? Pagina de confirmare (GET) o spune de la început, fără să consume nimic.
+     */
+    public function wasUsed(string $nonce): bool
+    {
+        return $nonce !== '' && $this->store()->has(self::nonceKey($nonce));
+    }
+
+    private static function nonceKey(string $nonce): string
+    {
+        return 'magic-link:nonce:'.hash('sha256', $nonce);
     }
 
     private function store(): Repository

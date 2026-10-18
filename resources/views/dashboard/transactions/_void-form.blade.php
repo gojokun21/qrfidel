@@ -13,13 +13,13 @@
                  aria-controls="void-{{ $transaction->id }}" ::aria-expanded="open.toString()">Anulează</x-ui.button>
 
     <form id="void-{{ $transaction->id }}" method="POST" action="{{ route('dashboard.transactions.void', $transaction) }}" x-show="open" x-cloak
-          @submit="sending = true" class="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+          @submit="sending = true" class="flex flex-col items-stretch gap-2">
         @csrf
         <input type="hidden" name="idempotency_key" value="{{ \Illuminate\Support\Str::uuid() }}">
         <label class="sr-only" for="reason-{{ $transaction->id }}">Motivul anulării</label>
         <x-ui.input id="reason-{{ $transaction->id }}" x-ref="reason" name="reason" type="text" maxlength="200" placeholder="Motiv (opțional)"
-                    class="min-w-0 flex-1 text-sm" />
-        <div class="flex shrink-0 gap-2">
+                    class="w-full min-w-56 text-sm" />
+        <div class="flex justify-end gap-2">
             <x-ui.button variant="danger" size="sm" ::disabled="sending">Confirmă anularea</x-ui.button>
             <x-ui.button type="button" variant="secondary" size="sm" @click="open = false; $nextTick(() => $refs.toggle.focus())">Renunță</x-ui.button>
         </div>

@@ -23,7 +23,7 @@
                 </div>
 
                 <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
-                    <li>{{ $program->cooldown_minutes > 0 ? 'Pauză '.$program->cooldown_minutes.' min' : 'Fără pauză' }}</li>
+                    <li>{{ $program->cooldown_minutes > 0 ? $program->cooldown_minutes.' min între ștampile' : 'Ștampile fără așteptare' }}</li>
                     <li>{{ $program->daily_limit ? 'Maximum '.$program->daily_limit.' pe zi' : 'Fără limită zilnică' }}</li>
                     @if ($program->max_stamps_per_visit > 1)
                         <li>Până la {{ $program->max_stamps_per_visit }} pe vizită</li>

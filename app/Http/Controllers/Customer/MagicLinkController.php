@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Exceptions\MagicLinkInvalid;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\MagicLinkRequest;
 use App\Models\Business;
@@ -9,6 +10,7 @@ use App\Models\Location;
 use App\Services\Loyalty\MagicLinkService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -33,9 +35,14 @@ class MagicLinkController extends Controller
 
     /**
      * GET pe link nu loghează: scannerele de linkuri din clienții de email îl deschid înaintea omului.
+     * Un link deja folosit primește direct pagina „Linkul nu mai e valabil”, nu un „Continuă” care ar eșua.
      */
-    public function show(Request $request): View
+    public function show(Request $request): View|Response
     {
+        if ($this->magicLinks->wasUsed(self::signedParam($request, 'nonce'))) {
+            return response()->view('customer.link-invalid', ['message' => (new MagicLinkInvalid)->getMessage()], 403);
+        }
+
         return view('customer.magic-confirm', [
             'email' => self::signedParam($request, 'email'),
             'action' => $request->fullUrl(),

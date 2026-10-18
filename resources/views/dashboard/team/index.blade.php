@@ -81,7 +81,7 @@
                 @foreach ($invitations as $invitation)
                     <li class="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between">
                         <div class="min-w-0">
-                            <p class="break-all font-medium text-ink">{{ $invitation->email }}</p>
+                            <p class="break-words font-medium text-ink">{{ $invitation->email }}</p>
                             <p class="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-ink-muted">
                                 {{ $invitation->role->label() }}{{ $invitation->location ? ' · '.$invitation->location->name : '' }} ·
                                 @if ($invitation->isExpired())
@@ -91,7 +91,8 @@
                                 @endif
                             </p>
                         </div>
-                        <form method="POST" action="{{ route('dashboard.invitations.destroy', $invitation) }}" class="-ml-2.5 sm:ml-0">
+                        <form method="POST" action="{{ route('dashboard.invitations.destroy', $invitation) }}" class="-ml-2.5 sm:ml-0"
+                              x-data @submit="if (! confirm('Anulezi invitația? Linkul trimis pe email nu va mai funcționa.')) $event.preventDefault()">
                             @csrf
                             @method('DELETE')
                             <x-ui.button variant="danger-ghost" size="sm">Anulează</x-ui.button>
