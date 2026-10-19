@@ -11,7 +11,7 @@
     Slotul adaugă acțiunea principală a paginii (de ex. „Înapoi” pe 419).
     `account=false` (500, 503): fără acțiunile de cont, care ar citi userul din baza de date poate căzută.
 --}}
-<x-guest-layout :title="$title">
+<x-guest-layout :title="$title" :account="$account">
     <div class="text-center">
         @if ($code)
             <p class="text-sm font-semibold uppercase tracking-eyebrow text-primary-ink">Eroare {{ $code }}</p>

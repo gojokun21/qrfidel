@@ -57,3 +57,21 @@ it('shows a Romanian 500 without details', function () {
         ->assertSee('Ceva n-a mers bine')
         ->assertDontSee('Server Error');
 });
+
+it('does not read the signed in user on the 500 page', function () {
+    Route::middleware('web')->get('/_test/broken', fn () => abort(500));
+
+    // Fără acțiuni de cont: nici sugestia pentru clienți, care ar verifica gărzile (baza poate fi căzută).
+    $this->get('/_test/broken')
+        ->assertStatus(500)
+        ->assertDontSee('Vezi cardurile tale');
+});
+
+it('translates an invalid signature on the 403 page', function () {
+    Route::middleware(['web', 'signed'])->get('/_test/signed', fn () => 'ok')->name('test.signed');
+
+    $this->get('/_test/signed?signature=gresit')
+        ->assertForbidden()
+        ->assertSee('Linkul nu mai e valabil')
+        ->assertDontSee('Invalid signature.');
+});
