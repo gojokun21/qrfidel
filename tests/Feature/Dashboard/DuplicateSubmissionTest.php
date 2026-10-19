@@ -6,7 +6,9 @@ use App\Models\Business;
 use App\Models\Location;
 use App\Models\Program;
 use App\Models\User;
+use App\Services\Loyalty\IdempotentCreation;
 use App\Services\Loyalty\ProgramTemplates;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /*
@@ -47,11 +49,53 @@ describe('business', function () {
         expect(Business::query()->count())->toBe(2);
     });
 
+    it('lands on the created business when a form with its own slug is submitted twice', function () {
+        $payload = [...$this->payload, 'slug' => 'cafe-verde', 'idempotency_key' => (string) Str::uuid()];
+
+        $this->actingAs($this->user)->post(route('dashboard.business.store'), $payload)->assertRedirect(route('dashboard'));
+        $this->actingAs($this->user)->post(route('dashboard.business.store'), $payload)
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('dashboard'));
+
+        expect(Business::query()->sole()->slug)->toBe('cafe-verde');
+    });
+
+    it('still refuses a slug taken by another business', function () {
+        Business::factory()->create(['slug' => 'cafe-verde']);
+
+        $this->actingAs($this->user)
+            ->post(route('dashboard.business.store'), [...$this->payload, 'slug' => 'cafe-verde', 'idempotency_key' => (string) Str::uuid()])
+            ->assertSessionHasErrors('slug');
+    });
+
     it('requires the key', function () {
         $this->actingAs($this->user)
             ->post(route('dashboard.business.store'), $this->payload)
             ->assertSessionHasErrors('idempotency_key');
 
+        expect(Business::query()->count())->toBe(0);
+    });
+
+    it('explains a stale form and gives it a fresh key', function () {
+        $this->actingAs($this->user)
+            ->from(route('dashboard.business.create'))
+            ->followingRedirects()
+            ->post(route('dashboard.business.store'), [...$this->payload, 'idempotency_key' => 'nu-e-uuid'])
+            ->assertSee('Formularul nu mai e valabil')
+            ->assertDontSee('value="nu-e-uuid"', false);
+    });
+
+    it('asks to wait instead of failing while the same form is still being created', function () {
+        $key = (string) Str::uuid();
+        app()->instance(IdempotentCreation::class, new IdempotentCreation(waitSeconds: 0));
+        $lock = Cache::lock("idempotency:business:{$this->user->id}:{$key}:lock", 30);
+        $lock->get();
+
+        $this->actingAs($this->user)
+            ->post(route('dashboard.business.store'), [...$this->payload, 'idempotency_key' => $key])
+            ->assertSessionHasErrors('idempotency_key');
+
+        $lock->release();
         expect(Business::query()->count())->toBe(0);
     });
 
