@@ -86,6 +86,16 @@ return [
             'lock_connection' => 'default',
         ],
 
+        // Același rol pe hostingul fără Redis (ADR 022): tabele proprii, pe care cache:clear nu le atinge.
+        // Rândurile expirate le șterge `cache:prune-expired` (programat).
+        'loyalty_database' => [
+            'driver' => 'database',
+            'connection' => env('DB_CACHE_CONNECTION'),
+            'table' => 'loyalty_cache',
+            'lock_connection' => env('DB_CACHE_LOCK_CONNECTION'),
+            'lock_table' => 'loyalty_cache_locks',
+        ],
+
         'dynamodb' => [
             'driver' => 'dynamodb',
             'key' => env('AWS_ACCESS_KEY_ID'),

@@ -7,16 +7,31 @@ use App\Models\Card;
 use App\Services\Loyalty\CardBalanceService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Expirările (SDD §8, ADR 013). onOneServer cere un cache cu lock-uri comune (Redis în producție); suprapunerea o previne ShouldBeUnique.
+// Expirările (SDD §8, ADR 013). onOneServer cere un cache cu lock-uri comune (Redis sau database); suprapunerea o previne ShouldBeUnique.
 Schedule::job(new ExpireStampRequests)->everyFiveMinutes()->onOneServer();
 Schedule::job(new ExpireRewards)->hourly()->onOneServer();
 Schedule::job(new ExpireStamps)->hourly()->onOneServer();
+
+// Driverul `database` nu șterge singur ce a expirat (ADR 022): fără asta, codurile QR rotite la 30 s umplu tabelele.
+Artisan::command('cache:prune-expired', function () {
+    $now = now()->getTimestamp();
+    $deleted = 0;
+
+    foreach (['cache', 'cache_locks', 'loyalty_cache', 'loyalty_cache_locks'] as $table) {
+        $deleted += DB::table($table)->where('expiration', '<', $now)->delete();
+    }
+
+    $this->info("Rânduri expirate șterse: {$deleted}");
+})->purpose('Șterge rândurile expirate din tabelele de cache (store-urile database)');
+
+Schedule::command('cache:prune-expired')->hourly()->onOneServer();
 
 // Reconstruiește cache-ul de pe carduri din jurnal (SDD §4).
 Artisan::command('cards:recalculate
