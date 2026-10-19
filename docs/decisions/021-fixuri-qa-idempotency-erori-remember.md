@@ -25,4 +25,9 @@ Testarea în browser din 2026-10-18 ([raportul](../qa/2026-10-18/RAPORT.md)) a g
 ## Consecințe
 - Testele care trimit formulare de creare includ `idempotency_key`; fără cheie, cererea e respinsă cu „Formularul nu mai e valabil…”.
 - Pe hosting, `Cache::lock` folosește store-ul de cache configurat. Cu `database` sau `redis`, lock-urile funcționează între procese.
+- După code review (închiderea 11h):
+  - lock-ul trăiește 60 s, iar cererea a doua așteaptă cel mult 15 s; la depășire primește o eroare de validare pe cheie („Formularul se trimite deja…”), nu 500;
+  - slug-ul ales de owner nu mai respinge retrimiterea propriei afaceri (`unique` ignoră afacerea creată deja cu cheia);
+  - eroarea cheii se arată în formular; o cheie lipsă sau invalidă se înlocuiește, una validă rămâne;
+  - pe 500/503 nici layout-ul nu mai citește gărzile; „Invalid signature.” are text în română pe 403.
 - O cerere cu cookie „remember” face o interogare în plus devreme. Orice pagină autentificată ar fi făcut-o oricum.
