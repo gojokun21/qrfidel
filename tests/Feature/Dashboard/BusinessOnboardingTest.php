@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Business;
 use App\Models\User;
 use App\Services\Loyalty\BusinessService;
+use Illuminate\Support\Str;
 
 it('sends a user without a business to the onboarding form', function () {
     $this->actingAs(User::factory()->create())
@@ -32,6 +33,7 @@ it('creates a business and makes the creator its owner', function () {
 
     $this->actingAs($user)
         ->post(route('dashboard.business.store'), [
+            'idempotency_key' => (string) Str::uuid(),
             'name' => 'Cafeneaua Verde',
             'type' => 'cafe',
             'timezone' => 'Europe/Bucharest',
@@ -57,6 +59,7 @@ it('generates a unique slug when the name is taken', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)->post(route('dashboard.business.store'), [
+        'idempotency_key' => (string) Str::uuid(),
         'name' => 'Cafeneaua Verde',
         'type' => 'cafe',
         'timezone' => 'Europe/Bucharest',
@@ -69,6 +72,7 @@ it('accepts a custom slug at creation', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)->post(route('dashboard.business.store'), [
+        'idempotency_key' => (string) Str::uuid(),
         'name' => 'Spălătoria Rapidă',
         'slug' => 'spala-rapid',
         'type' => 'carwash',
@@ -84,6 +88,7 @@ it('validates the business data', function (array $data, string $field) {
 
     $this->actingAs($user)
         ->post(route('dashboard.business.store'), [
+            'idempotency_key' => (string) Str::uuid(),
             'name' => 'Afacere',
             'type' => 'cafe',
             'timezone' => 'Europe/Bucharest',
@@ -105,6 +110,7 @@ it('does not let the creator set the business status', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)->post(route('dashboard.business.store'), [
+        'idempotency_key' => (string) Str::uuid(),
         'name' => 'Afacere',
         'type' => 'cafe',
         'timezone' => 'Europe/Bucharest',

@@ -8,6 +8,7 @@ use App\Http\Middleware\EnsureBusinessMember;
 use App\Http\Middleware\EnsureHasBusiness;
 use App\Http\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\ResolveRememberedUsers;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -30,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureRole::class,
             'platform-admin' => EnsurePlatformAdmin::class,
         ]);
+
+        // După StartSession și înainte de controller: relogarea din cookie-ul „remember” nu mai schimbă tokenul CSRF
+        // în mijlocul randării unei pagini cu formular.
+        $middleware->appendToGroup('web', ResolveRememberedUsers::class);
 
         // Clienții (rutele `customer.*`) au login-ul și pagina de start proprii, separate de staff (ADR 009).
         $middleware->redirectGuestsTo(fn (Request $request) => $request->routeIs('customer.*') ? route('customer.login') : route('login'));

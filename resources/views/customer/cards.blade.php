@@ -1,7 +1,7 @@
 <x-customer-layout title="Cardurile mele">
     <div>
         <h1 class="text-2xl font-bold text-ink">Cardurile mele</h1>
-        <p class="mt-1 break-all text-sm text-ink-secondary">{{ $customer->email }}</p>
+        <p class="mt-1 break-words text-sm text-ink-secondary">{{ $customer->email }}</p>
     </div>
 
     <x-layout.flash />

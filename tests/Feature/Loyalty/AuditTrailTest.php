@@ -9,6 +9,7 @@ use App\Services\Loyalty\ExpirationService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 it('stores the client IP for actions made through a web request', function () {
     $business = Business::factory()->create();
@@ -16,7 +17,7 @@ it('stores the client IP for actions made through a web request', function () {
 
     $this->actingAs($owner)
         ->withServerVariables(['REMOTE_ADDR' => '203.0.113.7'])
-        ->post(route('dashboard.locations.store'), ['name' => 'Centru'])
+        ->post(route('dashboard.locations.store'), ['idempotency_key' => (string) Str::uuid(), 'name' => 'Centru'])
         ->assertRedirect();
 
     expect(AuditLog::query()->where('action', 'location.created')->sole()->ip_address)->toBe('203.0.113.7');

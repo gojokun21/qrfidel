@@ -54,7 +54,7 @@
         </div>
     </div>
 
-    <nav class="mt-6 flex-1 space-y-1 overflow-y-auto px-3" aria-label="Meniu principal">
+    <nav class="mt-6 flex-1 space-y-1 overflow-y-auto px-3 [scrollbar-color:theme(colors.inverse.line)_transparent] [scrollbar-width:thin]" aria-label="Meniu principal">
         @if ($sidebarLinks !== [])
             <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-eyebrow text-inverse-muted">Meniu</p>
         @endif

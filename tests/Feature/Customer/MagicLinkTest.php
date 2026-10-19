@@ -214,6 +214,18 @@ describe('using the link', function () {
         $this->assertGuest('customer');
     });
 
+    it('says a used link is no longer valid already on GET', function () {
+        $url = requestMagicLink('ana@client.test');
+
+        $this->post($url);
+        Auth::guard('customer')->logout();
+
+        $this->get($url)
+            ->assertForbidden()
+            ->assertSee('Linkul nu mai e valabil')
+            ->assertDontSee('Continuă');
+    });
+
     it('expires after 15 minutes', function () {
         $url = requestMagicLink('ana@client.test');
 

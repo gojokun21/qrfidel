@@ -10,6 +10,7 @@ use App\Http\Requests\Dashboard\ProgramStatusRequest;
 use App\Models\Business;
 use App\Models\Program;
 use App\Models\User;
+use App\Services\Loyalty\IdempotentCreation;
 use App\Services\Loyalty\ProgramService;
 use App\Services\Loyalty\ProgramTemplate;
 use App\Services\Loyalty\ProgramTemplates;
@@ -21,7 +22,7 @@ use Illuminate\View\View;
 
 class ProgramController extends Controller
 {
-    public function __construct(private ProgramService $programs) {}
+    public function __construct(private ProgramService $programs, private IdempotentCreation $idempotent) {}
 
     public function index(CurrentBusiness $currentBusiness): View
     {
@@ -61,7 +62,9 @@ class ProgramController extends Controller
         Gate::authorize('create', [Program::class, $business]);
 
         $publish = $request->validated('intent') === 'publish';
-        $this->programs->create($this->actor($request), $business, $request->programData(), $publish, $request->validated('template'));
+        $actor = $this->actor($request);
+        $this->idempotent->once($actor, 'program', $request->string('idempotency_key')->value(),
+            fn () => $this->programs->create($actor, $business, $request->programData(), $publish, $request->validated('template')));
 
         return redirect()->route('dashboard.programs.index')
             ->with('status', $publish ? 'Programul a fost publicat. Clienții se pot înscrie.' : 'Programul a fost salvat ca ciornă.');

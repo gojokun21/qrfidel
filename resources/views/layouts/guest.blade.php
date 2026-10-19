@@ -32,11 +32,12 @@
                     {{ $slot }}
                 </main>
 
-                @guest
+                {{-- Doar vizitatorilor: clientul logat are deja „Cardurile mele” (de ex. pe paginile de eroare). --}}
+                @if ($account && ! auth('web')->check() && ! auth('customer')->check())
                     <p class="mt-6 text-center text-sm text-ink-secondary">
                         Ești client? <a href="{{ route('customer.login') }}" class="rounded-sm font-semibold text-primary-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-focus">Vezi cardurile tale</a>
                     </p>
-                @endguest
+                @endif
             </div>
         </div>
     </body>

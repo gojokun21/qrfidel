@@ -5,6 +5,43 @@ Structură: Făcut · Rămas / de continuat · Decizii noi · Probleme cunoscute
 
 ---
 
+## Sesiunile 11g + 11h – Localizare RO și fixurile din QA (2026-10-18 – 2026-10-20)
+
+În afara listei din SDD §11.4. 11h a pornit din 11g; se închid împreună (un singur merge).
+
+**Făcut:**
+- **11g:** ecranele de autentificare, validarea și emailurile în română (`lang/ro`).
+- **QA în browser** (2026-10-18): [raportul](qa/2026-10-18/RAPORT.md), cu dovezi.
+- **11h – fixurile din QA** ([ADR 021](decisions/021-fixuri-qa-idempotency-erori-remember.md)):
+  - crearea afacerii, locației și programului e idempotentă (`IdempotentCreation`, `x-ui.idempotency-key`); butoanele se dezactivează la submit;
+  - paginile de eroare 403/404/419/500/503 în română, cu o cale de ieșire;
+  - resetarea parolei răspunde neutru; magic link-urile folosite au pagina lor;
+  - `ResolveRememberedUsers` rezolvă relogarea din cookie-ul „remember” înainte de randare (fără 419 la login);
+  - traduceri și defecte mici de UI.
+- **Code review la închidere**, fixuri aplicate:
+  - retrimiterea cu slug propriu nu mai e respinsă de propria afacere;
+  - eroarea cheii se arată în formular, iar o cheie invalidă se înlocuiește;
+  - lock-ul (60 s) nu mai expiră în timpul creării; așteptarea depășită dă o eroare de validare, nu 500;
+  - pe 500 layout-ul nu mai citește gărzile; „Invalid signature.” e tradus pe 403.
+- Verificări: 916 teste verzi, Pint, PHPStan 0 erori, build.
+
+**Rămas / de continuat** (din review, neaplicate):
+- Resetarea parolei: emailul pleacă sincron doar când contul există, deci timpul de răspuns tot dezvăluie conturile. Mesajul e același și când brokerul limitează (60 s). Varianta: notificare `ShouldQueue`.
+- 404 pe o rută inexistentă rulează fără sesiune: un user logat vede „Autentificare” în loc de „Profil”.
+- `ResolveRememberedUsers` interoghează la fiecare cerere pentru un cookie „remember” invalid care nu se șterge.
+- `MagicLinkController` randează `customer.link-invalid` în paralel cu handlerul `MagicLinkInvalid`.
+- `reset-password` scrie „cel puțin 8 caractere” fix, nu din `Password::defaults()`.
+- La retrimiterea cu slug propriu rămâne o fereastră de milisecunde (afacerea inserată, id-ul încă necachet) în care validarea poate respinge slug-ul.
+
+**Decizii noi:**
+- [021](decisions/021-fixuri-qa-idempotency-erori-remember.md): idempotency la crearea din formularele ownerului, pagini de eroare, resetare neutră, relogare timpurie.
+
+**Probleme cunoscute:** vezi „Rămas”.
+
+**Următoarea sesiune:** 12 – Deploy pe `loyup.ro` (cPanel, MySQL, fără Redis) + test end-to-end real.
+
+---
+
 ## Sesiunea 11f – MySQL pentru hosting (2026-10-18)
 
 În afara listei din SDD §11.4: hostingul `loyup.ro` (cPanel) nu are PostgreSQL, ci MySQL 8.0.37. Proiectul trece pe MySQL ([ADR 020](decisions/020-mysql-in-loc-de-postgres.md)).

@@ -5,7 +5,7 @@
 --}}
 @if (session('magic_link_sent'))
     <x-ui.alert tone="success" title="Verifică-ți emailul">
-        Ți-am trimis un link de conectare la <strong class="break-all">{{ session('magic_link_sent') }}</strong>.
+        Ți-am trimis un link de conectare la <strong class="break-words">{{ session('magic_link_sent') }}</strong>.
         E valabil {{ config('loyalty.magic_link.ttl_minutes') }} minute și se poate folosi o singură dată.
     </x-ui.alert>
 @else

@@ -11,6 +11,7 @@ use App\Http\Requests\Dashboard\UpdateBusinessRequest;
 use App\Models\Business;
 use App\Models\User;
 use App\Services\Loyalty\BusinessService;
+use App\Services\Loyalty\IdempotentCreation;
 use App\Support\Tenancy\CurrentBusiness;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -18,7 +19,7 @@ use Illuminate\View\View;
 
 class BusinessController extends Controller
 {
-    public function __construct(private BusinessService $businesses) {}
+    public function __construct(private BusinessService $businesses, private IdempotentCreation $idempotent) {}
 
     public function create(): View
     {
@@ -35,9 +36,10 @@ class BusinessController extends Controller
 
         /** @var array{name: string, slug?: string|null, type: string, timezone: string, brand_color?: string|null} $data */
         $data = $request->validated();
-        $business = $this->businesses->create($user, $data);
+        $businessId = $this->idempotent->once($user, 'business', $request->string('idempotency_key')->value(),
+            fn () => $this->businesses->create($user, $data));
 
-        $request->session()->put(EnsureBusinessMember::SESSION_KEY, $business->id);
+        $request->session()->put(EnsureBusinessMember::SESSION_KEY, $businessId);
 
         return redirect()->route('dashboard')->with('status', 'Afacerea a fost creată. Adaugă prima locație.');
     }

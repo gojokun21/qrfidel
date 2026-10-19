@@ -20,6 +20,8 @@ class LocationRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:120'],
             'address' => ['nullable', 'string', 'max:255'],
+            // Doar la creare: un dublu-submit nu adaugă a doua locație (IdempotentCreation).
+            'idempotency_key' => [$this->isMethod('POST') ? 'required' : 'nullable', 'uuid'],
         ];
     }
 }

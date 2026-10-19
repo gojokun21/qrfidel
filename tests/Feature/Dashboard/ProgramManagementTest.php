@@ -10,6 +10,7 @@ use App\Models\Card;
 use App\Models\Program;
 use App\Models\User;
 use App\Services\Loyalty\ProgramTemplates;
+use Illuminate\Support\Str;
 
 beforeEach(function () {
     $this->business = Business::factory()->create(['name' => 'Cafeneaua Centrală', 'type' => BusinessType::Cafe]);
@@ -27,6 +28,7 @@ function cafeWizardPayload(array $overrides = []): array
         'rollover_extra' => '0',
         'color' => '#7c2d12',
         'intent' => 'publish',
+        'idempotency_key' => (string) Str::uuid(),
         ...$overrides,
     ];
 }

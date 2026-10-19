@@ -28,6 +28,7 @@ class ProgramRequest extends FormRequest
             'template' => ['nullable', 'string', Rule::in(ProgramTemplates::keys())],
             // Doar la creare: după aceea statusul se schimbă din acțiunile programului.
             'intent' => [$this->isMethod('POST') ? 'required' : 'nullable', Rule::in(['draft', 'publish'])],
+            'idempotency_key' => [$this->isMethod('POST') ? 'required' : 'nullable', 'uuid'],
 
             'name' => ['required', 'string', 'max:120'],
             'stamps_required' => ['required', 'integer', 'min:1', 'max:50'],
@@ -86,7 +87,7 @@ class ProgramRequest extends FormRequest
      */
     public function programData(): array
     {
-        $data = $this->safe()->except(['template', 'intent']);
+        $data = $this->safe()->except(['template', 'intent', 'idempotency_key']);
         $data['color'] = isset($data['color']) ? strtolower((string) $data['color']) : null;
         $data['rollover_extra'] = $this->boolean('rollover_extra');
 

@@ -8,6 +8,7 @@ use Illuminate\View\View;
 /**
  * Layout-ul paginilor de autentificare, invitații și erori: un card alb centrat pe fundalul pastel al brandului.
  * `heading` / `subheading` = titlul vizibil (h1) din card, pentru paginile care nu-și pun singure unul.
+ * `account=false` (paginile 500/503): nu se citesc gărzile, baza de date poate fi căzută.
  */
 class GuestLayout extends Component
 {
@@ -15,6 +16,7 @@ class GuestLayout extends Component
         public string $title = '',
         public ?string $heading = null,
         public ?string $subheading = null,
+        public bool $account = true,
     ) {}
 
     public function render(): View

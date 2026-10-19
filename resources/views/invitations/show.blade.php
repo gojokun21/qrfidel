@@ -1,7 +1,7 @@
 <x-guest-layout :title="'Invitație în echipa '.$business->name">
     <h1 class="text-lg font-semibold text-ink">Invitație în echipa {{ $business->name }}</h1>
     <p class="mt-2 text-sm text-ink-secondary">
-        Ai fost invitat ca <strong class="text-ink">{{ $invitation->role->label() }}</strong> cu adresa <strong class="break-all text-ink">{{ $invitation->email }}</strong>.
+        Ai fost invitat ca <strong class="text-ink">{{ $invitation->role->label() }}</strong> cu adresa <strong class="break-words text-ink">{{ $invitation->email }}</strong>.
     </p>
 
     <x-layout.flash class="mt-6" />

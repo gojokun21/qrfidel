@@ -1,4 +1,4 @@
-<x-guest-layout :title="__('Reset Password')">
+<x-guest-layout :title="__('Reset Password')" heading="Alege o parolă nouă" subheading="Parola trebuie să aibă cel puțin 8 caractere.">
     <form method="POST" action="{{ route('password.store') }}" class="space-y-5">
         @csrf
 

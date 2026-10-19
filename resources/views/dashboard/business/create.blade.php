@@ -1,7 +1,8 @@
 <x-app-layout title="Creează afacerea" width="form">
     <x-ui.card>
-        <form method="POST" action="{{ route('dashboard.business.store') }}" class="space-y-5">
+        <form method="POST" action="{{ route('dashboard.business.store') }}" class="space-y-5" x-data="{ sending: false }" @submit="sending = true">
             @csrf
+            <x-ui.idempotency-key />
 
             @include('dashboard.business._fields')
 
@@ -12,7 +13,7 @@
                 </div>
             </x-ui.field>
 
-            <x-ui.button>Creează afacerea</x-ui.button>
+            <x-ui.button ::disabled="sending">Creează afacerea</x-ui.button>
         </form>
     </x-ui.card>
 </x-app-layout>

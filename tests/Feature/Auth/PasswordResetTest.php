@@ -58,3 +58,25 @@ test('password can be reset with valid token', function () {
         return true;
     });
 });
+
+test('the reset link request answers the same for known and unknown emails', function () {
+    Notification::fake();
+    $user = User::factory()->create();
+
+    $known = $this->post('/forgot-password', ['email' => $user->email]);
+    $unknown = $this->post('/forgot-password', ['email' => 'nimeni@example.test']);
+    $throttled = $this->post('/forgot-password', ['email' => $user->email]);
+
+    foreach ([$known, $unknown, $throttled] as $response) {
+        $response->assertSessionHasNoErrors()
+            ->assertSessionHas('status', 'Dacă adresa are un cont, îți trimitem pe email linkul de resetare a parolei.');
+    }
+
+    Notification::assertSentToTimes($user, ResetPassword::class, 1);
+});
+
+test('the reset password screen has a heading', function () {
+    $this->get('/reset-password/token?email=ana@example.test')
+        ->assertOk()
+        ->assertSee('Alege o parolă nouă');
+});
